@@ -45,3 +45,7 @@ Then `/reload-skills` (or restart Claude Code). Update later with `git pull` (sy
 ## Versioning
 
 `VERSION` + git tags. Bump on any process-rule change so sessions can tell which loop they're running.
+
+## License
+
+[MIT](LICENSE).
