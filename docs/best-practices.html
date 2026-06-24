@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token-lean Claude Code — best practices</title>
+<style>
+  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --stop:#d23f3f; --ok:#2e9e5b; --code:#f3f5f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2rem; margin: 0 0 .25em; letter-spacing:-.02em; }
+  h2 { font-size: 1.25rem; margin: 2.4em 0 .6em; padding-top:.6em; border-top:1px solid var(--line); }
+  h3 { font-size: 1.02rem; margin: 1.4em 0 .3em; }
+  .lede { color:var(--mut); font-size:1.05rem; margin-top:0; }
+  table { border-collapse: collapse; width:100%; margin:1em 0; font-size:.94rem; }
+  th,td { text-align:left; padding:.5em .7em; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; }
+  code { background:var(--code); padding:.12em .4em; border-radius:5px; font-size:.88em; }
+  pre { background:var(--code); padding:16px 18px; border-radius:10px; overflow:auto; font-size:.84rem; line-height:1.5; border:1px solid var(--line); }
+  blockquote { margin:1.2em 0; padding:.4em 1.1em; border-left:3px solid var(--accent); color:var(--ink); background:#f6f9ff; border-radius:0 8px 8px 0; }
+  .tier { display:grid; grid-template-columns:1fr; gap:12px; margin:1em 0; }
+  .card { border:1px solid var(--line); border-radius:12px; padding:14px 18px; background:#fff; }
+  .card h3 { margin:.1em 0 .35em; font-size:1rem; }
+  .card p { margin:.2em 0; color:var(--mut); font-size:.92rem; }
+  .pill { display:inline-block; border-radius:999px; padding:.1em .7em; font-size:.78rem; font-weight:600; }
+  .p1 { background:#fdecec; color:var(--stop); }
+  .p2 { background:#fff3e0; color:#b9770e; }
+  .p3 { background:#e9f7ef; color:var(--ok); }
+  .practice { margin:1.1em 0; }
+  .practice b { display:block; margin-bottom:.15em; }
+  .muted { color:var(--mut); }
+  .nav { font-size:.9rem; margin-bottom:1.5em; }
+  footer { margin-top:3em; color:var(--mut); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="nav muted"><a href="process.html">the house SDLC</a> · <b>best practices</b> · <a href="case-study.html">case study</a></p>
+
+  <h1>Token-lean Claude Code: skills, subagents, and context</h1>
+  <p class="lede">A practitioner's guide to <em>why</em> a Claude Code setup gets expensive and <em>how</em>
+  to make it cheap without losing capability. The companion <a href="case-study.html">case study</a>
+  shows it applied to the house SDLC skills.</p>
+
+  <blockquote>Context is paid for <b>per message</b>, not per session. Anything loaded into a session is
+  re-sent on every turn for the rest of that session. The whole craft is moving weight out of the
+  always-loaded path and into places paid for only when actually used.</blockquote>
+
+  <h2>Why this matters</h2>
+  <p>A language model is stateless — it doesn't remember your conversation between turns. To continue,
+  the <em>entire</em> context (system prompt, tool defs, every prior message, every loaded skill body)
+  is re-sent on every turn. So:</p>
+  <blockquote>A 3,000-token skill body loaded for a 60-message session isn't a 3,000-token cost. It's
+  re-sent ~60 times. The thing you load once is paid for continuously.</blockquote>
+  <p>The expensive question is never "how big is this file." It's <b>"how long does it stay in context,
+  and how many turns pay for it."</b> A big file used once and discarded is cheap. A small file that's
+  always present is, over a long session, surprisingly expensive.</p>
+
+  <h2>How context works in an agent session</h2>
+  <p>Picture a session's context as three tiers, ordered by what they cost you.</p>
+
+  <div class="tier">
+    <div class="card">
+      <span class="pill p1">tier 1 — always loaded, every turn</span>
+      <h3>The expensive path</h3>
+      <p>System prompt, <b>every tool definition</b>, and <b>every registered skill/agent
+      <em>description</em></b> (the one-line metadata, not the body), plus the growing transcript. This
+      is "idle cost" — paid whether or not you use it. A registered agent you never invoke still costs
+      its description line on all 100 turns.</p>
+    </div>
+    <div class="card">
+      <span class="pill p2">tier 2 — loaded on demand, then sticky</span>
+      <h3>The per-message path</h3>
+      <p>Invoking a skill loads its full body — and it <b>stays</b> loaded to the session's end, re-sent
+      each turn. This tier quietly dominates cost. A monolithic 8,000-token skill invoked early in a long
+      session is the single most expensive thing in most setups.</p>
+    </div>
+    <div class="card">
+      <span class="pill p3">tier 3 — isolated, returns only a result</span>
+      <h3>The nearly-free path</h3>
+      <p>A subagent runs in its <b>own</b> context. It reads files and reasons at length — none of it
+      lands in your session. Only its final output (a few hundred tokens) returns. The 50,000 tokens of
+      diffs it read to produce a GO/NO-GO die with its context. <b>This is the lever.</b></p>
+    </div>
+  </div>
+
+  <h2>The plugin trap</h2>
+  <p>Plugins aren't inherently heavy — but how they're usually built makes them heavy. A plugin ships
+  two kinds of things:</p>
+  <ul>
+    <li><b>Skills</b> — each adds a description to tier 1 (idle), and its body to tier 2 <em>only if
+    invoked.</em></li>
+    <li><b>Registered agents</b> — each adds a description to tier 1 <em>always</em>, because the model
+    must know the agent exists to delegate to it.</li>
+  </ul>
+  <p>So a plugin with one lean skill and zero agents is nearly free at idle. A plugin with a monolithic
+  skill and four agents pays four agent description lines <b>every turn forever</b>, plus the full skill
+  body every turn <b>once anything triggers it</b> — and a whole-lifecycle skill triggers in nearly
+  every session.</p>
+  <blockquote><b>Registration is the cost.</b> Anything that must announce itself in tier 1 is an idle
+  tax. The number of registered surfaces — agents especially — is what you pay at idle; a fat skill body
+  is what you pay per-turn once it's live.</blockquote>
+
+  <h2>Subagents vs. loaded ("full") agents</h2>
+  <p>A registered agent and an ad-hoc subagent are the <b>same execution mechanism.</b> Both run in an
+  isolated context and return only output; neither keeps its working context in your session. The only
+  difference is registration:</p>
+  <table>
+    <tr><th></th><th>idle cost (tier 1)</th><th>where its instructions live</th></tr>
+    <tr><td><b>registered agent</b></td><td>one always-on description line</td><td>in the agent definition</td></tr>
+    <tr><td><b>inline subagent</b> (dispatched with a prompt)</td><td><b>zero</b></td><td>in the body of the skill that dispatches it</td></tr>
+  </table>
+  <p>Keep a reviewer's rubric <em>inside the dispatching skill's body</em> and spawn an inline subagent
+  with it, and you pay <b>zero idle cost</b> — the rubric is only in context when its owning skill is
+  already loaded.</p>
+  <blockquote>Moving an agent to a <b>remote/hosted runner does not reduce context load.</b> A local
+  subagent already keeps its context out of the parent. Hosting changes <em>where the CPU runs</em>, not
+  <em>what's in your prompt.</em></blockquote>
+
+  <h2>The best practices</h2>
+  <div class="practice"><b>1. Minimize the always-loaded surface, not total capability.</b>
+  Count your tier-1 lines (tool defs, skill + agent descriptions). That number is multiplied by every
+  turn of every session. Capability in tier 2/3 is comparatively free.</div>
+  <div class="practice"><b>2. Split a monolith along the seam you actually work on.</b>
+  A whole-lifecycle skill taxes every session for parts it isn't using. One skill per role (conduct vs.
+  execute, plan vs. build) means each session loads only its half.</div>
+  <div class="practice"><b>3. Put heavy reading in subagents; keep only verdicts in the parent.</b>
+  Reviews, audits, diff analysis, log trawls — anything that reads a lot to conclude a little. The parent
+  receives the conclusion, never the raw material.</div>
+  <div class="practice"><b>4. Prefer inline subagents over registered agents for rubric work.</b>
+  If a reviewer's instructions can live in the dispatching skill's body, you avoid the idle tax entirely.
+  Register an agent only when it must be invokable independently of any skill.</div>
+  <div class="practice"><b>5. Make long-lived sessions resumable from a cheap artifact.</b>
+  A conductor you keep reopening shouldn't reload a giant history. Have it write a short plaintext state
+  file and rebuild from that — a 1-KB status file beats dragging a 100-message transcript forward.</div>
+  <div class="practice"><b>6. Make ephemeral sessions actually ephemeral.</b>
+  A build session's heavy log is its biggest cost. Spin it up for one unit, tear it down, and the log
+  dies with it instead of contaminating the long-lived conductor.</div>
+  <div class="practice"><b>7. Don't optimize what isn't on the hot path.</b>
+  A doc read once is cheap; a workflow script on disk costs nothing until it runs. Spend effort on the
+  always-loaded tier and the sticky tier-2 bodies — that's where the multiplier lives.</div>
+
+  <h2>A quick mental model</h2>
+  <p>Before adding a capability, ask in order:</p>
+  <ol>
+    <li><b>Does it need to announce itself at idle?</b> If not, don't register it — dispatch inline.</li>
+    <li><b>Does it read a lot to conclude a little?</b> If so, it's a subagent, not inline skill text.</li>
+    <li><b>Will it stay loaded once triggered?</b> If so, is it carrying weight only <em>some</em> sessions
+    need? Split it.</li>
+    <li><b>Is this a long-lived session?</b> Then give it a cheap resume artifact so reopening is free.</li>
+  </ol>
+  <p class="muted">Get those four right and a setup that felt heavy becomes lean without losing a single
+  capability — which is exactly what the <a href="case-study.html">case study</a> walks through.</p>
+
+  <footer>House SDLC skills · best-practices companion · generated from <code>docs/best-practices.md</code>.</footer>
+</div>
+</body>
+</html>

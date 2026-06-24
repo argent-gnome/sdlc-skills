@@ -33,8 +33,14 @@ Then `/reload-skills` (or restart Claude Code). Update later with `git pull` (sy
 
 ## How it works
 
-See **[docs/process.md](docs/process.md)** (or open **docs/process.html** in a browser) for the full loop,
-the gates, and the token-cost rationale — written so you can understand the system without reading the skills.
+- **[docs/process.md](docs/process.md)** (or `docs/process.html`) — the full loop, the gates, and the
+  three reviews, written so you can understand the system without reading the skills.
+- **[docs/best-practices.md](docs/best-practices.md)** (or `docs/best-practices.html`) — the general
+  theory: how context is paid for per message, the three cost tiers, the plugin trap, subagents vs.
+  registered agents, and the rules that fall out of it.
+- **[docs/case-study.md](docs/case-study.md)** (or `docs/case-study.html`) — those rules applied here:
+  the move-by-move refactor of the old `dev-command-center` plugin into these two skills, with the
+  before/after token numbers.
 
 ## Versioning
 

@@ -1,5 +1,7 @@
 # The house SDLC — how it works
 
+*the house SDLC · [best practices](best-practices.md) · [case study](case-study.md)*
+
 This is the one build process, run the same way every time, by two cooperating Claude Code skills. It's a
 plugin-free, token-lean successor to the old `dev-command-center` plugin: same lifecycle discipline, a fraction
 of the context cost.

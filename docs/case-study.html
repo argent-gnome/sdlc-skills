@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case study — refactoring the SDLC out of a heavy plugin</title>
+<style>
+  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --stop:#d23f3f; --ok:#2e9e5b; --code:#f3f5f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2rem; margin: 0 0 .25em; letter-spacing:-.02em; }
+  h2 { font-size: 1.25rem; margin: 2.4em 0 .6em; padding-top:.6em; border-top:1px solid var(--line); }
+  h3 { font-size: 1.02rem; margin: 1.5em 0 .3em; }
+  .lede { color:var(--mut); font-size:1.05rem; margin-top:0; }
+  table { border-collapse: collapse; width:100%; margin:1em 0; font-size:.94rem; }
+  th,td { text-align:left; padding:.5em .7em; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; }
+  code { background:var(--code); padding:.12em .4em; border-radius:5px; font-size:.88em; }
+  pre { background:var(--code); padding:16px 18px; border-radius:10px; overflow:auto; font-size:.84rem; line-height:1.5; border:1px solid var(--line); }
+  blockquote { margin:1.2em 0; padding:.4em 1.1em; border-left:3px solid var(--accent); color:var(--ink); background:#f6f9ff; border-radius:0 8px 8px 0; }
+  .move { border:1px solid var(--line); border-radius:12px; padding:4px 20px 16px; background:#fff; margin:1.1em 0; }
+  .delta { color:var(--ok); font-weight:600; }
+  .muted { color:var(--mut); }
+  .nav { font-size:.9rem; margin-bottom:1.5em; }
+  footer { margin-top:3em; color:var(--mut); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="nav muted"><a href="process.html">the house SDLC</a> · <a href="best-practices.html">best practices</a> · <b>case study</b></p>
+
+  <h1>Refactoring the SDLC out of a heavy plugin</h1>
+  <p class="lede">The <a href="best-practices.html">best-practices</a> theory applied to one real system:
+  a token-heavy Claude Code plugin rebuilt as two lean, plugin-free local skills — every bit of process
+  discipline kept, per-message cost cut by roughly two-thirds.</p>
+  <p class="muted">Read the theory doc first if "tier 1/2/3" and "idle vs. per-message cost" aren't
+  already familiar — this doc uses that vocabulary throughout.</p>
+
+  <h2>The starting point</h2>
+  <p>The lifecycle lived in a plugin, <code>dev-command-center</code>, in a single skill,
+  <code>dev-orchestrator</code>. It worked — but it was expensive in exactly the ways the theory
+  predicts:</p>
+  <ul>
+    <li><b>A monolithic skill body</b> covering the entire lifecycle <em>plus</em> a board/tracking
+    subsystem — measured at <b>~8,392 tokens.</b> Because it covered everything, nearly every dev session
+    triggered it, so that weight sat in sticky tier 2 for whole sessions.</li>
+    <li><b>Four registered agents</b> — four tier-1 description lines, paid every turn of every session,
+    review or no review.</li>
+    <li>A board + GitHub-Pages tracker, public-board privacy rules, an onboarding scanner, a
+    self-improvement auditor loop, and an autonomous-mode section — all carried in the body.</li>
+  </ul>
+  <p>The reviews were the runtime killer: spelled out as full multi-agent panels, a single slice could
+  spin up <b>25–38 review agents.</b> Correct, but wildly out of proportion to most slices.</p>
+
+  <h2>What we were actually optimizing</h2>
+  <p>We did <em>not</em> set out to delete capability — the user liked the lifecycle. The goal was to
+  keep the discipline and move the weight off the hot path, via three moves: cut unused machinery;
+  re-implement reviews so the default path is cheap and escalates only when warranted; and split the
+  monolith along the seam the user already works on.</p>
+
+  <h2>The moves</h2>
+
+  <div class="move">
+    <h3>Move 1 — Delete the board subsystem</h3>
+    <p>The user had stopped tracking on the board, so all board machinery came out.
+    <span class="delta">8,392 → 4,929 tokens</span> (~41% off the sticky body), zero loss of discipline —
+    the board was never part of the discipline. Its one useful function, resume-after-close, was replaced
+    by a far cheaper artifact: a per-project <code>docs/dev-state.md</code> a fresh session reads in ~1 KB
+    instead of reloading a transcript. (Best practice #5.)</p>
+  </div>
+
+  <div class="move">
+    <h3>Move 2 — Fold the reviews down to their cheap default</h3>
+    <p>All three reviews stayed; their <em>form</em> now scales to stakes (a "rigor dial"): plan-check and
+    merge-gate became single inline subagents, with the merge-gate escalating to the full multi-lens
+    <b>panel only for high-stakes slices</b>; health-sweep stayed an advisory workflow. In body tokens
+    this barely moved (<span class="delta">4,929 → 4,882</span>) — but a normal slice went from ~25–38
+    review agents to about <b>2.</b> The heavy reading still happens, just in tier-3 isolated contexts
+    that return only a verdict. (Best practices #3, #4.)</p>
+  </div>
+
+  <div class="move">
+    <h3>Move 3 — Split the monolith into orchestrator + builder</h3>
+    <p>The lifecycle has a natural seam: a long-lived <b>conductor</b> and an ephemeral <b>executor.</b>
+    We split along it so each session loads only its half.</p>
+    <table>
+      <tr><th></th><th>tokens</th><th>vs. original</th></tr>
+      <tr><td>original monolith</td><td>~8,392</td><td>—</td></tr>
+      <tr><td><b>house-orchestrator</b></td><td>~2,725</td><td>~67% lighter</td></tr>
+      <tr><td><b>house-builder</b></td><td>~1,846</td><td>~77% lighter</td></tr>
+    </table>
+    <p>The builder is genuinely ephemeral — its heavy implementation log dies on teardown and never
+    reaches the conductor. (Best practice #6.)</p>
+  </div>
+
+  <div class="move">
+    <h3>Move 4 — Inline subagents instead of registered agents</h3>
+    <p>The four registered agents are gone; reviewer rubrics now live inside the orchestrator's body and
+    dispatch as inline subagents. Idle cost dropped from <b>four always-on agent descriptions</b> to
+    <span class="delta">~196 tokens</span> for the two skill descriptions — same isolation, same review
+    independence, zero idle tax. (Best practice #4.)</p>
+  </div>
+
+  <div class="move">
+    <h3>Move 5 — Cut the dead weight</h3>
+    <p>Removed because unused and body-only: the self-improvement auditor loop, the
+    autonomous/supervised-remote section (Claude Code does this natively), the onboarding scanner, and the
+    public-board privacy rules. Kept deliberately: "compose, don't reinvent" and the rigor dial — both
+    small and load-bearing.</p>
+  </div>
+
+  <h2>The result</h2>
+  <table>
+    <tr><th></th><th>before</th><th>after</th></tr>
+    <tr><td>sticky body in a dev session</td><td>~8,392 tok (one monolith)</td><td>~2,725 (orchestrator) <b>or</b> ~1,846 (builder)</td></tr>
+    <tr><td>idle agent surface</td><td>4 registered agent descriptions</td><td>~196 tok (2 skill descriptions)</td></tr>
+    <tr><td>review agents per normal slice</td><td>~25–38</td><td>~2 (escalates only when high-stakes)</td></tr>
+    <tr><td>resume mechanism</td><td>board subsystem in-body</td><td>~1 KB <code>docs/dev-state.md</code></td></tr>
+    <tr><td>dependencies</td><td>plugin + marketplace + 4 agents</td><td>none — plain local skills</td></tr>
+  </table>
+  <p>The lifecycle is identical from the user's seat: same stages, same hard gates, same three reviews,
+  same stack gates. What changed is purely <em>where the weight sits.</em></p>
+
+  <h2>What we deliberately did <em>not</em> do</h2>
+  <ul>
+    <li><b>Didn't move agents to a remote runner to "save context."</b> It wouldn't — a local subagent
+    already keeps its context out of the parent. Hosting changes where compute runs, not what's in the
+    prompt.</li>
+    <li><b>Didn't keep it as a plugin "to be safe."</b> A plugin isn't the problem — registration weight
+    is. A lean two-skill, zero-agent plugin would cost nearly the same at idle. We went plugin-free for
+    clean install/versioning, not for token reasons.</li>
+    <li><b>Didn't over-optimize cold artifacts.</b> Workflow scripts and human docs cost nothing until
+    used, so we left them readable.</li>
+  </ul>
+
+  <h2>The transferable lesson</h2>
+  <blockquote>Keep the always-loaded and sticky paths small; push heavy reading into isolated contexts;
+  resume from cheap artifacts. The lifecycle didn't get weaker — it got cheaper, because the cost was
+  never in the <em>discipline</em>, it was in <em>where the discipline was stored.</em></blockquote>
+
+  <footer>House SDLC skills · case-study companion · generated from <code>docs/case-study.md</code>.</footer>
+</div>
+</body>
+</html>
