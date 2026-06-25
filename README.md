@@ -33,6 +33,8 @@ Then `/reload-skills` (or restart Claude Code). Update later with `git pull` (sy
 
 ## How it works
 
+The docs are also published as web pages: **<https://argent-gnome.github.io/sdlc-skills/>**.
+
 - **[docs/process.md](docs/process.md)** (or `docs/process.html`) — the full loop, the gates, and the
   three reviews, written so you can understand the system without reading the skills.
 - **[docs/best-practices.md](docs/best-practices.md)** (or `docs/best-practices.html`) — the general

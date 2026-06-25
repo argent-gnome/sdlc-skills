@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House SDLC skills</title>
+<style>
+  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --code:#f3f5f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 64px 24px 96px; }
+  h1 { font-size: 2.1rem; margin: 0 0 .2em; letter-spacing:-.02em; }
+  .lede { color:var(--mut); font-size:1.08rem; margin-top:0; }
+  code { background:var(--code); padding:.12em .4em; border-radius:5px; font-size:.88em; }
+  .cards { display:grid; gap:14px; margin:2.2em 0 1em; }
+  a.card { display:block; border:1px solid var(--line); border-radius:12px; padding:18px 20px; background:#fff; text-decoration:none; color:inherit; transition:border-color .12s, transform .12s; }
+  a.card:hover { border-color:var(--accent); transform:translateY(-1px); }
+  a.card h3 { margin:0 0 .25em; font-size:1.05rem; color:var(--accent); }
+  a.card p { margin:0; color:var(--mut); font-size:.92rem; }
+  .repo { margin-top:2.4em; color:var(--mut); font-size:.9rem; }
+  .repo a { color:var(--accent); }
+  footer { margin-top:3em; color:var(--mut); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>House SDLC skills</h1>
+  <p class="lede">A lightweight, plugin-free pair of Claude Code skills that run one software-development
+  lifecycle the same way every time — at a fraction of the per-message token cost of a plugin.</p>
+
+  <div class="cards">
+    <a class="card" href="process.html">
+      <h3>How it works &rarr;</h3>
+      <p>The full loop, the gates, and the three reviews — understand the system without reading the skills.</p>
+    </a>
+    <a class="card" href="best-practices.html">
+      <h3>Best practices &rarr;</h3>
+      <p>The general theory: how context is paid for per message, the three cost tiers, the plugin trap,
+      subagents vs. registered agents, and the rules that fall out of it.</p>
+    </a>
+    <a class="card" href="case-study.html">
+      <h3>Case study &rarr;</h3>
+      <p>Those rules applied here: the move-by-move refactor of the old <code>dev-command-center</code>
+      plugin into these two skills, with before/after token numbers.</p>
+    </a>
+  </div>
+
+  <p class="repo">Source, install instructions, and the skills themselves:
+  <a href="https://github.com/argent-gnome/sdlc-skills">github.com/argent-gnome/sdlc-skills</a>.</p>
+
+  <footer>House SDLC skills &middot; two skills: <code>house-orchestrator</code> + <code>house-builder</code>.</footer>
+</div>
+</body>
+</html>
