@@ -72,3 +72,12 @@ stage that finishes the work — not something discovered at the next session's 
   branch is merged and clean. Anything potentially destructive — a stash, an unmerged branch, uncommitted
   changes, deleting a local or remote branch, or an off-git artifact — is **surfaced for the user's explicit
   OK, never resolved silently.** Running unattended never downgrades this.
+
+## Reconcile-subagent — the shared doc-update pattern
+
+Applying a decision, a plan, or an as-built change across the doc-model is **heavy doc read/write** — dispatch
+it to a subagent so it stays out of the parent's context. Contract: *"Read the relevant
+spec/plan/ADR/README/roadmap/dev-state under `<repoPath>` plus `<the decision / diff / plan>`. Update the docs
+so they match, following the routing rules above — a decision → a new ADR, scope/sequencing → roadmap,
+operational state → dev-state, as-built drift → the spec/plan. Change ONLY docs; report what you changed."* Two
+instances already exist: the **builder's** per-unit doc-reconcile, and the **shaper's** post-decision reconcile.
