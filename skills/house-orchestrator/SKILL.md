@@ -40,12 +40,19 @@ source of truth for *what goes where*; this skill only points at it.
 ## run — the procedure
 1. **Resume** from `docs/dev-state.md` (above). Identify the active slice + next action.
 2. **Ready the repo** (the "resume cold" + "ready before building" promise). Two checks, before any building:
-   - **Git reality** — current branch vs `main`, uncommitted/stashed WIP, a branch that predates a merge, a
-     stranded plan-patch, open PRs — plus plan-referenced artifacts that live OUTSIDE git (an untracked
-     sibling/content repo): check the disk, not just the log. Surface any tangle and resolve it first.
+   - **Git reality** — run the doctrine's full Resume sweep: current branch vs `main`, local + remote branches,
+     worktrees, uncommitted/stashed WIP, a branch that predates a merge, a stranded plan-patch, open PRs — plus
+     plan-referenced artifacts that live OUTSIDE git (an untracked sibling/content repo): check the disk, not
+     just the log. **Squash-merge caveat:** `git branch --merged` does NOT recognize a squash-merged branch as
+     merged — confirm merged-ness via `gh pr list --state merged` before pruning, never by reachability alone.
+     Surface any tangle and resolve it per the doctrine's **auto-fix boundary** (destructive fixes need the
+     user's OK).
    - **Can the repo progress the house way?** — the stack's CI gate set is wired and the docs scaffold exists
      (`docs/superpowers/specs|plans`, an ADR dir, `docs/retros/`, `docs/health/`). **Stand up anything missing
-     first.** STOP for the user's sign-off before changing CI config or branch protection.
+     first.** STOP for the user's sign-off before changing CI config or branch protection. **Repo-setup hygiene
+     readiness (doctrine):** ensure `.gitignore` covers IDE / tooling noise (a safe in-repo edit — apply it);
+     and recommend enabling GitHub **auto-delete-head-branch** — a repo-config change, so gated on the user's
+     OK, same as CI / branch protection.
 3. **Confirm the work.** State project + active slice + next action, and what this session will do. New slice →
    scope it first (stage 1). **No plan yet?** Backlog offshoots, health-sweep / `accepted.md` items, or an
    audible are NOT buildable as-is — author a plan first (stage 4; dispatch the plan-authoring to a subagent
