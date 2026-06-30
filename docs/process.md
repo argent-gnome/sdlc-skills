@@ -71,6 +71,24 @@ reads this file — not by reloading a heavy transcript.
 - **web** — tests · typecheck · lint · build; **no silently-destructive migrations** (a fresh CI DB passing is
   not proof against a populated one).
 
+## Docs & hygiene doctrine
+
+The skills share one runtime reference — `references/doctrine.md` in the orchestrator — read on-demand (never
+preloaded) at resume, finish, reconcile, and any doc write. It defines four things:
+
+- **Doc model** — one job per doc: `dev-state.md` (operational tracker), `roadmap.md` (durable spine),
+  `docs/adr/` (decision records — *why*), specs/plans (per-slice design authority), retros, `docs/health/`.
+- **dev-state allowlist** — `dev-state.md` is operational only (active slice, in-flight, slated, done, infra
+  pointers, gotchas, process notes). Durable strategy and decisions are *banned* — they route to roadmap/ADR.
+  The test: *if it's still true three slices from now, it isn't dev-state.*
+- **Routing** — a decision → an ADR; a scope change → roadmap; progress → dev-state; as-built drift → reconcile
+  the spec/plan in the slice PR.
+- **Hygiene** — per-merge the branch/worktree/stash are torn down; resume runs a git-reality check (with the
+  squash-merge caveat: `git branch --merged` misses squash-merged branches — confirm via PR state).
+
+Two of these are actively enforced by the orchestrator: a **dev-state lint** at reconcile and **per-merge
+teardown** at finish, so neither doc-bloat nor branch/worktree rot can accumulate.
+
 ## What was deliberately dropped (vs the old plugin)
 
 The board + GitHub-Pages tracker, the public-board privacy rules, the onboarding scanner, the self-improvement
