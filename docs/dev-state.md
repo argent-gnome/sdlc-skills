@@ -1,24 +1,25 @@
 # sdlc-skills — dev state   (updated 2026-06-30)
 
+
 > Operational tracker only (the doctrine's dev-state allowlist). Durable strategy → a roadmap doc;
 > the *why* behind decisions → specs/retros. Keep this short; update at stage transitions and session end.
 
 ## Active slice: none — between pieces of the ecosystem redesign
-- stage: idle            next action: scope Piece B (remaining self-checks)
+- stage: idle            next action: scope Piece C (the house-shaper skill)
 - branch: main (clean)   blocked on: none
 
 ## In-flight
 - builders / PRs: none (PR #1 merged)
 
 ## Slated (next up)
-- **Piece B** — wire the remaining self-checks into the loop stages: resume git-reality strengthening + the squash-merge caveat, broad session-end hygiene sweep, one-time repo-setup readiness.
-- **Piece C** — new `house-shaper` skill: front-of-loop research/brainstorm → reconcile (dialogue inline; research + reconcile in subagents).
+- **Piece C** — new `house-shaper` skill: front-of-loop research/brainstorm → reconcile (dialogue inline; research + reconcile in subagents). Last piece of the redesign.
 
 ## Done
+- **Piece B** — wire the remaining hygiene self-checks — 2026-06-30 — `docs/retros/2026-06-30-hygiene-self-checks-retro.md` (PR #2, `main` 40a4166; VERSION 0.3.0)
 - **Piece A** — shared docs & hygiene doctrine — 2026-06-30 — `docs/retros/2026-06-30-docs-hygiene-doctrine-retro.md` (PR #1, `main` 95bd854; VERSION 0.2.0)
 
 ## Infra / secrets
-- GitHub: `argent-gnome/sdlc-skills` (Pages site builds from `main`). Installed via `install.sh` (symlink mode) → `~/.claude/skills/`. Current VERSION: 0.2.0.
+- GitHub: `argent-gnome/sdlc-skills` (Pages site builds from `main`). Installed via `install.sh` (symlink mode) → `~/.claude/skills/`. Current VERSION: 0.3.0.
 - Runtime doctrine: `skills/house-orchestrator/references/doctrine.md`, cited by both skills via the `$HOME/.claude/skills/house-orchestrator/...` path.
 
 ## Gotchas
