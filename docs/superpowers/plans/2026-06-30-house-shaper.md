@@ -216,6 +216,8 @@ Replace with:
    build-dispatch stages and dispatch the rest. NEVER reinvent — invoke the named skill.
 ```
 
+(This is a substring replace; the line continues `skill. (The two `Workflow({scriptPath: ...})` lines below…` — **keep that trailing parenthetical** intact after your replacement.)
+
 - [ ] **Step 4: Collapse the front-end stage rows in the table**
 
 Find these six consecutive table rows (stages 0 through 4¼):
@@ -253,17 +255,93 @@ build); a within-plan tweak folds forward into the next unit. It is never an exc
 silently.
 ```
 
-- [ ] **Step 6: Verify all five edits**
+> **Steps 6–9 fix the collapse's blast radius** — four downstream references in `SKILL.md` that still assume the orchestrator shapes inline (found by plan-check). They MUST be fixed or the orchestrator will contradict itself.
+
+- [ ] **Step 6: Reword the Audibles "wrong assumption" bullet (it still re-plans inline)**
+
+Find:
+
+```markdown
+- **Building on a wrong assumption** — **stop the builder** (it's a background task), note what it committed /
+  the branch state, re-plan if the plan itself was wrong (plan-check the delta), and **re-dispatch** a fresh
+  builder with the correction plus the branch's partial state.
+```
+
+Replace with:
+
+```markdown
+- **Building on a wrong assumption** — **stop the builder** (it's a background task), note what it committed /
+  the branch state, and if the plan itself was wrong, **re-shape in a `house-shaper` session** (re-plan +
+  plan-check the delta there), then resume here to **re-dispatch** a fresh builder with the correction plus the
+  branch's partial state.
+```
+
+- [ ] **Step 7: Reattribute the Rigor dial's deleted-stage examples to the shaper**
+
+Find:
+
+```markdown
+*content / mechanical* → light (skip the mockup, single-reviewer merge-gate); *feature / UI* → full ceremony +
+mockup sign-off; *risky / novel* → add the stage-0 spike. **This dial governs the merge-gate's form:**
+```
+
+Replace with:
+
+```markdown
+*content / mechanical* → light (single-reviewer merge-gate; the shaper skips the mockup); *feature / UI* → full
+ceremony + mockup sign-off in the shaper; *risky / novel* → the shaper adds a spike. **This dial governs the
+merge-gate's form:**
+```
+
+- [ ] **Step 8: Trim the Gates list to orchestrator-side gates**
+
+Find:
+
+```markdown
+STOP and get the user at: **spec review · mockup sign-off · live/device validation · CI red · any plan
+deviation or genuine ambiguity · any irreversible / outward-facing action (publish a repo, deploy to prod,
+anything destructive).** Running unattended never downgrades a hard gate — notify and halt. Fail closed:
+```
+
+Replace with:
+
+```markdown
+STOP and get the user at: **confirm shaper artifacts (no ready-to-build plan → recommend a shaper) ·
+live/device validation · CI red · any plan deviation or genuine ambiguity · any irreversible / outward-facing
+action (publish a repo, deploy to prod, anything destructive).** (Spec review and mockup sign-off are gates in
+the *shaper* session, not here.) Running unattended never downgrades a hard gate — notify and halt. Fail closed:
+```
+
+- [ ] **Step 9: Point "Compose, don't reinvent" at the shaper for scoping/planning**
+
+Find:
+
+```markdown
+Every stage hands off to an existing skill. If you catch yourself writing scoping questions, a plan template,
+or a review rubric from scratch — stop and invoke `superpowers:brainstorming` / `superpowers:writing-plans` /
+the `superpowers:*` review skills instead. Yours is only: sequencing, gates, and model routing.
+```
+
+Replace with:
+
+```markdown
+Every stage hands off to an existing skill. If you catch yourself scoping, writing a plan, or brainstorming —
+stop: that's a `house-shaper` session, recommend it. For reviews, dispatch the `superpowers:*` review skills /
+the plan-check + merge-gate reviewer subagents. Yours is only: sequencing, gates, dispatch, and model routing.
+```
+
+- [ ] **Step 10: Verify all nine edits**
 
 Run: `grep -c 'redirect guard\|house-shaper\|0–4¼ shape' skills/house-orchestrator/SKILL.md` → expected `4` or more.
-Run: `grep -c -E '^   \| 1 scope \||^   \| 4¼ plan-check \|' skills/house-orchestrator/SKILL.md` → expected `0` (the old front-end rows are gone).
-Run: `grep -c 'shaper artifacts present' skills/house-orchestrator/SKILL.md` → expected `1`.
+Run: `grep -c -E '^   \| 1 scope \||^   \| 4¼ plan-check \|' skills/house-orchestrator/SKILL.md` → expected `0` (old front-end rows gone).
+Run: `grep -c 'shaper artifacts present\|shaper artifacts (no ready-to-build' skills/house-orchestrator/SKILL.md` → expected `2` (the collapsed table row + the Gates list).
+Run: `grep -c 'mockup sign-off · live/device\|re-plan if the plan itself was wrong\|add the stage-0 spike\|writing scoping questions' skills/house-orchestrator/SKILL.md` → expected `0` (all four stale phrasings removed).
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 11: Commit**
 
 ```bash
 git add skills/house-orchestrator/SKILL.md
-git commit -m "orchestrator: redirect guard + collapse the front end to a house-shaper handoff"
+git commit -m "orchestrator: redirect guard + front-end collapse + fix the blast radius (audibles/rigor/gates/compose)"
 ```
 
 ---
@@ -322,21 +400,88 @@ resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
         └────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-- [ ] **Step 5: Mirror all of the above into `docs/process.html`**
+- [ ] **Step 5: Fix the `process.md` ⛔ legend (spec/mockup gates are now shaper-side)**
 
-Read `docs/process.html`. Find and update, matching the file's hand-authored conventions (`<b>` house style, the existing `<table>`/cards, the loop `<pre>`):
-- the "two cooperating … skills" count → "three";
-- the "Why two skills" heading → "Why three skills" (and the "orchestrator and builder alike" phrase → "shaper, orchestrator, and builder alike");
-- add a **house-shaper** row to the role table (before the house-orchestrator row): role = shaper, loads = "the fuzzy front end: research, brainstorm, spec, plan, plan-check, reconcile", lives = "a user-run shaping session, torn down";
-- replace the loop `<pre>` diagram with an HTML-escaped version of the new diagram from Step 4 (preserve the box-drawing characters; escape `<`/`>`/`&` as needed).
+Find:
 
-- [ ] **Step 6: Verify md/html parity**
+```markdown
+⛔ = a hard gate: the orchestrator stops and gets the user (spec review, mockup sign-off, live validation,
+CI red, any plan deviation, any irreversible/outward-facing action). These never auto-clear, even unattended.
+```
+
+Replace with:
+
+```markdown
+⛔ = a hard gate that never auto-clears, even unattended. The shaper stops for spec review + mockup sign-off;
+the orchestrator stops to confirm shaper artifacts, for live validation, CI red, any plan deviation, and any
+irreversible/outward-facing action.
+```
+
+(The "## The three reviews" section's plan-check (4¼) description is intentionally left as-is — that review still exists; it simply runs in a shaper session now. A deeper rewrite of that section is out of scope for this slice.)
+
+- [ ] **Step 6: Mirror into `docs/process.html` — it's a 2-card CSS grid, NOT a `<table>`**
+
+Read `docs/process.html`, then make these exact edits (match the file's `<b>` / `.card` / `.pill` house style):
+
+(a) **Lede count** — find `by two cooperating Claude Code skills —` and change `two` → `three`.
+
+(b) **Heading** — find `<h2>Why two skills</h2>` → `<h2>Why three skills</h2>`. (Note: the HTML intro does NOT contain the phrase "orchestrator and builder alike" — there is nothing to change there; do not invent it.)
+
+(c) **Role cards** — the roles are a 2-column CSS grid, not a table. Add the shaper as a THIRD card AND widen this instance to 3 columns. Find:
+
+```html
+  <div class="two">
+    <div class="card">
+      <span class="pill">conductor</span>
+      <h3>house-orchestrator</h3>
+```
+
+Replace with:
+
+```html
+  <div class="two" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card">
+      <span class="pill">shaper</span>
+      <h3>house-shaper</h3>
+      <p>A user-run shaping session for the fuzzy front end — research, brainstorm, spec, plan, plan-check,
+      doc reconcile. Turns an idea into ready-to-build work (or a recorded decision), then hands off. Torn
+      down after.</p>
+    </div>
+    <div class="card">
+      <span class="pill">conductor</span>
+      <h3>house-orchestrator</h3>
+```
+
+(d) **Loop `<pre>` diagram** — replace the diagram inside the loop `<pre>` (the box from the `house-orchestrator` line through the final box-bottom line) with the version below. It contains NO `<`, `>`, or `&`, so paste the box-drawing characters as-is — no HTML-escaping needed:
+
+```
+        ┌──────────────── house-shaper (per idea, its own session) ───────────────┐
+ idea → │ intake → research (subagents) → brainstorm ⛔spec → plan → plan-check     │
+        │ (subagent) → reconcile (subagent) → hand off ready-to-build work (or ADR) │
+        └────────────────────────────────────┬─────────────────────────────────────┘
+                                              ▼  (a new orchestrator session picks it up)
+       ┌──────────────────────── house-orchestrator ────────────────────────┐
+resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
+                       hand off a unit   ┌──────── house-builder (per unit) ───────┐
+                                ────────▶│ 5 build (TDD) · 6 self-review · stack │
+                                         │ gates · doc-reconcile (subagent) · 8 CI │
+                       report back   ◀────│ → DONE / CONCERNS / BLOCKED           │
+                                │        └────────────────────────────────────────┘
+   7 merge-gate (subagent; PANEL if high-stakes) ⛔ → 7½ health-sweep (advisory)
+   → 9 live/device ⛔ → 9½ docs audit → 10 PR+merge → 11 reconcile + dev-state
+       └────────────────────────────────────────────────────────────────────┘
+```
+
+(e) **Footer** — find `see <code>skills/house-orchestrator</code> and <code>skills/house-builder</code> ·` and replace with `see <code>skills/house-shaper</code>, <code>skills/house-orchestrator</code> and <code>skills/house-builder</code> ·`.
+
+- [ ] **Step 7: Verify md/html parity + the diagram (not just the card) updated**
 
 Run: `grep -c 'house-shaper' docs/process.md docs/process.html` → expected ≥1 in each.
 Run: `grep -c 'Why three skills' docs/process.md docs/process.html` → expected 1 in each.
 Run: `grep -c 'Why two skills' docs/process.md docs/process.html` → expected 0 in both.
+Run: `grep -c 'confirm shaper artifacts' docs/process.md docs/process.html` → expected ≥1 in each (proves the loop diagram, not only the role card, was updated).
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add docs/process.md docs/process.html
