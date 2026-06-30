@@ -79,14 +79,14 @@ source of truth for *what goes where*; this skill only points at it.
    | 9 live/device | Simulator (iOS) / device / staging (web); **reload the app after any UI change.** When an `@Model`/schema changed, launch against a store populated under the *previous* schema. | ⛔ validation |
    | 9½ docs audit | re-read the slice's spec/plan/ADRs against the shipped code; reconcile any drift (a stale namespace, an as-built decision the doc still contradicts) in the same PR | — |
    | 10 PR + merge | `superpowers:finishing-a-development-branch`; **the spec, plan, and any approved mockup ship IN the slice PR** (the cited design authority — never "throwaway"; commit them deliberately, not via a stray `git add -A`) **Then per-merge teardown (doctrine hygiene): delete the merged branch (prefer auto-delete-head-branch, else prune), remove the unit's worktree, verify no stray stash.** | — |
-   | 11 reconcile | memory + docs + **verify post-merge main CI green** + write the slice retro to `<repoPath>/docs/retros/<key>-<slice>-retro.md` + **update `docs/dev-state.md`** **Run the dev-state lint (doctrine): scan `dev-state.md` against its allowlist and migrate any durable content out to roadmap/ADR BEFORE writing the resting state.** | — |
+   | 11 reconcile | memory + docs + **verify post-merge main CI green** + write the slice retro to `<repoPath>/docs/retros/<key>-<slice>-retro.md` + **update `docs/dev-state.md`** **Run the dev-state lint (doctrine): scan `dev-state.md` against its allowlist and migrate any durable content out to roadmap/ADR BEFORE writing the resting state.** **Then the broad session-end hygiene sweep (doctrine): scan for ANY stale local branches/worktrees/stashes + merged-but-undeleted remote branches, resolving per the auto-fix boundary (surface destructive).** | — |
 
 5. **Reconcile (stage 11).** Update memory, run the docs audit, verify post-merge main CI is green, write the
    retro (manual interventions · decisions · **plan deviations** · gate friction), and **update
    `docs/dev-state.md`** to the resting state. **Stage ledger (fail-closed):** account for every stage as
    **ran** · **skipped (with an allowed reason)** · **n/a** — the retro's "How it was built" line *is* this
    ledger. An unaccounted stage is a plan deviation → surface it. "I didn't get to it" is a deviation, not a skip.
-Per the doctrine's hygiene checklist, before writing the resting state: lint `dev-state.md` against the allowlist (migrate strays to roadmap/ADR), and confirm the just-merged unit left no stale branch, worktree, or stash.
+Per the doctrine's hygiene checklist, before writing the resting state: lint `dev-state.md` against the allowlist (migrate strays to roadmap/ADR), and run the **broad session-end hygiene sweep** — scan for ANY stale local branches, worktrees, or stashes and merged-but-undeleted remote branches (not just the unit that merged), resolving per the auto-fix boundary (surface anything destructive for the user's OK).
 
 ## Dispatching a builder (stage 5)
 Dispatch a **`house-builder` subagent** to implement ONE unit, **in the background** by default — so your
