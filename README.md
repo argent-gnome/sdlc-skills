@@ -3,8 +3,11 @@
 A lightweight, **plugin-free** set of Claude Code skills that run the house software-development lifecycle the
 same way every time — at a fraction of the per-message token cost of a plugin.
 
-Two skills, split along the way you actually work:
+Three skills, split along the way you actually work:
 
+- **`house-shaper`** — a user-run shaping session for the fuzzy front end: research, brainstorm, spec, plan,
+  plan-check, and doc reconcile. Turns an idea into ready-to-build work (or a recorded decision), then hands
+  off to the orchestrator.
 - **`house-orchestrator`** — the long-lived conductor session. Sequences a slice, holds the gates, writes
   kickoff prompts for build sessions, reviews their work via subagents, and reconciles. Resumes cold from a
   per-project `docs/dev-state.md` file.
@@ -41,7 +44,7 @@ The docs are also published as web pages: **<https://argent-gnome.github.io/sdlc
   theory: how context is paid for per message, the three cost tiers, the plugin trap, subagents vs.
   registered agents, and the rules that fall out of it.
 - **[docs/case-study.md](docs/case-study.md)** (or `docs/case-study.html`) — those rules applied here:
-  the move-by-move refactor of the old `dev-command-center` plugin into these two skills, with the
+  the move-by-move refactor of the old `dev-command-center` plugin into these three skills, with the
   before/after token numbers.
 
 ## Versioning

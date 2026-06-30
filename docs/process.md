@@ -2,18 +2,19 @@
 
 *the house SDLC · [best practices](best-practices.md) · [case study](case-study.md)*
 
-This is the one build process, run the same way every time, by two cooperating Claude Code skills. It's a
+This is the one build process, run the same way every time, by three cooperating Claude Code skills. It's a
 plugin-free, token-lean successor to the old `dev-command-center` plugin: same lifecycle discipline, a fraction
 of the context cost.
 
-## Why two skills
+## Why three skills
 
 Every message in a session re-sends the whole context, so a loaded skill body is a tax paid *per message*. A
-single monolithic SDLC skill makes every session — orchestrator and builder alike — pay for the whole
+single monolithic SDLC skill makes every session — shaper, orchestrator, and builder alike — pay for the whole
 lifecycle. Splitting along the seam you already work on means each session loads only its half:
 
 | | role | loads | lives |
 |---|---|---|---|
+| **house-shaper** | shaper | the fuzzy front end: research, brainstorm, spec, plan, plan-check, reconcile | a user-run shaping session, torn down |
 | **house-orchestrator** | conductor | sequencing, gates, kickoff prompts, review dispatch, reconcile | one long-lived session, resumable |
 | **house-builder** | executor | build one unit: TDD, stack gates, self-review, doc reconcile | ephemeral — spun up, then torn down |
 
@@ -24,9 +25,13 @@ light because it never reads diffs itself — it **dispatches reviews to subagen
 ## The loop
 
 ```
+        ┌──────────────── house-shaper (per idea, its own session) ───────────────┐
+ idea → │ intake → research (subagents) → brainstorm ⛔spec → plan → plan-check     │
+        │ (subagent) → reconcile (subagent) → hand off ready-to-build work (or ADR) │
+        └────────────────────────────────────┬─────────────────────────────────────┘
+                                              ▼  (a new orchestrator session picks it up)
         ┌──────────────────────────── house-orchestrator ────────────────────────────┐
-resume → ready repo → 1 scope → 2 spec ⛔ → 3 mockup ⛔ → 4 plan → 4¼ plan-check (subagent)
-                                                                          │
+resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
                               hand off a unit  ┌───────── house-builder (per unit) ─────────┐
                                        ───────▶│ 5 build (TDD) · 6 self-review · stack    │
                                                │ gates · doc-reconcile (subagent) · 8 CI  │
@@ -37,8 +42,9 @@ resume → ready repo → 1 scope → 2 spec ⛔ → 3 mockup ⛔ → 4 plan →
         └────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-⛔ = a hard gate: the orchestrator stops and gets the user (spec review, mockup sign-off, live validation,
-CI red, any plan deviation, any irreversible/outward-facing action). These never auto-clear, even unattended.
+⛔ = a hard gate that never auto-clears, even unattended. The shaper stops for spec review + mockup sign-off;
+the orchestrator stops to confirm shaper artifacts, for live validation, CI red, any plan deviation, and any
+irreversible/outward-facing action.
 
 ## The three reviews
 

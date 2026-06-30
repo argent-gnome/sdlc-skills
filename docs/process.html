@@ -33,14 +33,21 @@
 <div class="wrap">
   <p class="nav muted"><b>the house SDLC</b> · <a href="best-practices.html">best practices</a> · <a href="case-study.html">case study</a></p>
   <h1>The house SDLC</h1>
-  <p class="lede">One build process, run the same way every time, by two cooperating Claude Code skills —
+  <p class="lede">One build process, run the same way every time, by three cooperating Claude Code skills —
   a plugin-free, token-lean successor to the old <code>dev-command-center</code> plugin.</p>
 
-  <h2>Why two skills</h2>
+  <h2>Why three skills</h2>
   <p>Every message re-sends the whole session context, so a loaded skill body is a tax paid <em>per
   message</em>. A single monolithic SDLC skill makes every session pay for the whole lifecycle. Splitting
   along the seam you already work on means each session loads only its half.</p>
-  <div class="two">
+  <div class="two" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card">
+      <span class="pill">shaper</span>
+      <h3>house-shaper</h3>
+      <p>A user-run shaping session for the fuzzy front end — research, brainstorm, spec, plan, plan-check,
+      doc reconcile. Turns an idea into ready-to-build work (or a recorded decision), then hands off. Torn
+      down after.</p>
+    </div>
     <div class="card">
       <span class="pill">conductor</span>
       <h3>house-orchestrator</h3>
@@ -59,21 +66,25 @@
 
   <h2>The loop</h2>
 <pre>
+        ┌──────────────── house-shaper (per idea, its own session) ───────────────┐
+ idea → │ intake → research (subagents) → brainstorm ⛔spec → plan → plan-check     │
+        │ (subagent) → reconcile (subagent) → hand off ready-to-build work (or ADR) │
+        └────────────────────────────────────┬─────────────────────────────────────┘
+                                              ▼  (a new orchestrator session picks it up)
        ┌──────────────────────── house-orchestrator ────────────────────────┐
-resume → ready repo → 1 scope → 2 spec ⛔ → 3 mockup ⛔ → 4 plan → 4¼ plan-check
-                                                                  │
+resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
                        hand off a unit   ┌──────── house-builder (per unit) ───────┐
                                 ────────▶│ 5 build (TDD) · 6 self-review · stack │
-                                         │ gates · doc-reconcile · 8 CI          │
+                                         │ gates · doc-reconcile (subagent) · 8 CI │
                        report back   ◀────│ → DONE / CONCERNS / BLOCKED           │
                                 │        └────────────────────────────────────────┘
    7 merge-gate (subagent; PANEL if high-stakes) ⛔ → 7½ health-sweep (advisory)
-   → 9 live/device ⛔ → 9½ docs audit → 10 PR+merge → 11 reconcile + dev-state.md
+   → 9 live/device ⛔ → 9½ docs audit → 10 PR+merge → 11 reconcile + dev-state
        └────────────────────────────────────────────────────────────────────┘
 </pre>
-  <p><span class="stop">⛔ hard gate</span> — the orchestrator stops and gets the user: spec review, mockup
-  sign-off, live validation, CI red, any plan deviation, any irreversible/outward-facing action. These never
-  auto-clear, even when running unattended.</p>
+  <p><span class="stop">⛔ hard gate</span> — never auto-clears, even unattended. The shaper stops for spec
+  review + mockup sign-off; the orchestrator stops to confirm shaper artifacts, for live validation, CI red,
+  any plan deviation, and any irreversible/outward-facing action.</p>
 
   <h2>The three reviews</h2>
   <table>
@@ -122,7 +133,7 @@ resume → ready repo → 1 scope → 2 spec ⛔ → 3 mockup ⛔ → 4 plan →
   replaced by the lightweight <code>dev-state.md</code>. The lifecycle discipline stayed; the token weight
   didn't.</p>
 
-  <footer>House SDLC skills · see <code>skills/house-orchestrator</code> and <code>skills/house-builder</code> ·
+  <footer>House SDLC skills · see <code>skills/house-shaper</code>, <code>skills/house-orchestrator</code> and <code>skills/house-builder</code> ·
   generated from <code>docs/process.md</code>.</footer>
 </div>
 </body>
