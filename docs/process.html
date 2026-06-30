@@ -82,9 +82,9 @@ resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
    → 9 live/device ⛔ → 9½ docs audit → 10 PR+merge → 11 reconcile + dev-state
        └────────────────────────────────────────────────────────────────────┘
 </pre>
-  <p><span class="stop">⛔ hard gate</span> — the orchestrator stops and gets the user: spec review, mockup
-  sign-off, live validation, CI red, any plan deviation, any irreversible/outward-facing action. These never
-  auto-clear, even when running unattended.</p>
+  <p><span class="stop">⛔ hard gate</span> — never auto-clears, even unattended. The shaper stops for spec
+  review + mockup sign-off; the orchestrator stops to confirm shaper artifacts, for live validation, CI red,
+  any plan deviation, and any irreversible/outward-facing action.</p>
 
   <h2>The three reviews</h2>
   <table>
