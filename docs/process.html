@@ -114,8 +114,7 @@ resume → ready repo → 1 scope → 2 spec ⛔ → 3 mockup ⛔ → 4 plan →
     (squash-merge caveat: <code>git branch --merged</code> misses squash-merged branches — confirm via PR
     state).</li>
   </ul>
-  <p>Two are actively enforced by the orchestrator: a <b>dev-state lint</b> at reconcile and <b>per-merge
-  teardown</b> at finish.</p>
+  <p>All of these are wired into the loop — the <b>resume git-reality check</b> and <b>repo-setup readiness</b> at stage 2, <b>per-merge teardown</b> at finish, and the <b>dev-state lint</b> + <b>broad hygiene sweep</b> at reconcile — under a conservative <b>auto-fix boundary</b>: only provably-safe cleanups happen automatically; anything destructive is surfaced for the user, never silent.</p>
 
   <h2>Dropped vs the old plugin</h2>
   <p class="muted">The board + GitHub-Pages tracker, public-board privacy rules, onboarding scanner,

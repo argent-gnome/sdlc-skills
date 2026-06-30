@@ -86,8 +86,10 @@ preloaded) at resume, finish, reconcile, and any doc write. It defines four thin
 - **Hygiene** — per-merge the branch/worktree/stash are torn down; resume runs a git-reality check (with the
   squash-merge caveat: `git branch --merged` misses squash-merged branches — confirm via PR state).
 
-Two of these are actively enforced by the orchestrator: a **dev-state lint** at reconcile and **per-merge
-teardown** at finish, so neither doc-bloat nor branch/worktree rot can accumulate.
+All of these are wired into the loop — the **resume git-reality check** and **repo-setup readiness** at stage
+2, **per-merge teardown** at finish, and the **dev-state lint** + **broad hygiene sweep** at reconcile — under
+a conservative **auto-fix boundary**: only provably-safe cleanups happen automatically; anything destructive is
+surfaced for the user, never silent. So neither doc-bloat nor branch/worktree/stash rot can accumulate.
 
 ## What was deliberately dropped (vs the old plugin)
 
