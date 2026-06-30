@@ -67,3 +67,8 @@ stage that finishes the work — not something discovered at the next session's 
   `git branch --merged` does NOT recognize a squash-merged branch as merged (a squash creates a new commit that
   is not a descendant of the branch tip). Confirm merged-ness via PR state (`gh pr list --state merged`) before
   pruning — never by reachability alone.
+- **Auto-fix boundary.** A hygiene check may auto-resolve ONLY provably-safe, no-data-loss cases — pruning a
+  remote-tracking ref whose upstream is already deleted (`git fetch --prune`), or removing a worktree whose
+  branch is merged and clean. Anything potentially destructive — a stash, an unmerged branch, uncommitted
+  changes, deleting a local or remote branch, or an off-git artifact — is **surfaced for the user's explicit
+  OK, never resolved silently.** Running unattended never downgrades this.
