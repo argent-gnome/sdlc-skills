@@ -4,7 +4,7 @@
 > Operational tracker only (the doctrine's dev-state allowlist). Durable strategy → a roadmap doc;
 > the *why* behind decisions → specs/retros. Keep this short; update at stage transitions and session end.
 
-## Active slice: none — between pieces of the ecosystem redesign
+## Active slice: none — three-piece ecosystem redesign COMPLETE
 - stage: idle            next action: **Jake re-runs `./install.sh`** to register the new `house-shaper` skill (then `/reload-skills`)
 - branch: main (clean)   blocked on: none
 
