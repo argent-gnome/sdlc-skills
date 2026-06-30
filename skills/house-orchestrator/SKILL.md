@@ -37,6 +37,15 @@ at these moments — never preload it: **resume** (git-reality check), **finish*
 **reconcile** (dev-state lint + session-end hygiene), and any time you write a project doc. It is the single
 source of truth for *what goes where*; this skill only points at it.
 
+## Shaping happens elsewhere — the redirect guard
+You conduct the build of *already-shaped* work. You do NOT brainstorm, research, scope, author plans, or make
+non-trivial decisions in this session — that is **`house-shaper`** (its own session), and doing it here is the
+context bloat the split exists to prevent. **Redirect guard (conservative):** if a request would start new
+brainstorming/research, new scoping, a new plan, or a non-trivial decision / roadmap change, DON'T do it inline
+— **recommend a `house-shaper` session** (name what to explore) and resume here when its spec/plan/ADR/roadmap
+artifacts land. Quick clarifications, status checks, and gate calls you answer inline. Unsure → treat it as
+shaping and recommend the shaper.
+
 ## run — the procedure
 1. **Resume** from `docs/dev-state.md` (above). Identify the active slice + next action.
 2. **Ready the repo** (the "resume cold" + "ready before building" promise). Two checks, before any building:
@@ -53,24 +62,19 @@ source of truth for *what goes where*; this skill only points at it.
      readiness (doctrine):** ensure `.gitignore` covers IDE / tooling noise (a safe in-repo edit — apply it);
      and recommend enabling GitHub **auto-delete-head-branch** — a repo-config change, so gated on the user's
      OK, same as CI / branch protection.
-3. **Confirm the work.** State project + active slice + next action, and what this session will do. New slice →
-   scope it first (stage 1). **No plan yet?** Backlog offshoots, health-sweep / `accepted.md` items, or an
-   audible are NOT buildable as-is — author a plan first (stage 4; dispatch the plan-authoring to a subagent
-   when it's non-trivial, so the research stays out of your context), run plan-check (4¼), THEN dispatch a
-   builder. Never hand a builder un-planned work.
-4. **Walk the loop.** You own the design + gate stages and dispatch the rest. NEVER reinvent — invoke the named
-   skill. (The two `Workflow({scriptPath: ...})` lines below assume the standard install at
+3. **Confirm the work.** State project + active slice + next action, and what this session will do. **No
+   ready-to-build plan yet?** A new slice, a backlog/health offshoot, an `accepted.md` item, an audible, or a
+   decision is **shaping work, not buildable as-is** — recommend a **`house-shaper`** session to produce the
+   spec + plan + plan-check (+ reconciled docs), then resume here to build. Never shape or author a plan
+   inline; never hand a builder un-planned work.
+4. **Walk the loop.** Shaping (stages 0–4¼) is delegated to a `house-shaper` session; you own the gate +
+   build-dispatch stages and dispatch the rest. NEVER reinvent — invoke the named skill. (The two `Workflow({scriptPath: ...})` lines below assume the standard install at
    `$HOME/.claude/skills/house-orchestrator/workflows/`; resolve `$HOME` to your actual home directory when
    invoking, since `scriptPath` needs an absolute path. If you copy-installed elsewhere, use that path.)
 
    | Stage | You do | Gate |
    |---|---|---|
-   | 0 spike (risky/novel only) | `superpowers:brainstorming` → a GO/NO-GO verdict doc | — |
-   | 1 scope | `superpowers:brainstorming` + `intent-first-spec-anchored` | — |
-   | 2 spec | `superpowers:brainstorming` (+ intent-first) → `docs/superpowers/specs/` | ⛔ user review |
-   | 3 mockup (UI slices) | `superpowers:brainstorming` mockup. Reusing an already-signed-off mockup is legitimate for a *component-reuse / placement-only* slice — but state the decision and get the user's explicit OK; the sign-off gate still fires. Fresh mockup whenever the slice introduces genuinely new UI. | ⛔ sign-off |
-   | 4 plan | `superpowers:writing-plans` — carry a model-routing note + "NOT this slice" scope guards; **order tasks so the build/test target compiles at every boundary** (a shared-type signature change updates its call sites in the SAME task) and **merge compile-coupled tasks into one unit** ("mostly independent" is an assumption) | — |
-   | 4¼ plan-check | Dispatch **one fresh reviewer subagent** to critique the plan against the EXISTING app + spec through five lenses — **arch-fit · spec-coverage · risk/sequencing · testability · simpler-path** — returning must-fix-before-build + advisory. Fold must-fix into the plan before building (re-run `writing-plans` on the deltas). **A folded-in advisory is a commitment — once written into the plan, build it; re-waiving it is a plan deviation → surface it.** | ⚠️ revise if critical |
+   | 0–4¼ shape (delegated) | **Shaping runs in a `house-shaper` session, not here** — spike · scope · spec · mockup · plan · plan-check. Confirm it produced ready-to-build artifacts: spec (user-reviewed) + plan + plan-check + reconciled ADR/roadmap/dev-state. Absent (new slice · backlog/health item · audible needing re-plan · a decision)? **Recommend a `house-shaper` session; resume when its artifacts land** — never shape inline. | ⛔ shaper artifacts present |
    | 5 BUILD | **Dispatch a `house-builder` subagent** (background) to build ONE unit — see "Dispatching a builder." It builds + self-reviews + reconciles its unit's docs and returns a report. You do NOT build. One unit per dispatch. | — |
    | 6 intake | Receive the builder's report (4-state: DONE / DONE_WITH_CONCERNS / BLOCKED / NEEDS_CONTEXT) + branch/PR. Fold any concerns forward into later units. | — |
    | 7 merge-gate | **Default — dispatch one refute-biased reviewer subagent** on the completed slice diff (`git diff main...HEAD`), applying the rubric — **cross-task seams · spec-rule citation · regression/data-safety · gate compliance** — read-only, re-running build/tests itself (never trust the report). Verdict **GO / NO-GO**; **default to NO-GO on any unrefuted critical.** **Escalate to the full PANEL** — `Workflow({scriptPath: "$HOME/.claude/skills/house-orchestrator/workflows/merge-gate-panel.js", args: {project, repoPath, baseRef, headRef, sliceId, specGlobs, stack, highStakes, ledgerPath}})` — **whenever the rigor dial flags high-stakes** (a spec high-stakes rule, or the slice touches user data). `INCONCLUSIVE` (too few lenses ran) is NOT a pass — rerun or fall back to the single reviewer. | ⛔ NO-GO blocks |
@@ -109,16 +113,20 @@ The user **cannot talk to a running subagent**; their interjections land here, i
 builder runs in the background — your session stays responsive). When an audible arrives:
 - **Minor / fold-forward** — let the builder finish, then apply the change to the next unit or a fix-up dispatch.
 - **Building on a wrong assumption** — **stop the builder** (it's a background task), note what it committed /
-  the branch state, re-plan if the plan itself was wrong (plan-check the delta), and **re-dispatch** a fresh
-  builder with the correction plus the branch's partial state.
+  the branch state, and if the plan itself was wrong, **re-shape in a `house-shaper` session** (re-plan +
+  plan-check the delta there), then resume here to **re-dispatch** a fresh builder with the correction plus the
+  branch's partial state.
 
-An audible always re-enters the loop at scope/plan/build — it is never an excuse to edit code in *your*
-session. A change that alters spec rules or scope is a plan deviation: surface it, don't absorb it silently.
+An audible that changes scope or the plan re-enters via a **`house-shaper` session** (re-shape, then resume the
+build); a within-plan tweak folds forward into the next unit. It is never an excuse to shape or edit code in
+*your* session. A change that alters spec rules or scope is a plan deviation: surface it, don't absorb it
+silently.
 
 ## Gates — never cross silently
-STOP and get the user at: **spec review · mockup sign-off · live/device validation · CI red · any plan
-deviation or genuine ambiguity · any irreversible / outward-facing action (publish a repo, deploy to prod,
-anything destructive).** Running unattended never downgrades a hard gate — notify and halt. Fail closed:
+STOP and get the user at: **confirm shaper artifacts (no ready-to-build plan → recommend a shaper) ·
+live/device validation · CI red · any plan deviation or genuine ambiguity · any irreversible / outward-facing
+action (publish a repo, deploy to prod, anything destructive).** (Spec review and mockup sign-off are gates in
+the *shaper* session, not here.) Running unattended never downgrades a hard gate — notify and halt. Fail closed:
 unsure whether a gate is hard → treat it as hard.
 
 ## Cross-cutting policies
@@ -132,16 +140,17 @@ unsure whether a gate is hard → treat it as hard.
 
 ## Rigor dial (stakes, not file type)
 Scale ceremony to the cost of a wrong-but-plausible decision — the *stakes*, never the file type:
-*content / mechanical* → light (skip the mockup, single-reviewer merge-gate); *feature / UI* → full ceremony +
-mockup sign-off; *risky / novel* → add the stage-0 spike. **This dial governs the merge-gate's form:**
+*content / mechanical* → light (single-reviewer merge-gate; the shaper skips the mockup); *feature / UI* → full
+ceremony + mockup sign-off in the shaper; *risky / novel* → the shaper adds a spike. **This dial governs the
+merge-gate's form:**
 normal stakes → the single reviewer; **high stakes → escalate to the panel.** **Floor: the dial never SKIPS
 the merge-gate** — when the spec flags a high-stakes rule or the slice touches user data, the panel runs no
 matter how "light" the slice looks. Proposing to skip it is itself a hard gate.
 
 ## Compose, don't reinvent
-Every stage hands off to an existing skill. If you catch yourself writing scoping questions, a plan template,
-or a review rubric from scratch — stop and invoke `superpowers:brainstorming` / `superpowers:writing-plans` /
-the `superpowers:*` review skills instead. Yours is only: sequencing, gates, and model routing.
+Every stage hands off to an existing skill. If you catch yourself scoping, writing a plan, or brainstorming —
+stop: that's a `house-shaper` session, recommend it. For reviews, dispatch the `superpowers:*` review skills /
+the plan-check + merge-gate reviewer subagents. Yours is only: sequencing, gates, dispatch, and model routing.
 
 ## `docs/dev-state.md` format (the resume tracker)
 One file per project. Plain markdown — you write it, no script, no HTML. Keep it short; update it at stage
