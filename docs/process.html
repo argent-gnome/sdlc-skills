@@ -98,6 +98,25 @@ resume → ready repo → 1 scope → 2 spec ⛔ → 3 mockup ⛔ → 4 plan →
     <tr><td>web</td><td>tests · typecheck · lint · build; <b>no silently-destructive migrations</b> (a fresh CI DB passing is not proof against a populated one).</td></tr>
   </table>
 
+  <h2>Docs &amp; hygiene doctrine</h2>
+  <p>The skills share one runtime reference — <code>references/doctrine.md</code> in the orchestrator — read
+  on-demand (never preloaded) at resume, finish, reconcile, and any doc write. It defines four things:</p>
+  <ul>
+    <li><b>Doc model</b> — one job per doc: <code>dev-state.md</code> (operational tracker),
+    <code>roadmap.md</code> (durable spine), <code>docs/adr/</code> (decision records — <em>why</em>),
+    specs/plans (per-slice design authority), retros, <code>docs/health/</code>.</li>
+    <li><b>dev-state allowlist</b> — <code>dev-state.md</code> is operational only; durable strategy and
+    decisions are banned and route to roadmap/ADR. The test: <em>if it's still true three slices from now, it
+    isn't dev-state.</em></li>
+    <li><b>Routing</b> — a decision → an ADR; a scope change → roadmap; progress → dev-state; as-built drift →
+    reconcile the spec/plan in the slice PR.</li>
+    <li><b>Hygiene</b> — per-merge the branch/worktree/stash are torn down; resume runs a git-reality check
+    (squash-merge caveat: <code>git branch --merged</code> misses squash-merged branches — confirm via PR
+    state).</li>
+  </ul>
+  <p>Two are actively enforced by the orchestrator: a <b>dev-state lint</b> at reconcile and <b>per-merge
+  teardown</b> at finish.</p>
+
   <h2>Dropped vs the old plugin</h2>
   <p class="muted">The board + GitHub-Pages tracker, public-board privacy rules, onboarding scanner,
   self-improvement auditor loop, autonomous-mode setup, and the plugin/marketplace machinery — all removed or

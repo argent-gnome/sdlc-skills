@@ -36,7 +36,8 @@ model-routing note }`. If any is missing or the plan is ambiguous, **report `NEE
    out of your context): *"Read the spec/plan/ADR/README under `<repoPath>` and the diff for this unit. Update
    the docs so they match what was actually built — stale namespaces, an as-built decision the doc still
    contradicts, a README example that no longer runs. Report what you changed; change nothing outside the
-   docs."* The updated docs ship in this unit's PR.
+   docs. Follow the doctrine's routing rules — a decision belongs in an ADR, durable strategy in roadmap, not in
+   dev-state."* The updated docs ship in this unit's PR.
 5. **CI (stage 8).** Get the unit's PR run green via actual `gh run view --json conclusion` (never piped exit
    codes). See "CI failures" below.
 6. **Report back.** End with the 4-state contract + the branch/PR + a one-line "how it was built" (which
@@ -87,3 +88,10 @@ destructive).** The orchestrator (and the user) clear those — your job is to s
 ## Compose, don't reinvent
 TDD, the reviews, debugging, and finishing all have skills — invoke them. Yours is only: build the unit to the
 stack gates, self-review, reconcile the unit's docs, and report.
+
+## Doctrine — docs & hygiene
+The doc-model, routing rules, and hygiene checklist live in
+**`$HOME/.claude/skills/house-orchestrator/references/doctrine.md`** (resolve `$HOME`). Read it **on-demand**
+when you run the **doc-reconcile** step (so updated docs follow the routing rules) and at **teardown** (leave
+your unit's worktree removable and no stash behind — the orchestrator runs per-merge teardown at finish). Don't
+preload it.

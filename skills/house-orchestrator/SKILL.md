@@ -30,6 +30,13 @@ you "pick up where you left off" after the session was closed — rebuild your w
 **not** from a resumed transcript (that would drag the whole heavy log back into context). If the file is
 missing, this is a new project: create it after step 2.
 
+## Doctrine — the docs & hygiene rules
+The doc-model, the dev-state allowlist, the routing rules, and the git/doc hygiene checklist live in
+**`$HOME/.claude/skills/house-orchestrator/references/doctrine.md`** (resolve `$HOME`). Read it **on-demand**
+at these moments — never preload it: **resume** (git-reality check), **finish** (per-merge teardown),
+**reconcile** (dev-state lint + session-end hygiene), and any time you write a project doc. It is the single
+source of truth for *what goes where*; this skill only points at it.
+
 ## run — the procedure
 1. **Resume** from `docs/dev-state.md` (above). Identify the active slice + next action.
 2. **Ready the repo** (the "resume cold" + "ready before building" promise). Two checks, before any building:
@@ -64,14 +71,15 @@ missing, this is a new project: create it after step 2.
    | 8 CI | confirm the builder's PR run is green via actual `gh run view --json conclusion` (not piped exit codes). Infra-only failure / no-CI repos: see house-builder's stage-8 rules — the merge bar is the same and **CI-red is a hard gate.** | ⛔ CI green or authorized infra-only merge-through |
    | 9 live/device | Simulator (iOS) / device / staging (web); **reload the app after any UI change.** When an `@Model`/schema changed, launch against a store populated under the *previous* schema. | ⛔ validation |
    | 9½ docs audit | re-read the slice's spec/plan/ADRs against the shipped code; reconcile any drift (a stale namespace, an as-built decision the doc still contradicts) in the same PR | — |
-   | 10 PR + merge | `superpowers:finishing-a-development-branch`; **the spec, plan, and any approved mockup ship IN the slice PR** (the cited design authority — never "throwaway"; commit them deliberately, not via a stray `git add -A`) | — |
-   | 11 reconcile | memory + docs + **verify post-merge main CI green** + write the slice retro to `<repoPath>/docs/retros/<key>-<slice>-retro.md` + **update `docs/dev-state.md`** | — |
+   | 10 PR + merge | `superpowers:finishing-a-development-branch`; **the spec, plan, and any approved mockup ship IN the slice PR** (the cited design authority — never "throwaway"; commit them deliberately, not via a stray `git add -A`) **Then per-merge teardown (doctrine hygiene): delete the merged branch (prefer auto-delete-head-branch, else prune), remove the unit's worktree, verify no stray stash.** | — |
+   | 11 reconcile | memory + docs + **verify post-merge main CI green** + write the slice retro to `<repoPath>/docs/retros/<key>-<slice>-retro.md` + **update `docs/dev-state.md`** **Run the dev-state lint (doctrine): scan `dev-state.md` against its allowlist and migrate any durable content out to roadmap/ADR BEFORE writing the resting state.** | — |
 
 5. **Reconcile (stage 11).** Update memory, run the docs audit, verify post-merge main CI is green, write the
    retro (manual interventions · decisions · **plan deviations** · gate friction), and **update
    `docs/dev-state.md`** to the resting state. **Stage ledger (fail-closed):** account for every stage as
    **ran** · **skipped (with an allowed reason)** · **n/a** — the retro's "How it was built" line *is* this
    ledger. An unaccounted stage is a plan deviation → surface it. "I didn't get to it" is a deviation, not a skip.
+Per the doctrine's hygiene checklist, before writing the resting state: lint `dev-state.md` against the allowlist (migrate strays to roadmap/ADR), and confirm the just-merged unit left no stale branch, worktree, or stash.
 
 ## Dispatching a builder (stage 5)
 Dispatch a **`house-builder` subagent** to implement ONE unit, **in the background** by default — so your
