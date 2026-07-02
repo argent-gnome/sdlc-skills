@@ -96,6 +96,17 @@ resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
   <p class="muted">Reviews are subagents/workflows, never inline — the heavy reading happens in throwaway
   context, and independence (eyes that never saw the build) is the whole point of the merge-gate.</p>
 
+  <h2>Model routing — the fable-profile</h2>
+  <p>Judgment and throughput run on different models, on purpose. <b>Fable 5</b> (the Mythos-class tier above
+  Opus) takes the roles where a wrong-but-plausible judgment is expensive: the shaper session, plan-check, the
+  merge-gate reviewer, the panel's refuters, and the escalation re-dispatch for a twice-BLOCKED unit.
+  <b>Opus 4.8</b> takes the throughput roles: the orchestrator session (conversational sequencing), the
+  builders, panel + health-sweep lenses, research digests, and doc-reconcile. Opus builds / Fable reviews is
+  deliberate — the merge-gate gets independence of <em>architecture</em> (a different model's blind spots) on
+  top of independence of fresh eyes. Fable unavailable → the <b>opus-profile</b> stands in (single-Opus
+  reviewer; Opus refuters), noted in the retro. (Decision record:
+  <code>docs/adr/0001-fable-profile-model-routing.md</code>.)</p>
+
   <h2>Resume</h2>
   <p>The orchestrator is closeable and reopenable. It rebuilds its picture from a per-project
   <code>docs/dev-state.md</code> — a short plaintext tracker (active slice, stage, next action, blocked-on,
