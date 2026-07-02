@@ -15,10 +15,16 @@ builder's. When Fable became unavailable, the **opus-profile** was introduced: t
 lost independence-of-architecture. It worked, but at ~13+ agents per high-stakes gate, and every role
 ("driver · reviewers · authors") was pinned to Opus 4.8.
 
-*Caveat:* release-notes verification of exact Fable pricing/latency was blocked on decision day (Anthropic API
-outage took down the fetch path). The routing rests on tier positioning — Fable above Opus in capability,
-Opus above Fable in throughput/cost — not on specific price points. If the notes later show a surprising
-delta, revisit the aggressiveness, not the shape.
+*Verified against the release notes (fetched same day, after the outage cleared):* Fable 5 and Opus 4.8 are
+**priced identically** ($10 / $50 per Mtok) — there is no cost penalty for Fable. Fable's edge is capability
+(top score on Cognition's FrontierCode; "stayed focused across millions of tokens" on long-horizon agentic
+work; strongest document/chart reasoning). So the routing does NOT rest on cost. Throughput roles stay on
+Opus for three reasons that survive price parity: (1) **cross-architecture independence** — the merge-gate
+only reviews with different-model eyes if the builders are NOT Fable; (2) **fast mode** — Opus's faster
+output is real wall-clock on high-volume TDD loops and fan-out lenses; (3) **resilience** — Fable's
+dual-use safeguards and newer endpoints make Opus the sturdier default for unattended volume (Anthropic
+itself names Opus the fallback when Fable's safeguards restrict a query). Moving builders to Fable was
+considered and declined: it would buy builder capability at the cost of (1).
 
 ## Decision
 
@@ -41,8 +47,9 @@ noted in the slice retro. Fail-closed rules (INCONCLUSIVE panel, unverified crit
 
 ## Consequences
 
-- Fable spend concentrates on low-volume, high-leverage calls (a handful of agents per slice); the high-volume
-  fan-out (builders, lenses, sweeps) stays on Opus.
+- Fable takes the low-volume, high-leverage calls (a handful of agents per slice); the high-volume fan-out
+  (builders, lenses, sweeps) stays on Opus for independence, fast-mode wall-clock, and resilience — price
+  parity makes cost a non-factor either way.
 - The merge-gate regains both kinds of independence: architecture (Fable vs Opus-built code) *and*, at high
   stakes, perspective (the lens panel).
 - Wired in: `house-orchestrator/SKILL.md` (routing bullet + stage-7 row), `house-shaper/SKILL.md` (routing
