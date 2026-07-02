@@ -5,8 +5,8 @@
 > the *why* behind decisions → specs/retros. Keep this short; update at stage transitions and session end.
 
 ## Active slice: none
-- stage: idle            next action: merge the fable-profile routing PR
-- branch: feat/fable-profile-routing (PR open)   blocked on: none (`house-shaper` install confirmed — skill is registered)
+- stage: idle            next action: none (Jake runs `/reload-skills` in open sessions to pick up 0.5.0)
+- branch: main (clean)   blocked on: none
 
 ## In-flight
 - builders / PRs: none (PR #3 merged)
