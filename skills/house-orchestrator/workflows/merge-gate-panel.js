@@ -1,9 +1,9 @@
 export const meta = {
   name: 'merge-gate-panel',
-  description: 'The opus-profile stage-7 merge-gate: N refute-biased Opus lens reviewers → independent multi-refuter verification → GO/NO-GO. Replaces the single-Fable reviewer with independence-of-PERSPECTIVE (diverse lenses) standing in for the lost independence-of-ARCHITECTURE.',
+  description: 'The high-stakes stage-7 merge-gate panel (fable-profile): N refute-biased Opus lens reviewers → independent Fable refuter verification → GO/NO-GO. Layers independence-of-PERSPECTIVE (diverse lenses) on top of independence-of-ARCHITECTURE (Fable judging Opus-built code).',
   phases: [
     { title: 'Review', detail: 'one refute-biased Opus reviewer per rubric lens, in parallel' },
-    { title: 'Verify', detail: 'three independent Opus refuters per critical/should-fix finding; majority-refute kills it' },
+    { title: 'Verify', detail: 'three independent Fable refuters per critical/should-fix finding; majority-refute kills it' },
   ],
 }
 
@@ -83,7 +83,7 @@ const reviews = (await parallel(LENSES.map(L => () =>
     (a.highStakes ? `HIGH-STAKES slice (${a.highStakes}) — the rigor floor applies; do NOT down-rate findings.\n` : '') +
     (a.notes ? `Context: ${a.notes}\n` : '') +
     `\nReturn findings for THIS lens only. Severity: critical = must BLOCK the merge; should-fix = real but non-blocking; nit = cosmetic. If the lens is clean, return an empty findings array.`,
-    { label: `lens:${L.key}`, phase: 'Review', schema: FINDINGS_SCHEMA }
+    { label: `lens:${L.key}`, phase: 'Review', schema: FINDINGS_SCHEMA, model: 'opus' }
   ).then(r => ({ lens: L.key, findings: (r && r.findings) || [], outOfScope: (r && r.outOfScope) || [] }))
 ))).filter(Boolean)
 
@@ -112,7 +112,7 @@ const verified = (await parallel(candidates.map(c => () =>
       `Adversarially REFUTE this merge-gate finding. Default to refuted=true unless you become convinced it is a real, correctly-severity-rated issue.\n\n` +
       `Lens: ${c.lens}\nSeverity claimed: ${c.severity}\nTitle: ${c.title}\nLocation: ${c.file || '?'}${c.line ? ':' + c.line : ''}\nClaim: ${c.rationale}\nEvidence cited: ${c.evidence || '(none)'}\n\n` +
       `Independently verify against the actual diff (\`${diffCmd}\`) and code under "${repo}". Is it real and correctly rated, or a false positive / over-rated? **A finding about anything OUTSIDE "${repo}" or outside this slice's diff is automatically refuted=true (out of scope for this slice).**`,
-      { label: `refute:${c.id}#${k}`, phase: 'Verify', schema: VERDICT_SCHEMA }
+      { label: `refute:${c.id}#${k}`, phase: 'Verify', schema: VERDICT_SCHEMA, model: 'fable' }
     )
   )).then(votes => {
     const v = votes.filter(Boolean)

@@ -15,6 +15,11 @@ long-lived orchestrator. Run it here: the heavy *reading* goes to subagents (the
 brainstorm *dialogue* stays with you, and the shaping transcript dies when this session closes — only the
 artifacts (spec/plan/ADR/roadmap) persist. The orchestrator then conducts the build of what you shaped.
 
+**Model routing (fable-profile).** Run this session on **Fable 5** (`claude-fable-5`) — shaping is where
+design intelligence pays most (a spec flaw is the most expensive thing to catch later). Dispatch research +
+reconcile subagents on **Opus 4.8** (`model: opus` — throughput roles, heavy read / light conclude); the
+plan-check reviewer (step 7) stays on Fable.
+
 **Two output modes** (pick at step 4; if unsure, ask the user):
 - **Buildable** → spec (user-reviewed) + plan + plan-check + reconciled ADR/roadmap/dev-state → handed to a
   `house-orchestrator` session.

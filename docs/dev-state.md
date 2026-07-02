@@ -1,12 +1,12 @@
-# sdlc-skills — dev state   (updated 2026-06-30)
+# sdlc-skills — dev state   (updated 2026-07-01)
 
 
 > Operational tracker only (the doctrine's dev-state allowlist). Durable strategy → a roadmap doc;
 > the *why* behind decisions → specs/retros. Keep this short; update at stage transitions and session end.
 
-## Active slice: none — three-piece ecosystem redesign COMPLETE
-- stage: idle            next action: **Jake re-runs `./install.sh`** to register the new `house-shaper` skill (then `/reload-skills`)
-- branch: main (clean)   blocked on: none
+## Active slice: none
+- stage: idle            next action: merge the fable-profile routing PR
+- branch: feat/fable-profile-routing (PR open)   blocked on: none (`house-shaper` install confirmed — skill is registered)
 
 ## In-flight
 - builders / PRs: none (PR #3 merged)
@@ -15,6 +15,7 @@
 - none — the three-piece ecosystem redesign (A/B/C) is shipped. (The orchestrator context-budget self-check idea was dropped per Jake — manual context management.)
 
 ## Done
+- **fable-profile model routing** (Fable 5 returned; judgment→Fable, throughput→Opus) — 2026-07-01 — `docs/adr/0001-fable-profile-model-routing.md` (VERSION 0.5.0)
 - **Piece C** — the `house-shaper` skill (3-skill ecosystem) — 2026-06-30 — `docs/retros/2026-06-30-house-shaper-retro.md` (PR #3, `main` 79ee639; VERSION 0.4.0)
 - **Piece B** — wire the remaining hygiene self-checks — 2026-06-30 — `docs/retros/2026-06-30-hygiene-self-checks-retro.md` (PR #2, `main` 40a4166; VERSION 0.3.0)
 - **Piece A** — shared docs & hygiene doctrine — 2026-06-30 — `docs/retros/2026-06-30-docs-hygiene-doctrine-retro.md` (PR #1, `main` 95bd854; VERSION 0.2.0)

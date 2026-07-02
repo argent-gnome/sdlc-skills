@@ -70,7 +70,7 @@ const sweeps = (await parallel(LENSES.map(L => () =>
     `Review for: ${L.focus}\n\n` +
     `First read the accepted/wontfix ledger at "${repo}/${ledgerPath}" if it exists, and do NOT re-report anything already listed there.\n` +
     `Inspect the code under "${repo}". Report genuine, actionable health issues — real or imminent debt, not theoretical perfection. Do NOT invent refactors for their own sake or push premature abstraction. severity: major = architecture/correctness-adjacent debt worth its own backlog slice; minor = worth doing opportunistically; nit = trivial. Give a concrete suggestedChange and a rough effort (S/M/L). Return an empty findings array if the lens is clean.`,
-    { label: `health:${L.key}`, phase: 'Sweep', schema: FINDINGS_SCHEMA }
+    { label: `health:${L.key}`, phase: 'Sweep', schema: FINDINGS_SCHEMA, model: 'opus' }
   ).then(r => ({ lens: L.key, findings: (r && r.findings) || [] }))
 ))).filter(Boolean)
 
@@ -85,7 +85,7 @@ const synth = await agent(
   `3) RANK by value-to-effort, highest first.\n` +
   `Be honest — do not pad the list; if there are only a few real items, return only those.\n\n` +
   `Raw findings (JSON):\n${JSON.stringify(raw).slice(0, 16000)}`,
-  { label: 'synthesize', phase: 'Synthesize', schema: BACKLOG_SCHEMA }
+  { label: 'synthesize', phase: 'Synthesize', schema: BACKLOG_SCHEMA, model: 'opus' }
 )
 
 const backlog = (synth && synth.backlog) || []
