@@ -1,0 +1,8 @@
+gate: live_check
+verdict: approved
+by: agent
+recorded_at: '2026-07-28T23:57:28.495Z'
+notes: null
+evidence: >-
+  user confirmed after witnessing the live smoke run end-to-end and replaying the record log
+  in-session; skills loaded and driving this very session
