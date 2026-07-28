@@ -8,7 +8,7 @@ blocked_on: null
 appetite: 3-sessions
 created: '2026-07-28'
 branch: slice/0001-house-v2-s2-skills-rewrite
-base_sha: null
+base_sha: 3dceb6a44d08de638d7889c66592f9119da850ec
 pr: null
 adrs:
   - 0004-house2-coexistence-and-advisory-hooks
