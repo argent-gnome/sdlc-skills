@@ -168,10 +168,15 @@ tasks:
       at: '2026-07-28T22:47:06.523Z'
   - id: U3-T17
     title: smoke slice — end-to-end through the three house2-* skills
-    state: todo
+    state: done
     verify: house validate --strict
     depends_on:
       - U2-T16
+    evidence:
+      cmd: house validate --strict
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T23:34:16.929Z'
   - id: U3-T18
     title: S2 closeout — full bar, gating, merge-gate review, retro
     state: todo

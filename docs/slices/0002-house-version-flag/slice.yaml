@@ -3,7 +3,7 @@ id: 0002-house-version-flag
 title: house --version flag
 kind: slice
 rigor: patch
-state: live_check
+state: shipped
 blocked_on: null
 appetite: 1 session
 created: '2026-07-28'
