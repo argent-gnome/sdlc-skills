@@ -53,3 +53,32 @@ export function mint(root, title, opts = {}) {
   appendEvent(root, 'slice.created', { slice: id, actor: opts.actor ?? 'shaper', payload: { kind, rigor: man.rigor } });
   return id;
 }
+
+export function sliceDir(root, id) {
+  const dir = join(root, 'docs/slices', id);
+  if (!existsSync(join(dir, 'slice.yaml'))) throw new Error(`no such slice: ${id}`);
+  return dir;
+}
+
+export function recordGate(root, gate, args) {
+  const { gate_verdicts } = loadEnums();
+  if (!gate_verdicts[gate]) throw new Error(`unknown gate: ${gate}`);
+  if (!gate_verdicts[gate].includes(args.verdict)) throw new Error(`invalid verdict for ${gate}: ${args.verdict}`);
+  const dir = sliceDir(root, args.slice);
+  mkdirSync(join(dir, 'gates'), { recursive: true });
+  const extra = typeof args.payload === 'string' ? JSON.parse(args.payload) : (args.payload ?? {});
+  const rec = { gate, verdict: args.verdict, by: args.by ?? 'agent',
+    recorded_at: new Date().toISOString(), notes: args.notes ?? null, ...extra };   // plan_check passes must_fix[]/advisory_folded[] here
+  writeYaml(join(dir, 'gates', `${gate}.yaml`), rec);
+  appendEvent(root, 'gate.recorded', { slice: args.slice, actor: rec.by, payload: { gate, verdict: args.verdict } });
+  return rec;
+}
+
+const FREE_FORM = new Set(['work.discovered', 'deviation.raised', 'gate.requested', 'artifact.written',
+  'unit.dispatched', 'unit.heartbeat', 'unit.report', 'session.started', 'session.ended']);
+export function emit(root, type, args) {
+  if (!FREE_FORM.has(type))
+    throw new Error(`event '${type}' is owned by a dedicated command — not emittable via house event`);
+  const payload = typeof args.payload === 'string' ? JSON.parse(args.payload) : (args.payload ?? {});
+  return appendEvent(root, type, { slice: args.slice ?? null, actor: args.actor ?? 'agent', payload });
+}

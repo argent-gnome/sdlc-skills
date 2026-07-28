@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { init, mint } from '../lib/slices.js';
+import { init, mint, recordGate, emit } from '../lib/slices.js';
 import { readYaml, readEvents, parseFrontmatter } from '../lib/core.js';
 import { mkTmpRepo } from './helpers.js';
 
@@ -42,4 +42,24 @@ test('mint --adr: allocates in docs/adr with its own series, MADR-lite frontmatt
   assert.match(file, /docs\/adr\/0008-use-node-for-the-cli\.md$/);
   const { data } = parseFrontmatter(readFileSync(file, 'utf8'));
   assert.equal(data.state, 'proposed');
+});
+
+test('recordGate: writes gates/<name>.yaml + gate.recorded event; rejects unknown gate/verdict', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing', {});
+  recordGate(repo, 'plan_check', { slice: id, verdict: 'GO_WITH_FIXES', by: 'agent' });
+  const rec = readYaml(join(repo, `docs/slices/${id}/gates/plan_check.yaml`));
+  assert.equal(rec.verdict, 'GO_WITH_FIXES');
+  assert.ok(rec.recorded_at);
+  assert.equal(readEvents(repo).at(-1).payload.gate, 'plan_check');
+  assert.throws(() => recordGate(repo, 'vibes', { slice: id, verdict: 'GO' }), /unknown gate/);
+  assert.throws(() => recordGate(repo, 'merge_gate', { slice: id, verdict: 'MAYBE' }), /invalid verdict/);
+});
+
+test('emit: house event passes through with slice + parsed payload', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing2', {});
+  emit(repo, 'work.discovered', { slice: id, payload: '{"text":"found a thing","routed_to":"roadmap"}' });
+  assert.equal(readEvents(repo).at(-1).payload.text, 'found a thing');
+  assert.throws(() => emit(repo, 'slice.created', { slice: id }), /owned by a dedicated command/);   // no second writer path
 });
