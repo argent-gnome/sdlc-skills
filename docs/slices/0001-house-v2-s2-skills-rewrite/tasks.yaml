@@ -122,10 +122,15 @@ tasks:
       at: '2026-07-28T22:28:46.807Z'
   - id: U2-T13
     title: skills/house2-shaper/SKILL.md
-    state: todo
+    state: done
     verify: house validate
     depends_on:
       - U2-T12
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:33:16.046Z'
   - id: U2-T14
     title: skills/house2-orchestrator/SKILL.md
     state: todo
