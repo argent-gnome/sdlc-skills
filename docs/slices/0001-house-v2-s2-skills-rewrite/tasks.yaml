@@ -67,10 +67,15 @@ tasks:
     title: >-
       validate ride-alongs — roadmap lint, style url(), tasks.yaml structure, blocked_on rule, ADR
       status slot
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T6
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1768.117166
+      at: '2026-07-28T22:04:09.465Z'
   - id: U1-T8
     title: kickoff-brief schema + validation
     state: todo

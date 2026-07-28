@@ -2,6 +2,7 @@
 id: "{{ID}}"
 kind: adr
 title: "{{TITLE}}"
+status: "{{DATE}} — proposed"
 state: proposed
 date: {{DATE}}
 slices: []
