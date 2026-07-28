@@ -1585,12 +1585,10 @@ absorbed:
 - **T17 Step 2's "merge it," as-built: no PR.** The smoke branch `slice/0002-house-version-flag` was
   ff-merged into this slice's branch at `2c2d16b`, so the smoke's two-file diff rides THIS slice's
   merge-gate diff; 0002's own merge gate ran per-slice on its records (base_sha `d023fc1`).
-- **T17 Step 4 did not happen: no `artifact.written` smoke-evidence event exists on this slice.** The
-  planned attach (`house event artifact.written --slice 0001-house-v2-s2-skills-rewrite --payload
-  '{"kind":"smoke-evidence","slice":"0002-house-version-flag"}'`) has no matching line in
-  `.house/events.jsonl` — the nearest records are U3-T17's `task.done` and the `deviation.raised` that
-  names 0002. **Open for the orchestrator to emit before the S2 merge gate** (OBSERVED is writer-owned; a
-  doc reconcile cannot append events).
+- **T17 Step 4 landed late, at closeout:** the `artifact.written` smoke-evidence event was missing at
+  the 2026-07-28 reconcile (which flagged it as open — OBSERVED is writer-owned; a doc reconcile cannot
+  append events) and was emitted by the orchestrator at 2026-07-28T23:40:51Z, before the S2 merge gate,
+  with the planned payload (`{"kind":"smoke-evidence","slice":"0002-house-version-flag"}`).
 - Three `work.discovered` findings from the smoke were recorded on 0002 at gating and routed to the
   roadmap backlog (see `docs/roadmap.md`).
 

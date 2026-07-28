@@ -1,0 +1,47 @@
+gate: merge_gate
+verdict: NO_GO
+by: reviewer
+recorded_at: '2026-07-28T23:47:52.266Z'
+notes: null
+lenses:
+  - seams
+  - spec-citation
+  - regression
+  - gate-compliance
+findings:
+  - id: F1
+    severity: blocking
+    cite: >-
+      plan.md Task 18 recorded commitment (full bar: house validate --strict exit 0) + doctrine §5
+      dont-trust-the-report; R-8 strict-green handoff bar
+    what: >-
+      house validate --strict exits 1 at HEAD:
+      docs/slices/0001-house-v2-s2-skills-rewrite/retro.md:33 contains the literal [NEEDS
+      CLARIFICATION marker in backticks (outside an HTML comment, so the strip does not save it).
+      Introduced by commit 48b6093 whose own message claims strict 0 — the claim is false at that
+      commit. Spec R-13 literal bar (plain validate exit 0) passes; the violated rule is the T18
+      commitment and the truthfulness of the recorded evidence. Fix: reword retro.md line 33 to drop
+      the leading bracket (as plan.md T13 already does), re-run strict, re-gate.
+  - id: O1
+    severity: preference
+    cite: none — doc staleness
+    what: >-
+      plan.md Unit-3 as-built and dev-state manual block still say the T17 smoke-evidence event was
+      never emitted; it was emitted 2026-07-28T23:40:51Z (events.jsonl line 65, commit 6174355).
+  - id: O2
+    severity: preference
+    cite: none
+    what: >-
+      0001 slice.yaml kind: idea for a slice-tier slice; 0002 live_check by: agent while evidence
+      names the user. Both enum-legal, records exist.
+reruns:
+  tests: cd cli && npm test — 67/67 pass, 0 fail
+  validate: house validate exit 0; house validate --strict exit 1 (retro.md NEEDS-CLARIFICATION marker)
+  manual: >-
+    house --version -> 0.1.0 exit 0; probe repo: state ready refused without spec_review/plan_check
+    records (exit 1); task done re-tick refused; red evidence-cmd refused; house event --payload
+    persisted to events.jsonl; artifact todo->approved refused citing legal transitions; block +
+    passing gate auto-cleared with slice.unblocked; render dev-state refused wedged letter-gap
+    content exit 1 file untouched; render on this repo exit 0 byte-stable; v1 skills zero-diff; 0002
+    gate records x4 on disk with matching events; 0002 must-fix (in-repo --version test) present in
+    cli/test/cli.test.js

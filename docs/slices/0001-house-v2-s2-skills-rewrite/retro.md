@@ -30,9 +30,11 @@ under a real crash, not a drill.
 ## What was rough (all recorded, none silent)
 
 - **Validator false positive with repo-wide blast radius**: `validate --strict`'s naive
-  `[NEEDS CLARIFICATION` substring match hit this slice's plan *quoting* the marker in prose,
-  blocking 0002's handoff — the shaper had to reword approved plan text (recorded as a deviation).
-  No per-slice scoping. S3 candidate, in the roadmap backlog.
+  NEEDS-CLARIFICATION substring match (bracket omitted here so this mention does not trip it — the
+  first draft of this very retro tripped it and drew a merge-gate NO_GO, proving the point twice)
+  hit this slice's plan *quoting* the marker in prose, blocking 0002's handoff — the shaper had to
+  reword approved plan text (recorded as a deviation). No per-slice scoping. S3 candidate, in the
+  roadmap backlog.
 - **Gate/event payload loss**: `house gate --payload` persists in `gates/<name>.yaml` but is dropped
   from the `events.jsonl` copy; `house event` dropped `--payload` entirely during the smoke. Backlog.
 - **Artifact-record vs frontmatter drift**: 0002's spec frontmatter still read `shaping/draft` after

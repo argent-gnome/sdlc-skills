@@ -65,3 +65,4 @@
 {"id":"01KYNHMFJM6KQGY0WCFAPHMQH1","ts":"2026-07-28T23:40:51.668Z","event":"artifact.written","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"kind":"smoke-evidence","slice":"0002-house-version-flag"}}
 {"id":"01KYNHP3D16P6NZN3W10S68116","ts":"2026-07-28T23:41:44.737Z","event":"slice.pr_set","slice":"0001-house-v2-s2-skills-rewrite","actor":"orchestrator","payload":{"pr":null,"base_sha":"3dceb6a44d08de638d7889c66592f9119da850ec"}}
 {"id":"01KYNHQFEJNYDFJZZPTJMFBC0T","ts":"2026-07-28T23:42:29.842Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"to":"gating"}}
+{"id":"01KYNJ1AACF1A8ZRRM44KJNQT6","ts":"2026-07-28T23:47:52.268Z","event":"gate.recorded","slice":"0001-house-v2-s2-skills-rewrite","actor":"reviewer","payload":{"gate":"merge_gate","verdict":"NO_GO"}}
