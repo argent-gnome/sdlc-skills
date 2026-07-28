@@ -19,22 +19,23 @@
 > house v2 — or that has no minted slice id yet — lives here because the generator cannot derive it.
 
 ## Active slice (hand-authored — no minted slice id yet)
-- **house v2 S1 — kernel + `house` CLI**: building on `feat/house-v2-s1-kernel-cli`, plan
-  `docs/superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md`   blocked on: none
-- shaped 2026-07-28: spec approved (owner) + S1 plan checked (GO-WITH-FIXES, all fixes folded) + `docs/adr/0002-house-v2-state-first-redesign.md`
+- none — S1 shipped.
+- **Next action:** shape house v2 S2 (skills rewrite + doctrine v2 + hooks) in a `house-shaper` session — slice
+  `0001-house-v2-s2-skills-rewrite` minted as idea, S2 carry list in [`roadmap.md`](roadmap.md#s2-carry-list--fold-forward-from-s1).
 
 ## Slated (hand-authored — no minted slice id yet)
 - **house v2 S3** — migrate the proving pair (sdlc-skills + edge-scanner) → [`roadmap.md`](roadmap.md)
 - **house v2 S4+** — the desktop IDE (own shaping, own repo; blocked on S1–S3) → [`roadmap.md`](roadmap.md)
 
-## Done (hand-authored history — pre-house-v2 slices, no slice.yaml to derive from)
+## Done (hand-authored history — slices with no slice.yaml to derive from)
+- **house v2 S1 — kernel + `house` CLI** — 2026-07-28 — `docs/retros/2026-07-28-house-v2-s1-kernel-cli-retro.md` (PR #6, `main` 4a6a906; VERSION unchanged at 0.5.0, CLI at house-cli 0.1.0)
 - **fable-profile model routing** (Fable 5 returned; judgment→Fable, throughput→Opus) — 2026-07-01 — `docs/adr/0001-fable-profile-model-routing.md` (VERSION 0.5.0)
 - **Piece C** — the `house-shaper` skill (3-skill ecosystem) — 2026-06-30 — `docs/retros/2026-06-30-house-shaper-retro.md` (PR #3, `main` 79ee639; VERSION 0.4.0)
 - **Piece B** — wire the remaining hygiene self-checks — 2026-06-30 — `docs/retros/2026-06-30-hygiene-self-checks-retro.md` (PR #2, `main` 40a4166; VERSION 0.3.0)
 - **Piece A** — shared docs & hygiene doctrine — 2026-06-30 — `docs/retros/2026-06-30-docs-hygiene-doctrine-retro.md` (PR #1, `main` 95bd854; VERSION 0.2.0)
 
 ## Infra / secrets
-- GitHub: `argent-gnome/sdlc-skills` (Pages site builds from `main`). Installed via `install.sh` (symlink mode) → `~/.claude/skills/`. Current VERSION: 0.4.0.
+- GitHub: `argent-gnome/sdlc-skills` (Pages site builds from `main`). Installed via `install.sh` (symlink mode) → `~/.claude/skills/`. Current VERSION: 0.5.0 (skills bundle; unchanged by S1 — the CLI versions separately at `cli/package.json` 0.1.0).
 - **Three skills now:** `house-shaper` (fuzzy front end) · `house-orchestrator` (conductor) · `house-builder` (executor). `house-shaper` needs `./install.sh` re-run to symlink.
 - Runtime doctrine: `skills/house-orchestrator/references/doctrine.md`, cited by the orchestrator + builder + shaper via the `$HOME/.claude/skills/house-orchestrator/...` path.
 - **`house` CLI (v2 S1):** lives in `cli/`; install with `cd cli && npm link` (global `house` bin). Tests: `cd cli && npm test`. `install.sh` wiring is deferred to S2.
@@ -50,7 +51,6 @@
 
 ## Process notes
 - This repo **dogfoods the house process**: specs/plans under `docs/superpowers/`, retros under `docs/retros/`.
-- Redesign decisions (locked): doctrine scope = focused (docs + hygiene); enforcement = active self-checks at gates; `roadmap.md` = blessed-canonical durable-strategy doc name.
 - `roadmap.md` now exists (created at the house-v2 shaping, 2026-07-28) — durable sequencing and deferred work live there, not here.
 - **house v2 work** is minted by `house new` into `docs/slices/NNNN-<slug>/`. `docs/superpowers/` is retired for *new* work only — the pre-v2 specs/plans stay where they are.
 <!-- /house:manual -->
