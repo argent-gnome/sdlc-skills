@@ -3,8 +3,11 @@ id: 0001-house-v2-s2-skills-rewrite
 title: house v2 S2 — skills rewrite
 kind: idea
 rigor: slice
-state: gating
-blocked_on: null
+state: live_check
+blocked_on:
+  gate: live_check
+  note: awaiting user confirmation of the v2 system in the real environment before PR + merge to main
+  since: '2026-07-28'
 appetite: 3-sessions
 created: '2026-07-28'
 branch: slice/0001-house-v2-s2-skills-rewrite

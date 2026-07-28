@@ -179,7 +179,12 @@ tasks:
       at: '2026-07-28T23:34:16.929Z'
   - id: U3-T18
     title: S2 closeout — full bar, gating, merge-gate review, retro
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U3-T17
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1988.995417
+      at: '2026-07-28T23:51:38.142Z'
