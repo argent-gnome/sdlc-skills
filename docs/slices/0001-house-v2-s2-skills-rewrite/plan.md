@@ -1491,6 +1491,32 @@ validate before `shipped`).
 
 ---
 
+## As-built — Unit 1 (reconciled 2026-07-28, branch `slice/0001-house-v2-s2-skills-rewrite`)
+
+Tasks 1–10 were implemented in order, TDD, on the literal code in this plan; the suite went 43 → 66 tests
+with `house validate` exit 0 at every boundary. Units 2 and 3 are unbuilt — everything above this section
+from "Unit 2" onward is still forward-looking plan text. Deviations from the plan's literal code:
+
+- **`hooks.js` `pre-write` path check** — the plan's `relative(root, p)` was replaced by a symlink-tolerant
+  `realish()` / `repoRelative()` pair. The hook's root comes from `process.cwd()` (already realpath'd by the
+  OS) while `tool_input.file_path` arrives however the caller spelled it; on macOS anything under `/var`
+  (a symlink to `/private/var`) makes the two disagree, so the plan's guard would have silently never fired
+  in exactly the temp-dir shape the tests use. Advisory behavior is unchanged — this is a correctness fix,
+  not a scope change.
+- **Three tests added at self-review** (commit `3df054d`), closing documented-claim-without-test gaps:
+  `hook.degraded` (fail-open must not mean fail-silent), `slice.abandoned` (with the discriminating negative
+  that a non-terminal `parked` transition emits no terminal event), and the ADR template's free-text
+  `status:` slot beside the closed `state:` enum.
+- **Spec R-12's guarded-path list was narrower than this plan's** — Task 9 already guarded
+  `docs/slices/*/slice.yaml` and `tasks.yaml` alongside `.house/` and `gates/`. The as-built follows the
+  plan; spec R-12 was reconciled up to match (superset, not a scope change).
+- **Unit 1's `units[]` record is minted at closeout, not at dispatch.** The orchestrator dispatched this
+  unit before `house unit dispatch` existed — that command lands inside this very unit (Task 4) — so the
+  builder runs `dispatch` → `heartbeat` → `finalize` itself in Task 11, dogfooding the command it just
+  built. The `dispatched` timestamp on unit `01` is therefore the closeout time, not the real dispatch
+  time; a one-off consequence of the bootstrap, not a pattern. Units 2 and 3 dispatch through the CLI up
+  front, which is what the `SubagentStop` advisory reads.
+
 ## Plan-check (2026-07-28): GO_WITH_FIXES — all folded
 
 Must-fix folded: MF1 GEN_HEADERS whitelist trimmed to generator-only · MF2 shared run()/yaml helpers in

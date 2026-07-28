@@ -6,15 +6,19 @@ just makes the contract cheap to honor and impossible to fake.
 ## Install
 
 ```bash
-cd cli && npm link      # global `house` bin; Node >= 20, ESM, one runtime dep (js-yaml)
-npm test                # node:test suite
+./install.sh            # from the repo root: npm install in cli/ + link the `house` bin (+ the skills)
+cd cli && npm test      # node:test suite; Node >= 20, ESM, one runtime dep (js-yaml)
 ```
+
+`install.sh` prefers `npm link`; if the global prefix is not writable it falls back to a symlink in
+`~/.local/bin`. To install only the CLI: `cd cli && npm install && npm link`.
 
 ## The three-layer contract
 
 ```
 DECLARED   docs/slices/<id>/slice.yaml + YAML frontmatter    written by the agent owning the stage   tracked
-    │                                                        (spec.md, plan.md, tasks.yaml, gates/*)
+    │                                                        (spec.md, plan.md, tasks.yaml, gates/*,
+    │                                                         units/NN-report.md)
     ├─ append ──▶
 OBSERVED   .house/events.jsonl   append-only, ULID ids, merge=union   written ONLY by `house`   tracked
     │
@@ -30,13 +34,21 @@ Rules the code enforces, not just documents:
 - **Evidence-gated ticks.** `house task done` runs the verify command and refuses the tick on a nonzero exit.
   A task with no `verify:` and no `--evidence-cmd` cannot be ticked at all; a done task cannot be re-ticked.
 - **Anything derivable is derived.** Delete `.house/index.json`, run `house index` — byte-identical.
-- **One writer per field.** `house event` emits only free-form event types; `slice.created`,
-  `slice.state_changed`, `task.done`, `gate.recorded` belong to their dedicated commands.
-- **No silent drops.** `house render dev-state` refuses (exit 1) when hand-authored content sits outside the
-  `<!-- house:manual -->` markers.
+- **One writer per field.** `house event` emits only free-form event types; every other event type belongs to
+  its dedicated command (`house new/state/gate/task/block/unblock/artifact/unit/pr`). Each of those writers
+  appends its own event, so a manifest field cannot change without OBSERVED saying so.
+- **Fail-closed state machines.** `house artifact` walks `artifact_transitions` and refuses illegal jumps;
+  `house state` walks `state_transitions`; a unit with no finalized record is **unknown, never DONE**.
+- **No silent drops.** `house render dev-state` parses `dev-state.md` positionally — title | generated block |
+  `<!-- house:manual -->` block | tail — and refuses (exit 1, nothing written) when *any* content sits outside
+  those regions, naming the first offender. There is no back-compat path: fix the file, then re-render.
+- **Thinning OBSERVED is counted, never silent.** `readEvents` returns a skip count for torn JSONL lines and
+  `house log` prints it (`skipped: N` in `--json`).
 
 `schema/enums.yaml` is the single normative source for every enum — states, kinds, tiers, verdicts, event
-types, `free_form_events`, legal transitions, required gates. Nothing restates them.
+types, `free_form_events`, legal state and artifact transitions, required gates, `blocked_on` shape,
+`unit_results`. `schema/kickoff.yaml` is the same thing for the builder kickoff brief, read by sender and
+receiver alike. Nothing restates them.
 
 **Malformed input is a finding, never a crash.** A placeholder `tasks.yaml` with no `tasks:` key, a stray
 `.DS_Store` in `gates/`, one torn line in `events.jsonl` (an interrupted append, or a `merge=union` artifact),
@@ -47,24 +59,50 @@ reports the problem instead of throwing.
 
 | Command | What it does |
 |---|---|
-| `house init` | Scaffold `.house/`, `docs/slices/`, `docs/adr/`, `.gitattributes` (union-merge), `.gitignore`. Idempotent. |
-| `house new "<title>" [--kind <kind>] [--rigor <tier>]` | Mint identity: `docs/slices/NNNN-slug/` + `slice.yaml` + `spec.md`; `mkdir` is the allocator lock. |
-| `house new "<title>" --adr` | Mint an ADR in `docs/adr/` on its own series, MADR-lite frontmatter. |
+| `house init` | Scaffold `.house/`, `docs/slices/`, `docs/adr/`, `.gitattributes` (union-merge), `.gitignore`, and **merge** the advisory hooks block into `.claude/settings.json`. Idempotent; never overwrites existing hooks. |
+| `house new "<title>" [--kind <kind>] [--rigor <tier>] [--appetite <s>]` | Mint identity: `docs/slices/NNNN-slug/` + `slice.yaml` + `spec.md`; `mkdir` is the allocator lock. |
+| `house new "<title>" --adr` | Mint an ADR in `docs/adr/` on its own series, MADR-lite frontmatter (`status:` + `state:`). |
 | `house event <type> --slice <id> --payload '<json>'` | Append a free-form event to the OBSERVED log. |
-| `house gate <name> --slice <id> --verdict <v> [--by <who>] [--notes <s>] [--payload '<json>']` | Write `gates/<name>.yaml` + a `gate.recorded` event. Unknown gate or verdict is refused. |
+| `house gate <name> --slice <id> --verdict <v> [--by <who>] [--notes <s>] [--payload '<json>']` | Write `gates/<name>.yaml` + a `gate.recorded` event. Unknown gate or verdict is refused. On a **passing** verdict it auto-clears a `blocked_on` naming that gate (and emits `slice.unblocked`). |
 | `house task done <task> --slice <id> [--evidence-cmd "<cmd>"]` | Run the proof, record exit/summary, flip to `done` — or refuse. |
 | `house task block <task> --slice <id> --note "<why>"` | Mark blocked; the note is required. |
-| `house state <id> <to>` | Guarded transition: legal edge + required gate records + passing verdicts. |
-| `house status [--json]` · `house list [--json]` | Per-slice state + evidence-backed progress. |
-| `house next [--json]` | The ready set: `todo` tasks whose `depends_on` are all `done`. |
+| `house state <id> <to>` | Guarded transition: legal edge + required gate records + passing verdicts. Terminal transitions also emit `slice.shipped` / `slice.abandoned`. |
+| `house block <id> --gate <name> [--note "<why>"]` | Set `blocked_on` to the pinned `{gate, note, since}` shape + emit `gate.requested`. |
+| `house unblock <id> [--note "<why>"]` | Clear `blocked_on` by hand + emit `slice.unblocked`. |
+| `house artifact <id> <name> <state> [--reason "<why>"]` | Walk the artifact state machine; illegal jumps are refused, `skipped` requires a reason. |
+| `house unit <id> dispatch --title "<t>"` | Append a `units[]` entry, scaffold `units/NN-report.md`, print the new unit id. |
+| `house unit <id> heartbeat <unit> --note "<s>"` | Append a timestamped line to that unit's incremental report. |
+| `house unit <id> finalize <unit> --result <DONE\|BLOCKED\|NEEDS_CONTEXT\|DEVIATION> [--note "<s>"]` | Close the unit record. No finalize record ⇒ unknown, never DONE. |
+| `house pr <id> [--set <url>] [--base-sha <sha>]` | Set the merge projection's raw material; emits `slice.pr_set`. |
+| `house status [<id>] [--json]` · `house list [--json]` | Per-slice state + evidence-backed progress. A single-slice `--json` view also carries that slice's tasks. |
+| `house next [--slice <id>] [--json]` | The ready set: `todo` tasks whose `depends_on` are all `done`. Only workable states offer work — `idea`/`parked`/`abandoned` never do. |
+| `house log [--slice <id>] [--n <N>] [--json]` | Recent OBSERVED events, newest last, with the unparseable-line skip count. |
 | `house index` | Rebuild `.house/index.json` from DECLARED state. |
-| `house validate [--strict]` | Lint the repo: enum drift, orphan files, skips without reasons, done-without-evidence, external mockup refs, ADR states. `--strict` also blocks on `[NEEDS CLARIFICATION]`. |
-| `house render dev-state` | Regenerate the Active/In-flight/Slated/Done half of `docs/dev-state.md`. |
+| `house validate [--strict] [--json]` | Lint the repo: enum drift, orphan files, skips without reasons, done-without-evidence, external mockup refs (incl. style-attr `url()`), ADR states, `blocked_on` shape, `tasks.yaml` structure, kickoff-brief structure, roadmap `[NNNN]` refs pointing at slices that exist. `--strict` also blocks on `[NEEDS CLARIFICATION]`. |
+| `house render dev-state` | Regenerate the Active/In-flight/Slated/Parked/Done half of `docs/dev-state.md`. |
+| `house hook <event>` | Hook entry point (stdin JSON → stdout JSON) — see below. |
 
 **Exit codes:** `0` clean · `1` command error or red `validate` · `2` usage error / not a house repo.
+`house hook` is the exception: it **never** exits non-zero and prints nothing outside a house repo.
+
+## Hooks (advisory-only)
+
+`house init` merges four hooks into `.claude/settings.json`. All are advisory in S2 — observation, not
+enforcement ([ADR-0004](../docs/adr/0004-house2-coexistence-and-advisory-hooks.md)); the gates stay the
+enforcement point. Every path fails open, recording a `hook.degraded` event when it swallows a real error.
+
+| Event | `house hook …` | Behavior |
+|---|---|---|
+| `SessionStart` | `session-start` | emit `session.started`; inject `house status` + `house next` as additionalContext |
+| `SessionEnd` | `session-end` | emit `session.ended` (async) |
+| `PreToolUse` (`Edit\|Write\|MultiEdit`) | `pre-write` | permission **ask** — never deny — on writes to kernel-owned paths (`.house/`, `docs/slices/*/gates/`, `slice.yaml`, `tasks.yaml`), with a reason naming the right `house` command |
+| `SubagentStop` | `subagent-stop` | additionalContext naming any dispatched unit with no finalized report |
+
+`Stop` is deliberately not wired. Blocking hooks are an S3+ increment with a named precondition (builders
+declared as an agent type), per ADR-0004.
 
 ## Not in this slice
 
-Hooks wiring, `house archive`, `house adopt`, the skill rewrite, and the IDE all land in later slices. The
-`blocked_on` field and the `gate.requested` event type ship here as schema; their writers arrive with the
-skills in S2.
+`house archive`, `house adopt`, blocking hooks / `PreToolUse` deny, atomic (tmp+rename) writes, and the
+desktop IDE all land in later slices. The v2 skills that drive this CLI (`house2-*`) and doctrine v2 ship in
+the same slice as these commands but in a later unit.

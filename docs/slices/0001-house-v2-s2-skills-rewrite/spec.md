@@ -235,8 +235,10 @@ One `house hook <event>` subcommand (stdin JSON → stdout JSON contract), unit-
 and asserting stdout + exit code:
 - `SessionStart` → emit `session.started`, inject `house status` + `house next` as additionalContext.
 - `SessionEnd` (async) → emit `session.ended`.
-- `PreToolUse` (Edit|Write|MultiEdit) → permission **ask** (not deny) on writes under `.house/` and
-  `docs/slices/*/gates/`, reason pointing at the right `house` command.
+- `PreToolUse` (Edit|Write|MultiEdit) → permission **ask** (not deny) on writes to kernel-owned paths —
+  `.house/`, `docs/slices/*/gates/`, and `docs/slices/*/{slice,tasks}.yaml` — reason pointing at the right
+  `house` command. *(As-built reconcile 2026-07-28: the last pair was in the plan and the build from the
+  start; this line was the narrow one.)*
 - `SubagentStop` → advisory additionalContext naming any dispatched unit lacking a finalized report.
 - New `hook.degraded` event type in `enums.yaml`; every hook path exits 0 when outside a house repo or
   when `house` is missing, recording `hook.degraded` when it swallows a real error.
