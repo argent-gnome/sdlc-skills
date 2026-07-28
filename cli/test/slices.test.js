@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { init, mint, recordGate, emit, taskCmd, setState } from '../lib/slices.js';
 import { readYaml, writeYaml, readEvents, parseFrontmatter, loadEnums } from '../lib/core.js';
-import { mkTmpRepo } from './helpers.js';
+import { mkTmpRepo, run } from './helpers.js';   // readYaml/writeYaml already imported from core.js above
 
 test('init: scaffolds .house, docs/slices, gitattributes union-merge, gitignore for index', () => {
   const dir = mkdtempSync(join(tmpdir(), 'house-init-'));
@@ -191,4 +191,35 @@ test('free-form event list is a subset of the event-type enum (single source of 
   for (const e of free_form_events) assert.ok(event_types.includes(e), `${e} is not a known event type`);
   for (const owned of ['slice.created', 'slice.state_changed', 'gate.recorded', 'task.done', 'task.blocked'])
     assert.ok(!free_form_events.includes(owned), `${owned} must stay owned by its dedicated command`);
+});
+
+test('block/unblock: writes pinned shape, gate record with passing verdict auto-clears', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Blocky');
+  assert.equal(run(dir, 'block', '0001-blocky', '--gate', 'spec_review', '--note', 'awaiting user').code, 0);
+  let man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.deepEqual(Object.keys(man.blocked_on).sort(), ['gate', 'note', 'since']);   // shape pinned
+  assert.equal(man.blocked_on.gate, 'spec_review');
+  // a NON-passing verdict must NOT clear the block
+  run(dir, 'gate', 'spec_review', '--slice', '0001-blocky', '--verdict', 'changes_requested');
+  man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.ok(man.blocked_on);
+  // a passing verdict clears it and emits slice.unblocked — no hand-edit anywhere (spec R-2 scenario)
+  run(dir, 'gate', 'spec_review', '--slice', '0001-blocky', '--verdict', 'approved');
+  man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.equal(man.blocked_on, null);
+  const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
+  assert.match(ev, /"gate\.requested"/);
+  assert.match(ev, /"slice\.unblocked"/);
+});
+
+test('unblock: manual clear; refuses when not blocked; block refuses unknown gate', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Blocky');
+  assert.equal(run(dir, 'block', '0001-blocky', '--gate', 'nonsense').code, 1);
+  assert.equal(run(dir, 'unblock', '0001-blocky').code, 1);        // not blocked — refuse
+  run(dir, 'block', '0001-blocky', '--gate', 'merge_gate');
+  assert.equal(run(dir, 'unblock', '0001-blocky', '--note', 'user said proceed').code, 0);
+  const man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.equal(man.blocked_on, null);
 });

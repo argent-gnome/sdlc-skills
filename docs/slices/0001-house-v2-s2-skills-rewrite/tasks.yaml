@@ -10,10 +10,15 @@ tasks:
       at: '2026-07-28T21:57:31.845Z'
   - id: U1-T2
     title: house block/unblock + gate auto-clear, blocked_on shape pinned
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T1
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 665.995666
+      at: '2026-07-28T21:58:37.631Z'
   - id: U1-T3
     title: house artifact — artifact state machine writer
     state: todo

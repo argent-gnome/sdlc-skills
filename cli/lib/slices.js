@@ -74,7 +74,40 @@ export function recordGate(root, gate, args) {
     recorded_at: new Date().toISOString(), notes: args.notes ?? null, ...extra };   // plan_check passes must_fix[]/advisory_folded[] here
   writeYaml(join(dir, 'gates', `${gate}.yaml`), rec);
   appendEvent(root, 'gate.recorded', { slice: args.slice, actor: rec.by, payload: { gate, verdict: args.verdict } });
+  // auto-clear a blocked_on that names the gate just recorded — but ONLY on a passing verdict; a
+  // changes_requested record is exactly when the block must hold (spec R-2)
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const { passing_verdicts } = loadEnums();
+  if (man.blocked_on?.gate === gate && (passing_verdicts[gate] ?? []).includes(args.verdict)) {
+    man.blocked_on = null;
+    writeYaml(join(dir, 'slice.yaml'), man);
+    appendEvent(root, 'slice.unblocked', { slice: args.slice, actor: rec.by,
+      payload: { gate, via: 'gate.recorded' } });
+  }
   return rec;
+}
+
+export function block(root, id, args) {
+  if (!args.gate || args.gate === true) throw new Error('--gate <name> is required');
+  const { gate_verdicts } = loadEnums();
+  if (!gate_verdicts[args.gate]) throw new Error(`unknown gate: ${args.gate}`);
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.blocked_on = { gate: args.gate, note: args.note ?? null, since: new Date().toISOString().slice(0, 10) };
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'gate.requested', { slice: id, actor: args.actor ?? 'agent',
+    payload: { gate: args.gate, note: man.blocked_on.note } });
+}
+
+export function unblock(root, id, args) {
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  if (!man.blocked_on) throw new Error(`slice ${id} is not blocked`);
+  const was = man.blocked_on;
+  man.blocked_on = null;
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'slice.unblocked', { slice: id, actor: args.actor ?? 'agent',
+    payload: { gate: was.gate, via: 'manual', note: args.note ?? null } });
 }
 
 export function emit(root, type, args) {

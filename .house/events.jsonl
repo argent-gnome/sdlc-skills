@@ -5,3 +5,4 @@
 {"id":"01KYNAEDJD3X43AF48ZPH6RRHQ","ts":"2026-07-28T21:35:12.973Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"house-shaper","payload":{"to":"ready"}}
 {"id":"01KYNBGQ9J8D5H959SA2RZ6TKM","ts":"2026-07-28T21:53:57.042Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"to":"building"}}
 {"id":"01KYNBQ926QWKFHVF3MVX877A3","ts":"2026-07-28T21:57:31.846Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T1","cmd":"cd cli && npm test"}}
+{"id":"01KYNBS9A04DJF4514TWXDYMGN","ts":"2026-07-28T21:58:37.632Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T2","cmd":"cd cli && npm test"}}
