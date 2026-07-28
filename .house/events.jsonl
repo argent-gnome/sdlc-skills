@@ -33,3 +33,4 @@
 {"id":"01KYNETK1DWFT63X5YGQD2ZYYR","ts":"2026-07-28T22:51:46.093Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"spec","from":"draft","to":"awaiting_review"}}
 {"id":"01KYNETXJ7JMYKEECE45X64VKE","ts":"2026-07-28T22:51:56.872Z","event":"gate.requested","slice":"0002-house-version-flag","actor":"agent","payload":{}}
 {"id":"01KYNETXKWH1950FE43KNPQTFW","ts":"2026-07-28T22:51:56.924Z","event":"gate.requested","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"spec_review","note":"awaiting user verdict on spec review"}}
+{"id":"01KYNEY729SKHSJ3N3MSY07FJV","ts":"2026-07-28T22:53:44.905Z","event":"unit.report","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"03","result":"BLOCKED"}}
