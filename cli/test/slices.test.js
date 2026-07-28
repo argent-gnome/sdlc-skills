@@ -42,6 +42,8 @@ test('mint --adr: allocates in docs/adr with its own series, MADR-lite frontmatt
   assert.match(file, /docs\/adr\/0008-use-node-for-the-cli\.md$/);
   const { data } = parseFrontmatter(readFileSync(file, 'utf8'));
   assert.equal(data.state, 'proposed');
+  // free-text `status:` slot beside the closed `state:` enum — both, not one or the other (R-5)
+  assert.match(data.status, /^\d{4}-\d{2}-\d{2} — proposed$/);
 });
 
 test('recordGate: writes gates/<name>.yaml + gate.recorded event; rejects unknown gate/verdict', () => {
@@ -286,4 +288,16 @@ test('pr: sets pr + base_sha; state shipped emits slice.shipped (spec R-3 scenar
   const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
   assert.match(ev, /"slice\.pr_set"/);
   assert.match(ev, /"slice\.shipped"/);
+});
+
+test('setState: abandoning emits the terminal slice.abandoned event too', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'goner', {});
+  setState(repo, id, 'abandoned', {});
+  const evs = readEvents(repo).events.map(e => e.event);
+  assert.deepEqual(evs.slice(-2), ['slice.state_changed', 'slice.abandoned']);
+  // and a NON-terminal transition emits no terminal event (a blanket emit would fail this)
+  const id2 = mint(repo, 'parky', {});
+  setState(repo, id2, 'parked', {});
+  assert.deepEqual(readEvents(repo).events.at(-1).event, 'slice.state_changed');
 });

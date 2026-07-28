@@ -77,3 +77,15 @@ test('init: merges hooks into .claude/settings.json without clobbering existing 
   assert.equal(cmds.filter(c => c.includes('house hook session-start')).length, 1);
   assert.ok(s.hooks.PreToolUse.some(h => h.matcher === 'Edit|Write|MultiEdit'));
 });
+
+test('hook: a handler that throws exits 0, emits nothing to stdout, and RECORDS hook.degraded', () => {
+  const dir = mkTmpRepo();
+  execFileSync(process.execPath, [BIN, 'new', 'Broken'], { cwd: dir });
+  // corrupt a manifest so subagent-stop's readYaml throws inside the handler
+  writeFileSync(join(dir, 'docs/slices/0001-broken/slice.yaml'), 'units: [unclosed\n');
+  const r = hook(dir, 'subagent-stop', { agent_type: 'general-purpose' });
+  assert.equal(r.code, 0);                      // a hook must NEVER cost a session — even a broken one
+  assert.equal(r.out.trim(), '');
+  // …and fail-open must not mean fail-SILENT: the swallowed error is visible in OBSERVED
+  assert.match(readFileSync(join(dir, '.house/events.jsonl'), 'utf8'), /"hook\.degraded"/);
+});
