@@ -151,3 +151,21 @@ test('validate: hand-written blocked_on off the pinned shape is a finding (A3 â€
   assert.equal(r.code, 1);
   assert.match(JSON.parse(r.out).findings.map(f => f.msg).join('\n'), /blocked_on.*vibes/);
 });
+
+test('validate: kickoff brief â€” required fields, version int, tasks must exist', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Kicky');
+  writeFileSync(join(dir, 'docs/slices/0001-kicky/tasks.yaml'),
+    'tasks:\n  - id: T1\n    title: a\n    state: todo\n    verify: "true"\n');
+  const manPath = join(dir, 'docs/slices/0001-kicky/slice.yaml');
+  const man = readYaml(manPath);
+  man.kickoff = { version: 'one', unit: '01', tasks: ['T1', 'T9'], stakes: 'low', attended: true };
+  // missing scope_guards; version not an int; T9 does not exist
+  writeYaml(manPath, man);                                         // helpers re-export (Task 1 Step 0)
+  const r = run(dir, 'validate', '--json');
+  assert.equal(r.code, 1);
+  const msgs = JSON.parse(r.out).findings.map(f => f.msg).join('\n');
+  assert.match(msgs, /kickoff.*scope_guards.*required/);
+  assert.match(msgs, /kickoff.*version.*integer/);
+  assert.match(msgs, /kickoff.*T9/);
+});

@@ -1,6 +1,10 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readYaml, loadEnums, parseFrontmatter } from './core.js';
+
+// kickoff.yaml sits next to enums.yaml; fileURLToPath (not URL.pathname) — paths with spaces
+const kickoffSchema = readYaml(fileURLToPath(new URL('../schema/kickoff.yaml', import.meta.url)));
 
 // plan-check.md / merge-gate.md are OPTIONAL prose narratives; the machine-read verdict is always gates/*.yaml
 const KNOWN = new Set(['slice.yaml', 'spec.md', 'plan.md', 'plan-check.md', 'tasks.yaml', 'retro.md', 'merge-gate.md']);
@@ -65,6 +69,16 @@ export function validate(root, args) {
         for (const k of Object.keys(t)) if (!TASK_KEYS.has(k))
           err(tasksFile, `task ${t.id}: unknown key '${k}' — YAML comments and stray keys carry no meaning`, 'warning');
       }
+    }
+    // MUST stay BELOW the `tasksFile` declaration above — reading it earlier is a TDZ ReferenceError
+    if (man.kickoff != null) {
+      const k = man.kickoff;
+      for (const f of kickoffSchema.required) if (!(f in k)) err(manFile, `kickoff: '${f}' is required`);
+      if ('version' in k && !Number.isInteger(k.version)) err(manFile, `kickoff: version must be an integer`);
+      const known = new Set([...kickoffSchema.required, ...kickoffSchema.optional]);
+      for (const key of Object.keys(k)) if (!known.has(key)) err(manFile, `kickoff: unknown field '${key}'`, 'warning');
+      const tIds = (existsSync(tasksFile) ? readYaml(tasksFile)?.tasks ?? [] : []).map(t => t.id);
+      for (const t of k.tasks ?? []) if (!tIds.includes(t)) err(manFile, `kickoff: brief names task ${t} which is not in tasks.yaml`);
     }
     if (man.state === 'shipped') {
       if (!existsSync(join(dir, 'gates/merge_gate.yaml'))) err(dir, 'shipped without a merge_gate record');

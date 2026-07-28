@@ -78,10 +78,15 @@ tasks:
       at: '2026-07-28T22:04:09.465Z'
   - id: U1-T8
     title: kickoff-brief schema + validation
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T7
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1817.739333
+      at: '2026-07-28T22:05:01.889Z'
   - id: U1-T9
     title: house hook — advisory hooks, hook.degraded, init settings merge
     state: todo
