@@ -1,6 +1,7 @@
 # Spec — house v2: state-first redesign of the house SDLC ecosystem (design gate)
 
-_Status: **Draft — pending owner review** (shaped 2026-07-28, house-shaper session; research ran as a
+_Status: **Approved (owner, 2026-07-28)** — spec review gate passed; decisions D1–D5 resolved per
+recommendation (§13). (Shaped 2026-07-28, house-shaper session; research ran as a
 10-agent workflow — 3 skill deep-dives, 4 best-practices research passes, 3 competing redesign proposals.
 Full corpus committed at [`../research/2026-07-28-house-v2/`](../research/2026-07-28-house-v2/) — the three
 proposals are the recommended review reading, in this order:
@@ -250,15 +251,15 @@ Proving pair: sdlc-skills itself + edge-scanner, then one iOS repo, then fleet-l
 - The IDE's product design (panes, UX, stack final call) is its own future spec — this spec only fixes the
   contract it consumes.
 
-## 13. Open decisions for the owner (with recommendations)
+## 13. Owner decisions — RESOLVED (owner call, 2026-07-28: all per recommendation)
 
-| # | Decision | Recommendation |
+| # | Decision | Resolution |
 |---|---|---|
-| D1 | 3 skills vs 2 (merge shaper+orchestrator) | Keep 3 (§5) |
-| D2 | Merge-gate: panel vs single reviewer default | Single reviewer default; panel at `high` (§6) |
-| D3 | Retro cadence | Ledger always (computed); prose per-slice, optional for patches (§6) |
-| D4 | Spec+plan as separate files vs merged `slice.md` | Separate, with spec = five-slot pitch + Requirements (§3.2) |
-| D5 | CLI implementation language | Node (lives in `sdlc-skills/cli/`, installed globally) — matches the JS workflows it absorbs |
+| D1 | 3 skills vs 2 (merge shaper+orchestrator) | **Keep 3** (§5); orchestrator session = optimization, never substrate |
+| D2 | Merge-gate: panel vs single reviewer default | **Single refute-biased reviewer default; panel at `high` rigor or on owner request** (§6) |
+| D3 | Retro cadence | **Ledger always (computed); prose retro required for `slice` tier, optional for patches** (§6) |
+| D4 | Spec+plan as separate files vs merged `slice.md` | **Separate**, spec = five-slot pitch + Requirements (§3.2); single-file form available at patch tier |
+| D5 | CLI implementation language | **Node** (lives in `sdlc-skills/cli/`, installed globally) — absorbs the JS workflows + matches hook scripts |
 
 _Sources: the 10-report corpus at `../research/2026-07-28-house-v2/` (deep-dives quote v1 file:line
 throughout; research digests carry links). Reviewed against the three proposals' §"what v1 got right"

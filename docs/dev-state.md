@@ -1,18 +1,22 @@
-# sdlc-skills — dev state   (updated 2026-07-01)
+# sdlc-skills — dev state   (updated 2026-07-28)
 
 
-> Operational tracker only (the doctrine's dev-state allowlist). Durable strategy → a roadmap doc;
-> the *why* behind decisions → specs/retros. Keep this short; update at stage transitions and session end.
+> Operational tracker only (the doctrine's dev-state allowlist). Durable strategy → [`roadmap.md`](roadmap.md);
+> the *why* behind decisions → specs/ADRs/retros. Keep this short; update at stage transitions and session end.
 
-## Active slice: none
-- stage: idle            next action: none (Jake runs `/reload-skills` in open sessions to pick up 0.5.0)
-- branch: main (clean)   blocked on: none
+## Active slice: none building — house v2 **SHAPED** (2026-07-28)
+- shaped: spec approved (owner) + S1 plan checked (GO-WITH-FIXES, all fixes folded) + `docs/adr/0002-house-v2-state-first-redesign.md`
+- next action: orchestrator session to build **S1 (kernel + CLI)** from `docs/superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md`
+- branch: `house-v2-shaping` worktree (docs only)   blocked on: none
 
 ## In-flight
-- builders / PRs: none (PR #3 merged)
+- builders / PRs: none
 
 ## Slated (next up)
-- none — the three-piece ecosystem redesign (A/B/C) is shipped. (The orchestrator context-budget self-check idea was dropped per Jake — manual context management.)
+- **house v2 S1 — kernel + `house` CLI** → `docs/superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md` (ready to build)
+- **house v2 S2** — skills rewrite + doctrine v2 + hooks → [`roadmap.md`](roadmap.md)
+- **house v2 S3** — migrate the proving pair (sdlc-skills + edge-scanner) → [`roadmap.md`](roadmap.md)
+- **house v2 S4+** — the desktop IDE (own shaping, own repo; blocked on S1–S3) → [`roadmap.md`](roadmap.md)
 
 ## Done
 - **fable-profile model routing** (Fable 5 returned; judgment→Fable, throughput→Opus) — 2026-07-01 — `docs/adr/0001-fable-profile-model-routing.md` (VERSION 0.5.0)
@@ -33,4 +37,4 @@
 ## Process notes
 - This repo **dogfoods the house process**: specs/plans under `docs/superpowers/`, retros under `docs/retros/`.
 - Redesign decisions (locked): doctrine scope = focused (docs + hygiene); enforcement = active self-checks at gates; `roadmap.md` = blessed-canonical durable-strategy doc name.
-- A standalone `roadmap.md` for this repo doesn't exist yet — create one if the redesign backlog grows beyond Pieces B/C.
+- `roadmap.md` now exists (created at the house-v2 shaping, 2026-07-28) — durable sequencing and deferred work live there, not here.
