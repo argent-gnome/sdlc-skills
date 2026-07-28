@@ -24,7 +24,7 @@ event_types: [slice.created, slice.state_changed, slice.shipped, slice.abandoned
   task.done, task.blocked, work.discovered, deviation.raised, session.started, session.ended]
 free_form_events:             # the ONLY types `house event` may write — the rest are owned by a dedicated command
   [work.discovered, deviation.raised, gate.requested, artifact.written,
-   unit.dispatched, unit.heartbeat, unit.report, session.started, session.ended]
+   session.started, session.ended]
 state_transitions:            # from → allowed to (blocked_on is orthogonal, not a state)
   idea: [shaping, parked, abandoned]
   shaping: [ready, parked, abandoned]
@@ -38,6 +38,8 @@ required_gates:               # entry preconditions checked by `house state`
   live_check: [merge_gate]    # merge-gate gates the EXIT from gating, not just shipped
   shipped: [merge_gate]
 blocked_on_fields: [gate, note, since]   # the object `house block` writes; bare-string blocked_on is retired
+unit_results: [DONE, BLOCKED, NEEDS_CONTEXT, DEVIATION]   # the builder 4-state; absence of a finalized
+                                                          # record is fail-closed UNKNOWN, never DONE
 artifact_transitions:         # from → allowed to; `house artifact` fails closed on anything else
   todo: [draft, skipped]
   draft: [awaiting_review, superseded, skipped]

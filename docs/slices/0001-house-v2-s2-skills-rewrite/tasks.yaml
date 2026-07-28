@@ -32,10 +32,15 @@ tasks:
       at: '2026-07-28T21:59:23.242Z'
   - id: U1-T4
     title: house unit — dispatch/heartbeat/finalize + incremental reports
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T3
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1321.351375
+      at: '2026-07-28T22:00:18.542Z'
   - id: U1-T5
     title: house pr + terminal slice events + house log with skip count
     state: todo

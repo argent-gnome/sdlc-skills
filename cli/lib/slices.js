@@ -167,6 +167,47 @@ export function taskCmd(root, action, taskId, args) {
   writeYaml(file, doc);
 }
 
+export function unitCmd(root, id, action, unitId, args) {
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.units = man.units ?? [];
+  const now = () => new Date().toISOString();
+  if (action === 'dispatch') {
+    if (!args.title) throw new Error('--title is required');
+    const uid = String(man.units.length + 1).padStart(2, '0');
+    man.units.push({ id: uid, title: args.title, state: 'building', result: null, dispatched: now() });
+    mkdirSync(join(dir, 'units'), { recursive: true });
+    writeFileSync(join(dir, 'units', `${uid}-report.md`),
+      `# Unit ${uid} — ${args.title}\n\n- slice: ${id}\n- dispatched: ${now()}\n\n## Heartbeats\n\n## Result\n\n` +
+      `(pending — absence of a finalized result is fail-closed unknown, never DONE)\n`);
+    writeYaml(join(dir, 'slice.yaml'), man);
+    appendEvent(root, 'unit.dispatched', { slice: id, actor: args.actor ?? 'orchestrator',
+      payload: { unit: uid, title: args.title } });
+    return uid;
+  }
+  const unit = man.units.find(u => u.id === unitId);
+  if (!unit) throw new Error(`no such unit: ${unitId}`);
+  const reportPath = join(dir, 'units', `${unitId}-report.md`);
+  if (action === 'heartbeat') {
+    if (!args.note) throw new Error('--note is required for a heartbeat');
+    const cur = readFileSync(reportPath, 'utf8');
+    writeFileSync(reportPath, cur.replace('\n## Result', `- ${now()} — ${args.note}\n\n## Result`));
+    appendEvent(root, 'unit.heartbeat', { slice: id, actor: args.actor ?? 'builder',
+      payload: { unit: unitId, note: args.note } });
+  } else if (action === 'finalize') {
+    const { unit_results } = loadEnums();
+    if (!unit_results.includes(args.result))
+      throw new Error(`--result must be one of ${unit_results.join('|')} — got: ${args.result}`);
+    unit.state = 'finalized'; unit.result = args.result; unit.finalized = now();
+    const cur = readFileSync(reportPath, 'utf8');
+    writeFileSync(reportPath, cur.replace(/## Result[\s\S]*$/,
+      `## Result\n\n**${args.result}** — ${args.note ?? ''}\n- finalized: ${now()}\n`));
+    writeYaml(join(dir, 'slice.yaml'), man);
+    appendEvent(root, 'unit.report', { slice: id, actor: args.actor ?? 'builder',
+      payload: { unit: unitId, result: args.result } });
+  } else throw new Error(`unknown unit action: ${action}`);
+}
+
 export function setState(root, id, to, args) {
   const { slice_states, state_transitions, required_gates, passing_verdicts } = loadEnums();
   if (!slice_states.includes(to)) throw new Error(`unknown state: ${to}`);

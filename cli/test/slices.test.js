@@ -240,3 +240,28 @@ test('artifact: walks the state machine, refuses illegal jumps, records skip rea
   assert.equal(run(dir, 'artifact', '0001-arty', 'mockups', 'skipped', '--reason', 'CLI slice, no UI').code, 0);
   assert.match(readFileSync(join(dir, '.house/events.jsonl'), 'utf8'), /"artifact\.state_changed"/);
 });
+
+test('unit: dispatch allocates NN + report skeleton; heartbeat appends; finalize records 4-state', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Unity');
+  const d = run(dir, 'unit', '0001-unity', 'dispatch', '--title', 'CLI enablers');
+  assert.equal(d.code, 0);
+  const man1 = readYaml(join(dir, 'docs/slices/0001-unity/slice.yaml'));
+  assert.equal(man1.units.length, 1);
+  assert.equal(man1.units[0].id, '01');
+  assert.equal(man1.units[0].state, 'building');
+  const report = join(dir, 'docs/slices/0001-unity/units/01-report.md');
+  assert.match(readFileSync(report, 'utf8'), /never DONE/);        // fail-closed pending marker
+  assert.equal(run(dir, 'unit', '0001-unity', 'heartbeat', '01', '--note', 'task 2/5 done').code, 0);
+  assert.match(readFileSync(report, 'utf8'), /task 2\/5 done/);
+  // finalize requires a valid 4-state result
+  assert.equal(run(dir, 'unit', '0001-unity', 'finalize', '01', '--result', 'SHRUG').code, 1);
+  assert.equal(run(dir, 'unit', '0001-unity', 'finalize', '01', '--result', 'DONE', '--note', 'all green').code, 0);
+  const man2 = readYaml(join(dir, 'docs/slices/0001-unity/slice.yaml'));
+  assert.equal(man2.units[0].state, 'finalized');
+  assert.equal(man2.units[0].result, 'DONE');
+  const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
+  assert.match(ev, /"unit\.dispatched"/); assert.match(ev, /"unit\.heartbeat"/); assert.match(ev, /"unit\.report"/);
+  // and `house event` may no longer forge unit lifecycle events
+  assert.equal(run(dir, 'event', 'unit.report', '--slice', '0001-unity').code, 1);
+});
