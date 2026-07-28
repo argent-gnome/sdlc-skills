@@ -89,10 +89,15 @@ tasks:
       at: '2026-07-28T22:05:01.889Z'
   - id: U1-T9
     title: house hook — advisory hooks, hook.degraded, init settings merge
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T8
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1931.606875
+      at: '2026-07-28T22:08:26.905Z'
   - id: U1-T10
     title: install.sh — npm install + link the house bin
     state: todo

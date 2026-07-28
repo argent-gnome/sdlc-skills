@@ -16,6 +16,30 @@ export function init(dir) {
   if (!existsSync(join(dir, '.house/config.yaml'))) writeYaml(join(dir, '.house/config.yaml'), { schema_version: 1 });
   ensureLine(join(dir, '.gitattributes'), '.house/events.jsonl merge=union');
   ensureLine(join(dir, '.gitignore'), '.house/index.json');
+  mergeClaudeHooks(dir);
+}
+
+// The smallest possible generated block, ALWAYS merged, never overwritten — mis-merging degrades the
+// user's whole harness (spec, Rabbit Holes). Advisory-only in S2 (ADR-0004): no Stop hook, no deny.
+function mergeClaudeHooks(dir) {
+  const p = join(dir, '.claude', 'settings.json');
+  let cur = {};
+  if (existsSync(p)) {
+    try { cur = JSON.parse(readFileSync(p, 'utf8')); }
+    catch { throw new Error(`.claude/settings.json is not valid JSON — fix it by hand; refusing to touch it`); }
+  }
+  cur.hooks = cur.hooks ?? {};
+  const add = (ev, matcher, command, extra = {}) => {
+    const arr = cur.hooks[ev] = cur.hooks[ev] ?? [];
+    if (arr.some(h => (h.hooks ?? []).some(x => x.command === command))) return;   // idempotent
+    arr.push({ ...(matcher ? { matcher } : {}), hooks: [{ type: 'command', command, ...extra }] });
+  };
+  add('SessionStart', null, 'house hook session-start');
+  add('SessionEnd', null, 'house hook session-end', { async: true });
+  add('PreToolUse', 'Edit|Write|MultiEdit', 'house hook pre-write');
+  add('SubagentStop', null, 'house hook subagent-stop');
+  mkdirSync(join(dir, '.claude'), { recursive: true });
+  writeFileSync(p, JSON.stringify(cur, null, 2) + '\n');
 }
 
 const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);

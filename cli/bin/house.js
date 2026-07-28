@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 // cli/bin/house.js — the shebang above MUST be line 1 of the file or `npm link` execution breaks
+import { readFileSync } from 'node:fs';
 import { repoRoot } from '../lib/core.js';
 import * as slices from '../lib/slices.js';
 import * as derive from '../lib/derive.js';
+import * as hooks from '../lib/hooks.js';
 import { validate } from '../lib/validate.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -41,6 +43,14 @@ const commands = {
     process.exit(errs.some(e => e.level === 'error') ? 1 : 0);
   },
   render:  () => { if (pos[0] !== 'dev-state') throw new Error('usage: house render dev-state'); derive.renderDevState(need(root)); },
+  // NOT need(root): a hook fired outside a house repo exits 0 with no output, and a hook never
+  // exits non-zero at all — advisory-only (ADR-0004)
+  hook: () => {
+    let stdin = '';
+    try { stdin = readFileSync(0, 'utf8'); } catch { /* TTY / no stdin (EAGAIN) — a hook never exits non-zero (A6) */ }
+    const out = hooks.run(repoRoot(), pos[0], stdin);
+    if (out) console.log(out);
+  },
 };
 if (!commands[cmd]) { console.error(`usage: house <${Object.keys(commands).join('|')}>`); process.exit(2); }
 try { commands[cmd](); } catch (e) { console.error(`house ${cmd}: ${e.message}`); process.exit(1); }
