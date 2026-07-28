@@ -1,0 +1,23 @@
+{
+  "name": "house-cli",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bin": {
+    "house": "./bin/house.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.3.0"
+  }
+}
