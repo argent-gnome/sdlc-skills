@@ -74,3 +74,5 @@
 {"id":"01KYNJJX1HFJQDR98C5TJYNGPT","ts":"2026-07-28T23:57:28.497Z","event":"gate.recorded","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"gate":"live_check","verdict":"approved"}}
 {"id":"01KYNJJX1JP9R8MM84NCYDE96C","ts":"2026-07-28T23:57:28.498Z","event":"slice.unblocked","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"gate":"live_check","via":"gate.recorded"}}
 {"id":"01KYNJKN2W72NFGDHZXENWDBS1","ts":"2026-07-28T23:57:53.116Z","event":"slice.pr_set","slice":"0001-house-v2-s2-skills-rewrite","actor":"orchestrator","payload":{"pr":"https://github.com/argent-gnome/sdlc-skills/pull/8","base_sha":"3dceb6a44d08de638d7889c66592f9119da850ec"}}
+{"id":"01KYNJPGARN4BV7KVBK4B1ZAZQ","ts":"2026-07-28T23:59:26.552Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"to":"shipped"}}
+{"id":"01KYNJPGASQA3KDJYT2NN5BNQY","ts":"2026-07-28T23:59:26.553Z","event":"slice.shipped","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"pr":"https://github.com/argent-gnome/sdlc-skills/pull/8"}}
