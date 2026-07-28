@@ -14,3 +14,6 @@
 {"id":"01KYNC50J3BNB0H90MAG498256","ts":"2026-07-28T22:05:01.891Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T8","cmd":"cd cli && npm test"}}
 {"id":"01KYNCB8RTSE1F1RMS3GW9Z9V6","ts":"2026-07-28T22:08:26.907Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T9","cmd":"cd cli && npm test"}}
 {"id":"01KYNCCRFRJ0AJWPT7Z90NHKNK","ts":"2026-07-28T22:09:15.768Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T10","cmd":"./install.sh && house validate"}}
+{"id":"01KYNCV4TED7GY42H6X3BYGMA1","ts":"2026-07-28T22:17:07.150Z","event":"unit.dispatched","slice":"0001-house-v2-s2-skills-rewrite","actor":"orchestrator","payload":{"unit":"01","title":"CLI enablers"}}
+{"id":"01KYNCV4W48VMES5VMGTHSHE7T","ts":"2026-07-28T22:17:07.204Z","event":"unit.heartbeat","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"01","note":"tasks U1-T1…U1-T10 complete; self-review folded (3 test gaps closed); docs reconciled"}}
+{"id":"01KYNCWKPPQ833B6WJHAJS88WC","ts":"2026-07-28T22:17:55.158Z","event":"unit.report","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"01","result":"DONE"}}

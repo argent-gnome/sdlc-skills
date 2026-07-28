@@ -13,5 +13,11 @@ pr: null
 adrs:
   - 0004-house2-coexistence-and-advisory-hooks
 artifacts: {}
-units: []
+units:
+  - id: '01'
+    title: CLI enablers
+    state: finalized
+    result: DONE
+    dispatched: '2026-07-28T22:17:07.148Z'
+    finalized: '2026-07-28T22:17:55.153Z'
 kickoff: null

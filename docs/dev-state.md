@@ -4,7 +4,7 @@
 ## Active
 - **0001-house-v2-s2-skills-rewrite** — house v2 S2 — skills rewrite · state: building · 10/17
 ## In-flight
-- **0001-house-v2-s2-skills-rewrite** — PR n/a
+- none
 ## Slated
 - none
 ## Parked
