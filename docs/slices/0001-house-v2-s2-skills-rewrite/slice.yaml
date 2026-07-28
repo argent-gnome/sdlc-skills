@@ -3,15 +3,33 @@ id: 0001-house-v2-s2-skills-rewrite
 title: house v2 S2 — skills rewrite
 kind: idea
 rigor: slice
-state: ready
+state: live_check
 blocked_on: null
 appetite: 3-sessions
 created: '2026-07-28'
 branch: slice/0001-house-v2-s2-skills-rewrite
-base_sha: null
-pr: null
+base_sha: 3dceb6a44d08de638d7889c66592f9119da850ec
+pr: https://github.com/argent-gnome/sdlc-skills/pull/8
 adrs:
   - 0004-house2-coexistence-and-advisory-hooks
 artifacts: {}
-units: []
+units:
+  - id: '01'
+    title: CLI enablers
+    state: finalized
+    result: DONE
+    dispatched: '2026-07-28T22:17:07.148Z'
+    finalized: '2026-07-28T22:17:55.153Z'
+  - id: '02'
+    title: doctrine v2 + the three house2-* skills
+    state: finalized
+    result: DONE
+    dispatched: '2026-07-28T22:23:04.495Z'
+    finalized: '2026-07-28T22:48:07.535Z'
+  - id: '03'
+    title: smoke slice + closeout (orchestrator-driven)
+    state: finalized
+    result: BLOCKED
+    dispatched: '2026-07-28T22:50:04.011Z'
+    finalized: '2026-07-28T22:53:44.898Z'
 kickoff: null

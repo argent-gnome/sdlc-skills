@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { init, mint, recordGate, emit, taskCmd, setState } from '../lib/slices.js';
 import { readYaml, writeYaml, readEvents, parseFrontmatter, loadEnums } from '../lib/core.js';
-import { mkTmpRepo } from './helpers.js';
+import { mkTmpRepo, run } from './helpers.js';   // readYaml/writeYaml already imported from core.js above
 
 test('init: scaffolds .house, docs/slices, gitattributes union-merge, gitignore for index', () => {
   const dir = mkdtempSync(join(tmpdir(), 'house-init-'));
@@ -31,7 +31,7 @@ test('mint: allocates 0001, 0002… scanning slices dir; slugifies; scaffolds di
   const id2 = mint(repo, 'Second thing', { kind: 'idea' });
   assert.equal(id2, '0002-second-thing');
   assert.equal(readYaml(join(repo, 'docs/slices/0002-second-thing/slice.yaml')).state, 'idea');
-  const ev = readEvents(repo);
+  const ev = readEvents(repo).events;
   assert.deepEqual(ev.map(e => e.event), ['slice.created', 'slice.created']);
 });
 
@@ -42,6 +42,8 @@ test('mint --adr: allocates in docs/adr with its own series, MADR-lite frontmatt
   assert.match(file, /docs\/adr\/0008-use-node-for-the-cli\.md$/);
   const { data } = parseFrontmatter(readFileSync(file, 'utf8'));
   assert.equal(data.state, 'proposed');
+  // free-text `status:` slot beside the closed `state:` enum — both, not one or the other (R-5)
+  assert.match(data.status, /^\d{4}-\d{2}-\d{2} — proposed$/);
 });
 
 test('recordGate: writes gates/<name>.yaml + gate.recorded event; rejects unknown gate/verdict', () => {
@@ -51,7 +53,7 @@ test('recordGate: writes gates/<name>.yaml + gate.recorded event; rejects unknow
   const rec = readYaml(join(repo, `docs/slices/${id}/gates/plan_check.yaml`));
   assert.equal(rec.verdict, 'GO_WITH_FIXES');
   assert.ok(rec.recorded_at);
-  assert.equal(readEvents(repo).at(-1).payload.gate, 'plan_check');
+  assert.equal(readEvents(repo).events.at(-1).payload.gate, 'plan_check');
   assert.throws(() => recordGate(repo, 'vibes', { slice: id, verdict: 'GO' }), /unknown gate/);
   assert.throws(() => recordGate(repo, 'merge_gate', { slice: id, verdict: 'MAYBE' }), /invalid verdict/);
 });
@@ -60,7 +62,7 @@ test('emit: house event passes through with slice + parsed payload', () => {
   const repo = mkTmpRepo();
   const id = mint(repo, 'thing2', {});
   emit(repo, 'work.discovered', { slice: id, payload: '{"text":"found a thing","routed_to":"roadmap"}' });
-  assert.equal(readEvents(repo).at(-1).payload.text, 'found a thing');
+  assert.equal(readEvents(repo).events.at(-1).payload.text, 'found a thing');
   assert.throws(() => emit(repo, 'slice.created', { slice: id }), /owned by a dedicated command/);   // no second writer path
 });
 
@@ -101,7 +103,7 @@ test('setState: legal transition writes manifest + event; illegal transition ref
   recordGate(repo, 'plan_check', { slice: id, verdict: 'GO', by: 'agent' });
   setState(repo, id, 'ready', {});
   assert.equal(readYaml(join(repo, `docs/slices/${id}/slice.yaml`)).state, 'ready');
-  assert.equal(readEvents(repo).at(-1).event, 'slice.state_changed');
+  assert.equal(readEvents(repo).events.at(-1).event, 'slice.state_changed');
 });
 
 test('setState: refused while a required gate holds a blocking verdict', () => {
@@ -191,4 +193,111 @@ test('free-form event list is a subset of the event-type enum (single source of 
   for (const e of free_form_events) assert.ok(event_types.includes(e), `${e} is not a known event type`);
   for (const owned of ['slice.created', 'slice.state_changed', 'gate.recorded', 'task.done', 'task.blocked'])
     assert.ok(!free_form_events.includes(owned), `${owned} must stay owned by its dedicated command`);
+});
+
+test('block/unblock: writes pinned shape, gate record with passing verdict auto-clears', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Blocky');
+  assert.equal(run(dir, 'block', '0001-blocky', '--gate', 'spec_review', '--note', 'awaiting user').code, 0);
+  let man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.deepEqual(Object.keys(man.blocked_on).sort(), ['gate', 'note', 'since']);   // shape pinned
+  assert.equal(man.blocked_on.gate, 'spec_review');
+  // a NON-passing verdict must NOT clear the block
+  run(dir, 'gate', 'spec_review', '--slice', '0001-blocky', '--verdict', 'changes_requested');
+  man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.ok(man.blocked_on);
+  // a passing verdict clears it and emits slice.unblocked — no hand-edit anywhere (spec R-2 scenario)
+  run(dir, 'gate', 'spec_review', '--slice', '0001-blocky', '--verdict', 'approved');
+  man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.equal(man.blocked_on, null);
+  const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
+  assert.match(ev, /"gate\.requested"/);
+  assert.match(ev, /"slice\.unblocked"/);
+});
+
+test('unblock: manual clear; refuses when not blocked; block refuses unknown gate', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Blocky');
+  assert.equal(run(dir, 'block', '0001-blocky', '--gate', 'nonsense').code, 1);
+  assert.equal(run(dir, 'unblock', '0001-blocky').code, 1);        // not blocked — refuse
+  run(dir, 'block', '0001-blocky', '--gate', 'merge_gate');
+  assert.equal(run(dir, 'unblock', '0001-blocky', '--note', 'user said proceed').code, 0);
+  const man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
+  assert.equal(man.blocked_on, null);
+});
+
+test('artifact: walks the state machine, refuses illegal jumps, records skip reasons', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Arty');
+  // spec R-2 scenario: todo → approved is an illegal jump, named with the legal transitions
+  const bad = run(dir, 'artifact', '0001-arty', 'spec', 'approved');
+  assert.equal(bad.code, 1);
+  assert.match(bad.out, /illegal transition/);
+  assert.equal(run(dir, 'artifact', '0001-arty', 'spec', 'draft').code, 0);
+  assert.equal(run(dir, 'artifact', '0001-arty', 'spec', 'awaiting_review').code, 0);
+  assert.equal(run(dir, 'artifact', '0001-arty', 'spec', 'approved').code, 0);
+  const man = readYaml(join(dir, 'docs/slices/0001-arty/slice.yaml'));
+  assert.equal(man.artifacts.spec.state, 'approved');
+  assert.equal(run(dir, 'artifact', '0001-arty', 'mockups', 'skipped').code, 1);   // skip needs --reason
+  assert.equal(run(dir, 'artifact', '0001-arty', 'mockups', 'skipped', '--reason', 'CLI slice, no UI').code, 0);
+  assert.match(readFileSync(join(dir, '.house/events.jsonl'), 'utf8'), /"artifact\.state_changed"/);
+});
+
+test('unit: dispatch allocates NN + report skeleton; heartbeat appends; finalize records 4-state', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Unity');
+  const d = run(dir, 'unit', '0001-unity', 'dispatch', '--title', 'CLI enablers');
+  assert.equal(d.code, 0);
+  const man1 = readYaml(join(dir, 'docs/slices/0001-unity/slice.yaml'));
+  assert.equal(man1.units.length, 1);
+  assert.equal(man1.units[0].id, '01');
+  assert.equal(man1.units[0].state, 'building');
+  const report = join(dir, 'docs/slices/0001-unity/units/01-report.md');
+  assert.match(readFileSync(report, 'utf8'), /never DONE/);        // fail-closed pending marker
+  assert.equal(run(dir, 'unit', '0001-unity', 'heartbeat', '01', '--note', 'task 2/5 done').code, 0);
+  assert.match(readFileSync(report, 'utf8'), /task 2\/5 done/);
+  // finalize requires a valid 4-state result
+  assert.equal(run(dir, 'unit', '0001-unity', 'finalize', '01', '--result', 'SHRUG').code, 1);
+  assert.equal(run(dir, 'unit', '0001-unity', 'finalize', '01', '--result', 'DONE', '--note', 'all green').code, 0);
+  const man2 = readYaml(join(dir, 'docs/slices/0001-unity/slice.yaml'));
+  assert.equal(man2.units[0].state, 'finalized');
+  assert.equal(man2.units[0].result, 'DONE');
+  const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
+  assert.match(ev, /"unit\.dispatched"/); assert.match(ev, /"unit\.heartbeat"/); assert.match(ev, /"unit\.report"/);
+  // and `house event` may no longer forge unit lifecycle events
+  assert.equal(run(dir, 'event', 'unit.report', '--slice', '0001-unity').code, 1);
+});
+
+test('pr: sets pr + base_sha; state shipped emits slice.shipped (spec R-3 scenario)', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Shippy');
+  assert.equal(run(dir, 'pr', '0001-shippy').code, 1);             // nothing to set — refuse
+  assert.equal(run(dir, 'pr', '0001-shippy', '--set', 'https://github.com/x/y/pull/9',
+    '--base-sha', 'abc123').code, 0);
+  const man = readYaml(join(dir, 'docs/slices/0001-shippy/slice.yaml'));
+  assert.equal(man.pr, 'https://github.com/x/y/pull/9');
+  assert.equal(man.base_sha, 'abc123');
+  // walk to shipped through the gate machinery, then check the terminal event
+  run(dir, 'gate', 'spec_review', '--slice', '0001-shippy', '--verdict', 'approved');
+  run(dir, 'gate', 'plan_check', '--slice', '0001-shippy', '--verdict', 'GO');
+  run(dir, 'state', '0001-shippy', 'ready');
+  run(dir, 'state', '0001-shippy', 'building');
+  run(dir, 'state', '0001-shippy', 'gating');
+  run(dir, 'gate', 'merge_gate', '--slice', '0001-shippy', '--verdict', 'GO');
+  assert.equal(run(dir, 'state', '0001-shippy', 'shipped').code, 0);
+  const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
+  assert.match(ev, /"slice\.pr_set"/);
+  assert.match(ev, /"slice\.shipped"/);
+});
+
+test('setState: abandoning emits the terminal slice.abandoned event too', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'goner', {});
+  setState(repo, id, 'abandoned', {});
+  const evs = readEvents(repo).events.map(e => e.event);
+  assert.deepEqual(evs.slice(-2), ['slice.state_changed', 'slice.abandoned']);
+  // and a NON-terminal transition emits no terminal event (a blanket emit would fail this)
+  const id2 = mint(repo, 'parky', {});
+  setState(repo, id2, 'parked', {});
+  assert.deepEqual(readEvents(repo).events.at(-1).event, 'slice.state_changed');
 });

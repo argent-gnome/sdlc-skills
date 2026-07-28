@@ -53,13 +53,13 @@ export function appendEvent(root, event, fields) {
 export function readEvents(root) {
   const raw = readFileSync(join(root, '.house', 'events.jsonl'), 'utf8');
   // One torn line (an interrupted append, or a conflict artifact under `merge=union`) must not make the
-  // whole OBSERVED log unreadable — skip what will not parse and keep every event that will.
-  const events = [];
+  // whole OBSERVED log unreadable — but OBSERVED is a truth layer: thinning it must be COUNTED, not silent.
+  const events = []; let skipped = 0;
   for (const l of raw.split('\n')) {
     if (!l.trim()) continue;
-    try { events.push(JSON.parse(l)); } catch { /* unparseable line — skipped, never fatal */ }
+    try { events.push(JSON.parse(l)); } catch { skipped++; }
   }
-  return events;
+  return { events, skipped };
 }
 export function loadEnums() {
   return readYaml(loadEnumsPath());               // fileURLToPath — URL.pathname breaks on paths with spaces

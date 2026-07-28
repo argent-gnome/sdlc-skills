@@ -5,6 +5,7 @@ import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { mkTmpRepo } from './helpers.js';
 
 const BIN = fileURLToPath(new URL('../bin/house.js', import.meta.url));
 const run = (cwd, ...a) => {
@@ -23,4 +24,28 @@ test('cli: exit 2 outside a repo + on unknown cmd; 0 on init/new/status; 1 on va
   const man = join(dir, 'docs/slices/0001-smoke-slice/slice.yaml');
   writeFileSync(man, readFileSync(man, 'utf8').replace('state: shaping', 'state: polishing'));
   assert.equal(run(dir, 'validate').code, 1);                    // red validate = exit 1
+});
+
+test('validate --json: machine-readable findings', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Val');
+  writeFileSync(join(dir, 'docs/slices/0001-val/stray.txt'), 'orphan');
+  const r = run(dir, 'validate', '--json');
+  assert.equal(r.code, 1);
+  const j = JSON.parse(r.out);
+  assert.ok(j.findings.some(f => f.msg.includes('orphan file')));
+  assert.equal(typeof j.errors, 'number');
+});
+
+test('cli: --version prints package.json version, exit 0, works outside a repo', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'house-ver-'));            // NOT a house repo (R-1)
+  const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'));
+  const r = run(dir, '--version');
+  assert.equal(r.code, 0);
+  assert.equal(r.out, `${pkg.version}\n`);
+  const repo = mkTmpRepo();                                         // house-tracked repo (R-1 scenario 1;
+  const r2 = run(repo, '--version');                                //  plan-check must-fix)
+  assert.equal(r2.code, 0);
+  assert.equal(r2.out, `${pkg.version}\n`);
+  assert.equal(run(dir, 'frobnicate').code, 2);                     // unknown-cmd path unchanged (R-2)
 });

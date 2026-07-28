@@ -3,19 +3,28 @@
 A lightweight, **plugin-free** set of Claude Code skills that run the house software-development lifecycle the
 same way every time — at a fraction of the per-message token cost of a plugin.
 
-Three skills, split along the way you actually work:
+**Six skills, two coexisting generations** ([ADR-0004](docs/adr/0004-house2-coexistence-and-advisory-hooks.md)),
+split along the way you actually work:
 
-- **`house-shaper`** — a user-run shaping session for the fuzzy front end: research, brainstorm, spec, plan,
-  plan-check, and doc reconcile. Turns an idea into ready-to-build work (or a recorded decision), then hands
-  off to the orchestrator.
-- **`house-orchestrator`** — the long-lived conductor session. Sequences a slice, holds the gates, writes
-  kickoff prompts for build sessions, reviews their work via subagents, and reconciles. Resumes cold from a
-  per-project `docs/dev-state.md` file.
-- **`house-builder`** — an ephemeral build session that implements ONE plan unit (TDD + stack gates +
-  self-review + doc reconcile), then reports back and is torn down.
+- **`house-shaper`** / **`house2-shaper`** — a user-run shaping session for the fuzzy front end: research,
+  brainstorm, spec, plan, plan-check, and doc reconcile. Turns an idea into ready-to-build work (or a recorded
+  decision), then hands off to the orchestrator.
+- **`house-orchestrator`** / **`house2-orchestrator`** — the long-lived conductor session. Sequences a slice,
+  holds the gates, dispatches build sessions, reviews their work via subagents, and reconciles. Resumes cold
+  from a per-project `docs/dev-state.md` file (v1) or the `house` CLI's records (v2).
+- **`house-builder`** / **`house2-builder`** — an ephemeral build session that implements ONE plan unit (TDD +
+  stack gates + self-review + doc reconcile), then reports back and is torn down.
+
+The `house2-*` trio is the **house v2** rewrite: thin actors over a state-first kernel (the `house` CLI +
+on-disk records in `.house/`), with a judgment-only doctrine that never restates what the kernel's
+`cli/schema/enums.yaml` already owns. **They only run in a repo the kernel tracks** — one with a `.house/`
+directory (`house init` creates it) — and refuse otherwise, same as the `house-*` trio refuses once a repo
+has migrated. The two sets install side by side and don't touch each other; v1 is untouched, unarchived, and
+still the default until a repo migrates. The rename to canonical names and the v1 archive are a planned S3
+cutover, not done yet — see [`docs/roadmap.md`](docs/roadmap.md).
 
 Reviews (plan-check, merge-gate, doc-reconcile) run as **subagents** — the diff/docs are read in *their*
-context and only the verdict returns, so the orchestrator stays light. Two heavier reviews stay as **local
+context and only the verdict returns, so the orchestrator stays light. Two heavier v1 reviews stay as **local
 workflows** (`skills/house-orchestrator/workflows/`): the high-stakes merge-gate **panel** and the advisory
 **code-health-sweep**. Nothing here depends on a plugin, marketplace, or external repo.
 

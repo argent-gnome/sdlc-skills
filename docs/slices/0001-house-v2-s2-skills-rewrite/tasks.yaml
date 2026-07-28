@@ -1,85 +1,190 @@
 tasks:
   - id: U1-T1
     title: renderDevState positional parse (S1 GO condition) + Parked section + shared test run() helper
-    state: todo
+    state: done
     verify: cd cli && npm test
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 644.031667
+      at: '2026-07-28T21:57:31.845Z'
   - id: U1-T2
     title: house block/unblock + gate auto-clear, blocked_on shape pinned
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T1]
+    depends_on:
+      - U1-T1
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 665.995666
+      at: '2026-07-28T21:58:37.631Z'
   - id: U1-T3
     title: house artifact — artifact state machine writer
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T2]
+    depends_on:
+      - U1-T2
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 977.251459
+      at: '2026-07-28T21:59:23.242Z'
   - id: U1-T4
     title: house unit — dispatch/heartbeat/finalize + incremental reports
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T3]
+    depends_on:
+      - U1-T3
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1321.351375
+      at: '2026-07-28T22:00:18.542Z'
   - id: U1-T5
     title: house pr + terminal slice events + house log with skip count
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T4]
+    depends_on:
+      - U1-T4
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1807.05525
+      at: '2026-07-28T22:01:39.744Z'
   - id: U1-T6
     title: read side — status <id> --json, next --slice, validate --json
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T5]
+    depends_on:
+      - U1-T5
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1789.482125
+      at: '2026-07-28T22:02:48.286Z'
   - id: U1-T7
-    title: validate ride-alongs — roadmap lint, style url(), tasks.yaml structure, blocked_on rule, ADR status slot
-    state: todo
+    title: >-
+      validate ride-alongs — roadmap lint, style url(), tasks.yaml structure, blocked_on rule, ADR
+      status slot
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T6]
+    depends_on:
+      - U1-T6
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1768.117166
+      at: '2026-07-28T22:04:09.465Z'
   - id: U1-T8
     title: kickoff-brief schema + validation
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T7]
+    depends_on:
+      - U1-T7
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1817.739333
+      at: '2026-07-28T22:05:01.889Z'
   - id: U1-T9
     title: house hook — advisory hooks, hook.degraded, init settings merge
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U1-T8]
+    depends_on:
+      - U1-T8
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1931.606875
+      at: '2026-07-28T22:08:26.905Z'
   - id: U1-T10
     title: install.sh — npm install + link the house bin
-    state: todo
+    state: done
     verify: ./install.sh && house validate
-    depends_on: [U1-T9]
+    depends_on:
+      - U1-T9
+    evidence:
+      cmd: ./install.sh && house validate
+      cmd_exit: 0
+      summary: Run /reload-skills (or restart Claude Code) to pick up the changes.
+      at: '2026-07-28T22:09:15.767Z'
   - id: U2-T12
     title: doctrine v2 — judgment-only, points at enums, settled contradictions
-    state: todo
+    state: done
     verify: house validate
-    depends_on: [U1-T10]
+    depends_on:
+      - U1-T10
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:28:46.807Z'
   - id: U2-T13
     title: skills/house2-shaper/SKILL.md
-    state: todo
+    state: done
     verify: house validate
-    depends_on: [U2-T12]
+    depends_on:
+      - U2-T12
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:33:16.046Z'
   - id: U2-T14
     title: skills/house2-orchestrator/SKILL.md
-    state: todo
+    state: done
     verify: house validate
-    depends_on: [U2-T12]
+    depends_on:
+      - U2-T12
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:36:39.027Z'
   - id: U2-T15
     title: skills/house2-builder/SKILL.md + .house/gates.yml + model_profile seed
-    state: todo
+    state: done
     verify: house validate
-    depends_on: [U2-T12]
+    depends_on:
+      - U2-T12
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:38:20.775Z'
   - id: U2-T16
     title: keep-verbatim ledger audit — every rule has a home
-    state: todo
+    state: done
     verify: house validate
-    depends_on: [U2-T13, U2-T14, U2-T15]
+    depends_on:
+      - U2-T13
+      - U2-T14
+      - U2-T15
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:47:06.523Z'
   - id: U3-T17
     title: smoke slice — end-to-end through the three house2-* skills
-    state: todo
+    state: done
     verify: house validate --strict
-    depends_on: [U2-T16]
+    depends_on:
+      - U2-T16
+    evidence:
+      cmd: house validate --strict
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T23:34:16.929Z'
   - id: U3-T18
     title: S2 closeout — full bar, gating, merge-gate review, retro
-    state: todo
+    state: done
     verify: cd cli && npm test
-    depends_on: [U3-T17]
+    depends_on:
+      - U3-T17
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1988.995417
+      at: '2026-07-28T23:51:38.142Z'

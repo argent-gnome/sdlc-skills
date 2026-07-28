@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { readYaml } from './core.js';
+import { readYaml, readEvents } from './core.js';
 
 export function buildIndex(root) {
   const dir = join(root, 'docs/slices');
@@ -27,26 +27,46 @@ export function buildIndex(root) {
 export function writeIndex(root) {
   writeFileSync(join(root, '.house/index.json'), JSON.stringify(buildIndex(root), null, 2) + '\n');
 }
-export function status(root, args) {
+export function status(root, args, id = args?._id ?? null) {
   const idx = buildIndex(root);
-  if (args.json) return JSON.stringify({ slices: idx.slices.map(({ tasks, ...s }) => s) }, null, 2);
-  return idx.slices.map(s => `${s.id}  [${s.state}]  ${s.progress.done}/${s.progress.total}  ${s.title}` +
+  const picked = id ? idx.slices.filter(s => s.id === id) : idx.slices;
+  if (id && !picked.length) throw new Error(`no such slice: ${id}`);
+  if (args.json)                                                    // single-slice view keeps tasks; repo view drops them
+    return JSON.stringify({ slices: picked.map(({ tasks, ...s }) => id ? { ...s, tasks } : s) }, null, 2);
+  return picked.map(s => `${s.id}  [${s.state}]  ${s.progress.done}/${s.progress.total}  ${s.title}` +
     (s.blocked_on ? `  ⛔ ${s.blocked_on.gate ?? s.blocked_on}` : '')).join('\n') || '(no slices)';
 }
-export const list = status;                        // same projection; list keeps tasks out either way
+export const list = (root, args) => status(root, args, null);       // list stays the whole-repo projection
+
+const WORKABLE = ['shaping', 'ready', 'building', 'gating', 'live_check'];   // idea = pre-shaping, offers no work (A8)
 export function next(root, args) {
   const idx = buildIndex(root);
-  const ready = idx.slices.flatMap(s => (s.tasks ?? [])
+  const pool = idx.slices.filter(s => WORKABLE.includes(s.state))   // parked/abandoned never offer work
+    .filter(s => !args.slice || s.id === args.slice);
+  const ready = pool.flatMap(s => (s.tasks ?? [])
     .filter(t => t.state === 'todo' && (t.depends_on ?? []).every(d => s.tasks.find(x => x.id === d)?.state === 'done'))
     .map(t => ({ slice: s.id, id: t.id, title: t.title })));
   return args.json ? JSON.stringify(ready, null, 2) : ready.map(t => `${t.slice} ${t.id} ${t.title}`).join('\n') || '(nothing ready)';
 }
 
+export function log(root, args) {
+  const { events, skipped } = readEvents(root);
+  const rows = events.filter(e => !args.slice || e.slice === args.slice);
+  const shown = args.n ? rows.slice(-Number(args.n)) : rows;
+  if (args.json) return JSON.stringify({ skipped, events: shown }, null, 2);
+  const head = skipped ? [`(warning: ${skipped} unparseable line${skipped === 1 ? '' : 's'} skipped — OBSERVED is thinner than it looks)`] : [];
+  return head.concat(shown.map(e => `${e.ts}  ${e.event}  ${e.slice ?? '-'}  ${JSON.stringify(e.payload ?? {})}`))
+    .join('\n') || '(no events)';
+}
+
 export function renderDevState(root) {
   const idx = buildIndex(root);
-  const active = idx.slices.filter(s => ['shaping', 'ready', 'building', 'gating', 'live_check'].includes(s.state));
-  const slated = idx.slices.filter(s => s.state === 'idea');
-  const done = idx.slices.filter(s => s.state === 'shipped');
+  const byState = (states) => idx.slices.filter(s => states.includes(s.state));
+  const active = byState(['shaping', 'ready', 'building', 'gating', 'live_check']);
+  const slated = byState(['idea']);
+  const parked = byState(['parked']);
+  const done = byState(['shipped']);                 // abandoned renders in NO section (spec, settled) —
+                                                     // its history is the event log + the slice dir
   const line = (s) => `- **${s.id}** — ${s.title} · state: ${s.state} · ${s.progress.done}/${s.progress.total}` +
     (s.blocked_on ? ` · ⛔ blocked on ${s.blocked_on.gate ?? s.blocked_on}` : '');
   const inflight = idx.slices.filter(s => s.pr != null || (s.units ?? []).some(u => u.state === 'building'));
@@ -54,22 +74,41 @@ export function renderDevState(root) {
     '## Active', ...(active.length ? active.map(line) : ['- none']),
     '## In-flight', ...(inflight.length ? inflight.map(s => `- **${s.id}** — PR ${s.pr ?? 'n/a'}`) : ['- none']),
     '## Slated', ...(slated.length ? slated.map(line) : ['- none']),
+    '## Parked', ...(parked.length ? parked.map(line) : ['- none']),
     '## Done', ...(done.length ? done.map(line) : ['- none']), ''].join('\n');
   const dsPath = join(root, 'docs/dev-state.md');
   const cur = existsSync(dsPath) ? readFileSync(dsPath, 'utf8') : '';
-  const m = /<!-- house:manual -->[\s\S]*?<!-- \/house:manual -->/.exec(cur);
-  const manual = m ? m[0] : '<!-- house:manual -->\n<!-- /house:manual -->';
+  const manual = /<!-- house:manual -->[\s\S]*?<!-- \/house:manual -->/.exec(cur)?.[0]
+    ?? '<!-- house:manual -->\n<!-- /house:manual -->';
   const title = /^# .*$/m.exec(cur)?.[0] ?? '# dev state';
-  // Refuse silent data loss: content outside title / generated block / manual markers must be wrapped first.
-  // ORDER MATTERS — strip the generated block while the opening manual marker is still present, so its
-  // lookahead anchors on that marker. Removing the manual block first would leave the lazy match with only
-  // `$` to stop at, swallowing (and silently dropping) everything after `<!-- /house:manual -->`.
-  const leftover = cur
-    .replace(/<!-- generated by[\s\S]*?(?=<!-- house:manual -->|$)/, '')
-    .replace(m?.[0] ?? '', '')
-    .replace(/^# .*$/m, '')
-    .trim();
-  if (leftover)
-    throw new Error('dev-state.md has content outside the <!-- house:manual --> markers — wrap it first (no silent drops)');
+  // POSITIONAL PARSE — title | generated region | manual block | tail. The v1 regex-strip consumed the
+  // letter-gap (content wedged between generated block and the manual marker) and silently dropped it
+  // with exit 0 (the MF6 finding; S1 merge-gate GO condition). Here every non-blank line of the
+  // pre-manual region must be one the generator itself emits — anything else is named and refused.
+  if (cur) {
+    const manStart = cur.indexOf('<!-- house:manual -->');
+    const manEnd = cur.indexOf('<!-- /house:manual -->');
+    if (manStart !== -1 && manEnd === -1)                          // fail closed with an HONEST message (A5)
+      throw new Error('dev-state.md has an opening <!-- house:manual --> but no closing marker — fix the markers first');
+    const pre = manStart === -1 ? cur : cur.slice(0, manStart);
+    const tail = manStart === -1 ? '' : cur.slice(manEnd + '<!-- /house:manual -->'.length);
+    // ONLY headings the generator itself emits — whitelisting anything hand-authored here would let that
+    // exact heading be accepted outside the markers and silently deleted on rewrite (plan-check MF1)
+    const GEN_HEADERS = new Set(['## Active', '## In-flight', '## Slated', '## Parked', '## Done']);
+    const stray = [];
+    for (const l of pre.split('\n')) {
+      const t = l.trim();
+      if (!t) continue;
+      if (t === title.trim()) continue;
+      if (t.startsWith('<!-- generated by')) continue;
+      if (GEN_HEADERS.has(t)) continue;
+      if (t === '- none' || t.startsWith('- **')) continue;        // generator bullet shapes
+      stray.push(t);
+    }
+    for (const l of tail.split('\n')) if (l.trim()) stray.push(l.trim());
+    if (stray.length)
+      throw new Error(`dev-state.md has content outside the generated block / <!-- house:manual --> markers` +
+        ` — move it inside the manual block first (no silent drops): ${JSON.stringify(stray[0])}`);
+  }
   writeFileSync(dsPath, `${title}\n\n${gen}\n${manual}\n`);
 }

@@ -1,1 +1,5 @@
 schema_version: 1
+model_profile:                # ADR-0001 fable-profile; the orchestrator reads this at dispatch
+  builder: claude-opus-4-8
+  reviewer: claude-fable-5
+  fallback: opus-profile      # Fable outage ⇒ halt at gate.requested for hard gates, never downgrade

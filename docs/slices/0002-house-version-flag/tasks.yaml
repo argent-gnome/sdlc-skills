@@ -1,0 +1,10 @@
+tasks:
+  - id: T1
+    title: 'house --version pre-dispatch flag: print cli/package.json version, exit 0 (R-1, R-2)'
+    state: done
+    verify: cd cli && npm test
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1925.8285
+      at: '2026-07-28T23:21:03.919Z'

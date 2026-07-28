@@ -1,0 +1,17 @@
+# The versioned builder kickoff brief (spec R-14). ONE schema, read by sender (orchestrator) and
+# receiver (builder) alike — the v1 four-field sender/receiver divergence is structurally impossible.
+# A builder receiving a brief that fails validation returns NEEDS_CONTEXT naming missing_inputs.
+schema_version: 1
+required: [version, unit, tasks, scope_guards, stakes, attended]
+optional: [plan_check_commitments, fold_forward, stack, notes]
+types:
+  version: int          # incremented on EVERY reissue — a builder must be able to say "brief v3, not v2"
+  unit: string          # unit id this brief dispatches (units[] entry)
+  tasks: list           # task ids from tasks.yaml, in dispatch order
+  scope_guards: list    # the "NOT this slice" lines, verbatim from the plan
+  stakes: string        # free text: what a wrong-but-plausible decision costs here
+  attended: bool        # false ⇒ every hard gate halts at gate.requested (never downgrades)
+  plan_check_commitments: list   # folded advisories — each is a commitment, not a suggestion
+  fold_forward: list    # carry items owed by this unit
+  stack: string         # key into .house/gates.yml; unknown/absent stack ⇒ NEEDS_CONTEXT
+  notes: string

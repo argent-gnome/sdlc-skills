@@ -1,0 +1,10 @@
+# Declarative per-stack gates (minimal S2 schema): stacks.<key>.gates = ordered {name, cmd} list.
+# The builder runs every gate for its brief's `stack:`; an absent/unknown stack ⇒ NEEDS_CONTEXT.
+schema_version: 1
+stacks:
+  node:
+    gates:
+      - name: tests
+        cmd: cd cli && npm test
+      - name: validate
+        cmd: house validate

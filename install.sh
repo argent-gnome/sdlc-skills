@@ -28,6 +28,23 @@ for dir in "$SKILLS_SRC"/*/; do
   fi
 done
 
+# ---- house CLI (v2 S2): deps + global bin ------------------------------------
+# cli/node_modules is gitignored — a bare symlink of bin/house.js cannot resolve js-yaml.
+echo
+echo "Installing house CLI dependencies…"
+(cd "$REPO_DIR/cli" && npm install --no-fund --no-audit --silent)
+if command -v house >/dev/null 2>&1; then
+  echo "house CLI already on PATH: $(command -v house)"
+else
+  echo "Linking house CLI (npm link)…"
+  (cd "$REPO_DIR/cli" && npm link) || {
+    echo "npm link failed (global prefix not writable?) — falling back to ~/.local/bin"
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$REPO_DIR/cli/bin/house.js" "$HOME/.local/bin/house"
+    case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) echo "NOTE: add ~/.local/bin to PATH";; esac
+  }
+fi
+
 echo
 echo "Installed: $(ls -1 "$SKILLS_SRC" | tr '\n' ' ')"
 echo "The workflow scriptPaths in house-orchestrator/SKILL.md assume the install dir is"

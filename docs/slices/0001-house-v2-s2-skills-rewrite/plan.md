@@ -1305,8 +1305,10 @@ idea/slice/decision needing shaping in a `.house/` repo". Then, in order:
    `house gate plan_check --slice <id> --verdict <GO|GO_WITH_FIXES|NO_GO> --payload '{"must_fix":[…],"advisory_folded":[…]}'`.
    A folded-in advisory is a commitment.
 9. **Handoff:** write the kickoff block (schema: `cli/schema/kickoff.yaml`) into `slice.yaml`, bump
-   `version` on every reissue; `house validate --strict` must be green (no `[NEEDS CLARIFICATION`
-   markers); `house state <id> ready`. Hand to a `house2-orchestrator` session.
+   `version` on every reissue; `house validate --strict` must be green (no `NEEDS CLARIFICATION`
+   markers — bracket omitted here so this mention does not trip the naive substring check in
+   `cli/lib/validate.js`, a false positive found by the 0002 smoke run); `house state <id> ready`.
+   Hand to a `house2-orchestrator` session.
 
 Keep-verbatim rules this file owns (from the R-11 ledger): session-shape economics · research-dispatch
 contract · brainstorm-cannot-be-a-subagent · read-doctrine-on-demand · folded-advisory-is-a-commitment ·
@@ -1490,6 +1492,105 @@ reference. Any gap = a v2-skill bug — fix the skill, not the record, and re-ru
 validate before `shipped`).
 
 ---
+
+## As-built — Unit 1 (reconciled 2026-07-28, branch `slice/0001-house-v2-s2-skills-rewrite`)
+
+Tasks 1–10 were implemented in order, TDD, on the literal code in this plan; the suite went 43 → 66 tests
+with `house validate` exit 0 at every boundary. Units 2 and 3 are unbuilt — everything above this section
+from "Unit 2" onward is still forward-looking plan text. Deviations from the plan's literal code:
+
+- **`hooks.js` `pre-write` path check** — the plan's `relative(root, p)` was replaced by a symlink-tolerant
+  `realish()` / `repoRelative()` pair. The hook's root comes from `process.cwd()` (already realpath'd by the
+  OS) while `tool_input.file_path` arrives however the caller spelled it; on macOS anything under `/var`
+  (a symlink to `/private/var`) makes the two disagree, so the plan's guard would have silently never fired
+  in exactly the temp-dir shape the tests use. Advisory behavior is unchanged — this is a correctness fix,
+  not a scope change.
+- **Three tests added at self-review** (commit `3df054d`), closing documented-claim-without-test gaps:
+  `hook.degraded` (fail-open must not mean fail-silent), `slice.abandoned` (with the discriminating negative
+  that a non-terminal `parked` transition emits no terminal event), and the ADR template's free-text
+  `status:` slot beside the closed `state:` enum.
+- **Spec R-12's guarded-path list was narrower than this plan's** — Task 9 already guarded
+  `docs/slices/*/slice.yaml` and `tasks.yaml` alongside `.house/` and `gates/`. The as-built follows the
+  plan; spec R-12 was reconciled up to match (superset, not a scope change).
+- **Unit 1's `units[]` record is minted at closeout, not at dispatch.** The orchestrator dispatched this
+  unit before `house unit dispatch` existed — that command lands inside this very unit (Task 4) — so the
+  builder runs `dispatch` → `heartbeat` → `finalize` itself in Task 11, dogfooding the command it just
+  built. The `dispatched` timestamp on unit `01` is therefore the closeout time, not the real dispatch
+  time; a one-off consequence of the bootstrap, not a pattern. Units 2 and 3 dispatch through the CLI up
+  front, which is what the `SubagentStop` advisory reads.
+
+## As-built — Unit 2 (reconciled 2026-07-28, branch `slice/0001-house-v2-s2-skills-rewrite`)
+
+Tasks 12–16 were implemented in the plan's order (12 first, so no install window ever had a `SKILL.md`
+whose doctrine did not exist — plan-check advisory A7). Shipped: `skills/house2-orchestrator/references/
+doctrine.md` (194 lines, the 9 mandated sections), the three `house2-*` `SKILL.md` files, `.house/gates.yml`,
+and the `model_profile` seed in `.house/config.yaml`. `house validate` exit 0 and 66/66 tests at every task
+boundary; no file under `cli/` was touched.
+
+**Line-count targets met exactly:** shaper 90 (≤90), orchestrator 80 (≤80), builder 80 (≤80).
+
+**The point-never-restate greps come up empty** on all four new prose files — no line names two slice
+states, no verdict list (`GO.*NO_GO`, `approved.*changes_requested`), no old stage numbers, no
+`docs/superpowers/` path in any `SKILL.md`, and no model-name literal in the orchestrator skill. Exactly one
+line in the whole set matches the two-state pattern before the `grep -v '→'` filter, and it is the one the
+plan mandates: doctrine §2's "the legal `building → shaping` edge" (advisory A2's exemption, working as
+designed).
+
+Decisions taken inside the plan's latitude, recorded rather than absorbed:
+
+- **Hard gates and tiers are pointed at, not listed.** Plan §4 says "the list by *name* (pointer to
+  `gate_verdicts` keys)"; spec R-7's scenario says a grep for any literal list of gate names must return
+  zero. The scenario wins: doctrine §4 says "every key of `gate_verdicts` is a hard-gate rung" and sends the
+  reader to the schema. Same for the rigor dial — §3 describes the gradient in prose and points at `tiers`.
+  The stage table's gate-rung column likewise reads "⛔ its `required_gates` rung" rather than naming the
+  gates, which also avoids the `ready` row restating its own state name.
+- **`unit_results` is pointed at too** — the builder's finalize line reads `--result <a value from
+  unit_results>` instead of spelling the four-state enum, for the same reason. The fail-closed rule that
+  *depends* on the enum ("absence of a finalized record is UNKNOWN, never DONE") is stated in full.
+- **The auto-fix boundary is stated once, in `house2-orchestrator` §8**, which is the home the R-11 ledger
+  assigns it. Doctrine §8's hygiene checklist points there rather than restating it, honoring "stated ONCE".
+- **`docs/superpowers/` appears once in doctrine §6** — as the retirement notice the plan mandates ("retired
+  for new work"). The zero-paths rule is enforced on the three `SKILL.md` files, which are clean.
+- **No `install.sh` edit was needed.** It globs `skills/*/`, so the three new dirs symlink automatically;
+  `./install.sh` was re-run and all three resolve in `~/.claude/skills/` with `SKILL.md` and the doctrine
+  reachable at the path the skills cite.
+
+**Task 16 — R-11 ledger audit: 36/36 rows resolve to a real section; zero resolve to "dropped."** The audit
+was run mechanically (grep each rule's verbatim phrase in its assigned file) rather than by eye, which
+caught a class of defect worth recording: **five keep-verbatim phrases were split across a line wrap**, so
+they existed in the prose but could not be found by the grep a reviewer would run — rules 08 (redirect
+guard), 10 (five plan-check lenses), 22 (brainstorm-cannot-be-a-subagent), 23c (builder's
+read-doctrine-on-demand), 25 ("I didn't get to it"). All five were re-wrapped so each phrase sits on one
+line. A keep-verbatim rule that is not greppable fails R-11's audit scenario ("a reviewer can name the exact
+file + section"), so this was a real fix, not cosmetics.
+
+One ledger row resolves to a slightly different place than the ledger's wording: **rule 23
+(read-doctrine-on-demand) lives in each skill's doctrine pointer block, immediately above §1 Preflight**,
+rather than inside §1 itself — present in all three files, as required.
+
+## As-built — Unit 3, T17 (partial — reconciled 2026-07-28; T18 still open)
+
+T17 is **done** (evidence: `house validate --strict` exit 0, recorded by `house task done`; suite at
+67/67). The smoke slice minted as `0002-house-version-flag` ran the whole arc through the three v2 skills:
+shaped by `house2-shaper` (spec_review halt → user approval → plan + plan-check GO_WITH_FIXES → kickoff v1
+→ `ready`), then `building` → `gating` (merge gate **GO, zero findings**, reviewer re-ran everything
+personally) → `live_check` (user-approved) → `shipped`. Deviations and drift, recorded rather than
+absorbed:
+
+- **Unit 03's record is finalized `BLOCKED`, yet T17 is ticked.** The unit halted correctly at the 0002
+  spec_review hard gate and was finalized BLOCKED (`units/03-report.md`). After the user approved the
+  gate, the orchestrator drove the smoke to `shipped` and ticked T17 **inline** — no re-dispatch, since
+  the unit was orchestrator-driven by design. Recorded as a `deviation.raised` event on this slice; the
+  BLOCKED finalize stands as the honest record of the halt, not an error to rewrite.
+- **T17 Step 2's "merge it," as-built: no PR.** The smoke branch `slice/0002-house-version-flag` was
+  ff-merged into this slice's branch at `2c2d16b`, so the smoke's two-file diff rides THIS slice's
+  merge-gate diff; 0002's own merge gate ran per-slice on its records (base_sha `d023fc1`).
+- **T17 Step 4 landed late, at closeout:** the `artifact.written` smoke-evidence event was missing at
+  the 2026-07-28 reconcile (which flagged it as open — OBSERVED is writer-owned; a doc reconcile cannot
+  append events) and was emitted by the orchestrator at 2026-07-28T23:40:51Z, before the S2 merge gate,
+  with the planned payload (`{"kind":"smoke-evidence","slice":"0002-house-version-flag"}`).
+- Three `work.discovered` findings from the smoke were recorded on 0002 at gating and routed to the
+  roadmap backlog (see `docs/roadmap.md`).
 
 ## Plan-check (2026-07-28): GO_WITH_FIXES — all folded
 

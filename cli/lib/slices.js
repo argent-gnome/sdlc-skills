@@ -16,6 +16,30 @@ export function init(dir) {
   if (!existsSync(join(dir, '.house/config.yaml'))) writeYaml(join(dir, '.house/config.yaml'), { schema_version: 1 });
   ensureLine(join(dir, '.gitattributes'), '.house/events.jsonl merge=union');
   ensureLine(join(dir, '.gitignore'), '.house/index.json');
+  mergeClaudeHooks(dir);
+}
+
+// The smallest possible generated block, ALWAYS merged, never overwritten — mis-merging degrades the
+// user's whole harness (spec, Rabbit Holes). Advisory-only in S2 (ADR-0004): no Stop hook, no deny.
+function mergeClaudeHooks(dir) {
+  const p = join(dir, '.claude', 'settings.json');
+  let cur = {};
+  if (existsSync(p)) {
+    try { cur = JSON.parse(readFileSync(p, 'utf8')); }
+    catch { throw new Error(`.claude/settings.json is not valid JSON — fix it by hand; refusing to touch it`); }
+  }
+  cur.hooks = cur.hooks ?? {};
+  const add = (ev, matcher, command, extra = {}) => {
+    const arr = cur.hooks[ev] = cur.hooks[ev] ?? [];
+    if (arr.some(h => (h.hooks ?? []).some(x => x.command === command))) return;   // idempotent
+    arr.push({ ...(matcher ? { matcher } : {}), hooks: [{ type: 'command', command, ...extra }] });
+  };
+  add('SessionStart', null, 'house hook session-start');
+  add('SessionEnd', null, 'house hook session-end', { async: true });
+  add('PreToolUse', 'Edit|Write|MultiEdit', 'house hook pre-write');
+  add('SubagentStop', null, 'house hook subagent-stop');
+  mkdirSync(join(dir, '.claude'), { recursive: true });
+  writeFileSync(p, JSON.stringify(cur, null, 2) + '\n');
 }
 
 const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
@@ -74,7 +98,59 @@ export function recordGate(root, gate, args) {
     recorded_at: new Date().toISOString(), notes: args.notes ?? null, ...extra };   // plan_check passes must_fix[]/advisory_folded[] here
   writeYaml(join(dir, 'gates', `${gate}.yaml`), rec);
   appendEvent(root, 'gate.recorded', { slice: args.slice, actor: rec.by, payload: { gate, verdict: args.verdict } });
+  // auto-clear a blocked_on that names the gate just recorded — but ONLY on a passing verdict; a
+  // changes_requested record is exactly when the block must hold (spec R-2)
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const { passing_verdicts } = loadEnums();
+  if (man.blocked_on?.gate === gate && (passing_verdicts[gate] ?? []).includes(args.verdict)) {
+    man.blocked_on = null;
+    writeYaml(join(dir, 'slice.yaml'), man);
+    appendEvent(root, 'slice.unblocked', { slice: args.slice, actor: rec.by,
+      payload: { gate, via: 'gate.recorded' } });
+  }
   return rec;
+}
+
+export function block(root, id, args) {
+  if (!args.gate || args.gate === true) throw new Error('--gate <name> is required');
+  const { gate_verdicts } = loadEnums();
+  if (!gate_verdicts[args.gate]) throw new Error(`unknown gate: ${args.gate}`);
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.blocked_on = { gate: args.gate, note: args.note ?? null, since: new Date().toISOString().slice(0, 10) };
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'gate.requested', { slice: id, actor: args.actor ?? 'agent',
+    payload: { gate: args.gate, note: man.blocked_on.note } });
+}
+
+export function artifactCmd(root, id, name, to, args) {
+  if (!name || !to) throw new Error('usage: house artifact <slice-id> <name> <state> [--reason …]');
+  const { artifact_states, artifact_transitions } = loadEnums();
+  if (!artifact_states.includes(to)) throw new Error(`unknown artifact state: ${to}`);
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const cur = man.artifacts?.[name]?.state ?? 'todo';
+  const allowed = artifact_transitions[cur] ?? [];
+  if (!allowed.includes(to))
+    throw new Error(`artifact '${name}': illegal transition ${cur} → ${to} (allowed: ${allowed.join(', ') || 'none'})`);
+  if (to === 'skipped' && !args.reason) throw new Error(`artifact '${name}': skip requires --reason`);
+  man.artifacts = man.artifacts ?? {};
+  man.artifacts[name] = { ...(man.artifacts[name] ?? {}), state: to,
+    ...(args.reason ? { skip_reason: args.reason } : {}), updated: new Date().toISOString().slice(0, 10) };
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'artifact.state_changed', { slice: id, actor: args.actor ?? 'agent',
+    payload: { artifact: name, from: cur, to } });
+}
+
+export function unblock(root, id, args) {
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  if (!man.blocked_on) throw new Error(`slice ${id} is not blocked`);
+  const was = man.blocked_on;
+  man.blocked_on = null;
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'slice.unblocked', { slice: id, actor: args.actor ?? 'agent',
+    payload: { gate: was.gate, via: 'manual', note: args.note ?? null } });
 }
 
 export function emit(root, type, args) {
@@ -115,6 +191,60 @@ export function taskCmd(root, action, taskId, args) {
   writeYaml(file, doc);
 }
 
+export function prCmd(root, id, args) {
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const sha = args['base-sha'];
+  if ((!args.set || args.set === true) && (!sha || sha === true))
+    throw new Error('nothing to set: pass --set <pr-url> and/or --base-sha <sha>');
+  if (args.set && args.set !== true) man.pr = args.set;
+  if (sha && sha !== true) man.base_sha = sha;
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'slice.pr_set', { slice: id, actor: args.actor ?? 'orchestrator',
+    payload: { pr: man.pr, base_sha: man.base_sha } });
+}
+
+export function unitCmd(root, id, action, unitId, args) {
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.units = man.units ?? [];
+  const now = () => new Date().toISOString();
+  if (action === 'dispatch') {
+    if (!args.title) throw new Error('--title is required');
+    const uid = String(man.units.length + 1).padStart(2, '0');
+    man.units.push({ id: uid, title: args.title, state: 'building', result: null, dispatched: now() });
+    mkdirSync(join(dir, 'units'), { recursive: true });
+    writeFileSync(join(dir, 'units', `${uid}-report.md`),
+      `# Unit ${uid} — ${args.title}\n\n- slice: ${id}\n- dispatched: ${now()}\n\n## Heartbeats\n\n## Result\n\n` +
+      `(pending — absence of a finalized result is fail-closed unknown, never DONE)\n`);
+    writeYaml(join(dir, 'slice.yaml'), man);
+    appendEvent(root, 'unit.dispatched', { slice: id, actor: args.actor ?? 'orchestrator',
+      payload: { unit: uid, title: args.title } });
+    return uid;
+  }
+  const unit = man.units.find(u => u.id === unitId);
+  if (!unit) throw new Error(`no such unit: ${unitId}`);
+  const reportPath = join(dir, 'units', `${unitId}-report.md`);
+  if (action === 'heartbeat') {
+    if (!args.note) throw new Error('--note is required for a heartbeat');
+    const cur = readFileSync(reportPath, 'utf8');
+    writeFileSync(reportPath, cur.replace('\n## Result', `- ${now()} — ${args.note}\n\n## Result`));
+    appendEvent(root, 'unit.heartbeat', { slice: id, actor: args.actor ?? 'builder',
+      payload: { unit: unitId, note: args.note } });
+  } else if (action === 'finalize') {
+    const { unit_results } = loadEnums();
+    if (!unit_results.includes(args.result))
+      throw new Error(`--result must be one of ${unit_results.join('|')} — got: ${args.result}`);
+    unit.state = 'finalized'; unit.result = args.result; unit.finalized = now();
+    const cur = readFileSync(reportPath, 'utf8');
+    writeFileSync(reportPath, cur.replace(/## Result[\s\S]*$/,
+      `## Result\n\n**${args.result}** — ${args.note ?? ''}\n- finalized: ${now()}\n`));
+    writeYaml(join(dir, 'slice.yaml'), man);
+    appendEvent(root, 'unit.report', { slice: id, actor: args.actor ?? 'builder',
+      payload: { unit: unitId, result: args.result } });
+  } else throw new Error(`unknown unit action: ${action}`);
+}
+
 export function setState(root, id, to, args) {
   const { slice_states, state_transitions, required_gates, passing_verdicts } = loadEnums();
   if (!slice_states.includes(to)) throw new Error(`unknown state: ${to}`);
@@ -134,4 +264,10 @@ export function setState(root, id, to, args) {
   man.state = to;
   writeYaml(join(dir, 'slice.yaml'), man);
   appendEvent(root, 'slice.state_changed', { slice: id, actor: args.actor ?? 'agent', payload: { to } });
+  // terminal transitions get their matching terminal event — `slice.shipped` finally has a producer
+  // (ADR-0004: the shipped enum beats program spec §3.5's `slice.merged`)
+  if (to === 'shipped')
+    appendEvent(root, 'slice.shipped', { slice: id, actor: args.actor ?? 'agent', payload: { pr: man.pr } });
+  if (to === 'abandoned')
+    appendEvent(root, 'slice.abandoned', { slice: id, actor: args.actor ?? 'agent', payload: {} });
 }

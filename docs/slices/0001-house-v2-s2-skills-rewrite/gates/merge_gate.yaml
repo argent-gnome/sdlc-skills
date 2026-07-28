@@ -1,0 +1,31 @@
+gate: merge_gate
+verdict: GO
+by: agent
+recorded_at: '2026-07-28T23:50:54.535Z'
+notes: null
+regate_of: NO_GO 2026-07-28T23:47:52Z
+fix_commit: 38c128a
+lenses:
+  - fix-scope
+  - record-truth
+  - bar-rerun
+findings:
+  - id: R1
+    severity: info
+    what: >-
+      Fix commit 38c128a exactly scoped: retro.md marker reworded bracket-free (F1), plan.md Unit-3
+      as-built and dev-state manual block corrected never-emitted -> emitted 23:40:51Z (O1); the
+      only other hunks are the prior NO_GO gate record itself (merge_gate.yaml new file + its
+      gate.recorded event in events.jsonl) — record-keeping, no code touched, clean lenses
+      undisturbed
+  - id: R2
+    severity: info
+    what: >-
+      Retro reworded line truthful: states the retro first draft tripped strict and drew a
+      merge-gate NO_GO — matches recorded NO_GO 23:47:52Z F1; grep -F "[NEEDS CLARIFICATION" on
+      retro.md exits 1; house log shows artifact.written smoke-evidence at 2026-07-28T23:40:51.668Z
+      matching the corrected claims
+reruns:
+  tests: cd cli && npm test — 67/67 pass, 0 fail
+  validate_strict: house validate --strict exit 0
+  manual: house --version -> 0.1.0 exit 0
