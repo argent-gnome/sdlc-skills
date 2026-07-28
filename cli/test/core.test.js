@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ulid, parseFrontmatter, serializeFrontmatter, repoRoot, appendEvent, readEvents } from '../lib/core.js';
 import { mkTmpRepo } from './helpers.js';
+import { appendFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 test('ulid: 26 chars, Crockford base32, monotonic-ish lexical order', () => {
   const a = ulid(), b = ulid();
@@ -57,4 +59,13 @@ test('events: append writes one JSON line with ulid id + ISO ts; read returns in
 test('events: unknown event type throws (enum enforced at the only writer)', () => {
   const repo = mkTmpRepo();
   assert.throws(() => appendEvent(repo, 'made.up', { slice: 'x' }), /unknown event type/);
+});
+
+test('events: a truncated line (interrupted append / union-merge artifact) is skipped, not fatal', () => {
+  const repo = mkTmpRepo();
+  appendEvent(repo, 'slice.created', { slice: '0001-x', actor: 'shaper', payload: {} });
+  appendFileSync(join(repo, '.house/events.jsonl'), '{"id":"truncated","ts":"20\n');   // a torn write
+  appendEvent(repo, 'task.done', { slice: '0001-x', actor: 'builder', payload: { task: 't1' } });
+  const ev = readEvents(repo);                                     // must not throw — the log is append-only truth
+  assert.deepEqual(ev.map(e => e.event), ['slice.created', 'task.done']);
 });

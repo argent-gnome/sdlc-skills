@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync, appendFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
-import { readYaml, writeYaml, appendEvent, loadEnums, parseFrontmatter } from './core.js';
+import { readYaml, writeYaml, appendEvent, loadEnums } from './core.js';
 
 function ensureLine(file, line) {
   const cur = existsSync(file) ? readFileSync(file, 'utf8') : '';
@@ -29,6 +29,7 @@ function nextOrdinal(dir, re) {
 
 export function mint(root, title, opts = {}) {
   if (!title) throw new Error('a title is required');
+  if (!slug(title)) throw new Error(`title must contain at least one alphanumeric character: ${title}`);
   const tpl = (name) => readFileSync(new URL(`../templates/${name}`, import.meta.url), 'utf8');
   if (opts.adr) {
     const dir = join(root, 'docs/adr');
@@ -56,6 +57,7 @@ export function mint(root, title, opts = {}) {
 }
 
 export function sliceDir(root, id) {
+  if (!id || typeof id !== 'string') throw new Error('--slice is required');
   const dir = join(root, 'docs/slices', id);
   if (!existsSync(join(dir, 'slice.yaml'))) throw new Error(`no such slice: ${id}`);
   return dir;
@@ -75,10 +77,11 @@ export function recordGate(root, gate, args) {
   return rec;
 }
 
-const FREE_FORM = new Set(['work.discovered', 'deviation.raised', 'gate.requested', 'artifact.written',
-  'unit.dispatched', 'unit.heartbeat', 'unit.report', 'session.started', 'session.ended']);
 export function emit(root, type, args) {
-  if (!FREE_FORM.has(type))
+  // which types `house event` may write is a separate concept from which types exist — but it still
+  // lives in schema/enums.yaml, so nothing restates an enum (plan header rule + advisory A2)
+  const { free_form_events } = loadEnums();
+  if (!free_form_events.includes(type))
     throw new Error(`event '${type}' is owned by a dedicated command — not emittable via house event`);
   const payload = typeof args.payload === 'string' ? JSON.parse(args.payload) : (args.payload ?? {});
   return appendEvent(root, type, { slice: args.slice ?? null, actor: args.actor ?? 'agent', payload });
@@ -87,15 +90,19 @@ export function emit(root, type, args) {
 export function taskCmd(root, action, taskId, args) {
   const dir = sliceDir(root, args.slice);
   const file = join(dir, 'tasks.yaml');
-  const doc = readYaml(file);
-  const task = doc.tasks.find(t => t.id === taskId);
+  if (!existsSync(file)) throw new Error(`no tasks.yaml for slice ${args.slice} — nothing to ${action}`);
+  const doc = readYaml(file) ?? {};
+  const task = (doc.tasks ?? []).find(t => t.id === taskId);
   if (!task) throw new Error(`no such task: ${taskId}`);
   if (action === 'done') {
     if (task.state === 'done') throw new Error(`task ${taskId} already done — no silent re-ticks`);
     const cmd = args['evidence-cmd'] ?? task.verify;   // verify: is the task's declared proof; --evidence-cmd overrides it
     if (!cmd) throw new Error('evidence required: pass --evidence-cmd or set verify: on the task');
     let out;
-    try { out = execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }); }
+    // maxBuffer: a real `npm test` / `pytest -v` blows past execSync's 1MB default, which throws with
+    // status === null and would report a PASSING command as a failed one. timeout: never hang the CLI.
+    try { out = execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 64 * 1024 * 1024, timeout: 15 * 60 * 1000 }); }
     catch (e) { throw new Error(`evidence command failed (exit ${e.status}): ${cmd}`); }
     task.state = 'done';
     task.evidence = { cmd, cmd_exit: 0, summary: out.trim().split('\n').at(-1) ?? '', at: new Date().toISOString() };
@@ -119,7 +126,9 @@ export function setState(root, id, to, args) {
     const gf = join(dir, 'gates', `${gate}.yaml`);
     if (!existsSync(gf)) throw new Error(`missing gate record for '${to}': ${gate} (an unrecorded gate is an unpassed gate)`);
     const rec = readYaml(gf);
-    if (!passing_verdicts[gate].includes(rec.verdict))          // fail-closed: only an explicit pass advances
+    if (!passing_verdicts[gate])
+      throw new Error(`gate ${gate} has no passing_verdicts entry in schema/enums.yaml — failing closed`);
+    if (!passing_verdicts[gate].includes(rec?.verdict))          // fail-closed: only an explicit pass advances
       throw new Error(`gate ${gate}: '${rec.verdict}' is not a passing verdict`);
   }
   man.state = to;

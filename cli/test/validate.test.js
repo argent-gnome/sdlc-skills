@@ -88,3 +88,31 @@ test('validate: blocked/skipped tasks need a note or reason', () => {
   assert.match(msgs.join(' '), /task t1: blocked/);
   assert.match(msgs.join(' '), /task t2: skipped/);
 });
+
+test('validate: id/dirname mismatch, orphan dir, and @import mockup refs each get their own error', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'fourrules', {});
+  const dir = join(repo, 'docs/slices', id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.id = '9999-renamed-by-hand';                                 // manifest id no longer matches the dir
+  writeYaml(join(dir, 'slice.yaml'), man);
+  mkdirSync(join(dir, 'scratch'), { recursive: true });            // not in KNOWN_DIRS
+  mkdirSync(join(dir, 'mockups'), { recursive: true });
+  writeFileSync(join(dir, 'mockups/01.html'), '<style>@import url("https://fonts.example.com/x.css");</style>');
+  const msgs = validate(repo, {}).map(e => e.msg).join(' | ');
+  assert.match(msgs, /!= directory name/);
+  assert.match(msgs, /orphan directory in slice dir: scratch/);
+  assert.match(msgs, /external ref/);
+  // and a clean slice next to it produces none of them
+  mint(repo, 'tidy', {});
+  assert.equal(validate(repo, {}).filter(e => e.path.includes('tidy')).length, 0);
+});
+
+test('validate: malformed frontmatter is reported, not thrown', () => {
+  const repo = mkTmpRepo();
+  mint(repo, 'ok', {});
+  writeFileSync(join(repo, 'docs/adr/0002-bad.md'), '---\nstate: [unclosed\n---\n# ADR\n');
+  let errs;
+  assert.doesNotThrow(() => { errs = validate(repo, {}); });
+  assert.match(errs.map(e => e.msg).join(' '), /unparseable frontmatter/);
+});

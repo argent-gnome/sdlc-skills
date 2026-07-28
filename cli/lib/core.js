@@ -52,7 +52,14 @@ export function appendEvent(root, event, fields) {
 }
 export function readEvents(root) {
   const raw = readFileSync(join(root, '.house', 'events.jsonl'), 'utf8');
-  return raw.split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  // One torn line (an interrupted append, or a conflict artifact under `merge=union`) must not make the
+  // whole OBSERVED log unreadable — skip what will not parse and keep every event that will.
+  const events = [];
+  for (const l of raw.split('\n')) {
+    if (!l.trim()) continue;
+    try { events.push(JSON.parse(l)); } catch { /* unparseable line — skipped, never fatal */ }
+  }
+  return events;
 }
 export function loadEnums() {
   return readYaml(loadEnumsPath());               // fileURLToPath — URL.pathname breaks on paths with spaces

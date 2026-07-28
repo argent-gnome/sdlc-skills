@@ -36,7 +36,12 @@ Rules the code enforces, not just documents:
   `<!-- house:manual -->` markers.
 
 `schema/enums.yaml` is the single normative source for every enum — states, kinds, tiers, verdicts, event
-types, legal transitions, required gates. Nothing restates them.
+types, `free_form_events`, legal transitions, required gates. Nothing restates them.
+
+**Malformed input is a finding, never a crash.** A placeholder `tasks.yaml` with no `tasks:` key, a stray
+`.DS_Store` in `gates/`, one torn line in `events.jsonl` (an interrupted append, or a `merge=union` artifact),
+or unparseable ADR frontmatter each degrade gracefully — the derived layer keeps building and `validate`
+reports the problem instead of throwing.
 
 ## Commands
 

@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { init, mint, recordGate, emit, taskCmd, setState } from '../lib/slices.js';
-import { readYaml, writeYaml, readEvents, parseFrontmatter } from '../lib/core.js';
+import { readYaml, writeYaml, readEvents, parseFrontmatter, loadEnums } from '../lib/core.js';
 import { mkTmpRepo } from './helpers.js';
 
 test('init: scaffolds .house, docs/slices, gitattributes union-merge, gitignore for index', () => {
@@ -132,4 +132,63 @@ test('setState: shipped also demands the merge_gate record — the rigor dial ca
   recordGate(repo, 'merge_gate', { slice: id, verdict: 'GO', by: 'reviewer' });
   setState(repo, id, 'shipped', {});
   assert.equal(readYaml(join(repo, `docs/slices/${id}/slice.yaml`)).state, 'shipped');
+});
+
+test("task done: a declared verify: IS executed when no --evidence-cmd is passed (and can refuse the tick)", () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'verifyfallback', {});
+  writeYaml(join(repo, `docs/slices/${id}/tasks.yaml`), { tasks: [
+    { id: 't1', title: 'declared proof fails', state: 'todo', verify: 'exit 7', depends_on: [] },
+    { id: 't2', title: 'declared proof passes', state: 'todo', verify: 'echo proven', depends_on: [] } ] });
+  // an implementation that ignored task.verify would tick t1 happily — or refuse t2 for lack of a command
+  assert.throws(() => taskCmd(repo, 'done', 't1', { slice: id }), /evidence command failed \(exit 7\)/);
+  assert.equal(readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks[0].state, 'todo');
+  taskCmd(repo, 'done', 't2', { slice: id });
+  const t2 = readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks[1];
+  assert.equal(t2.state, 'done');
+  assert.equal(t2.evidence.cmd, 'echo proven');                    // the DECLARED command is what ran
+  assert.equal(t2.evidence.summary, 'proven');
+});
+
+test('task done: a passing command with megabytes of output still ticks (real suites are noisy)', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'noisy', {});
+  writeYaml(join(repo, `docs/slices/${id}/tasks.yaml`), { tasks: [{ id: 't1', title: 'a', state: 'todo', depends_on: [] }] });
+  // ~2MB of stdout — over execSync's 1MB default, which would report a PASSING command as "exit null"
+  taskCmd(repo, 'done', 't1', { slice: id, 'evidence-cmd': 'node -e "process.stdout.write(\'x\'.repeat(2e6)+\'\\ndone\\n\')"' });
+  const t = readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks[0];
+  assert.equal(t.state, 'done');
+  assert.equal(t.evidence.summary, 'done');
+});
+
+test('setState: GO_WITH_FIXES is a passing plan_check verdict (MF2 pinned on both sides)', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'gwf', {});
+  recordGate(repo, 'spec_review', { slice: id, verdict: 'approved', by: 'human' });
+  recordGate(repo, 'plan_check', { slice: id, verdict: 'GO_WITH_FIXES', by: 'agent' });
+  setState(repo, id, 'ready', {});                                 // must NOT throw
+  assert.equal(readYaml(join(repo, `docs/slices/${id}/slice.yaml`)).state, 'ready');
+});
+
+test('commands that need a slice say so instead of throwing a path TypeError', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'needslice', {});
+  assert.throws(() => recordGate(repo, 'plan_check', { verdict: 'GO' }), /--slice is required/);
+  assert.throws(() => taskCmd(repo, 'done', 't1', {}), /--slice is required/);
+  assert.throws(() => recordGate(repo, 'plan_check', { slice: 'nope', verdict: 'GO' }), /no such slice/);
+  assert.throws(() => taskCmd(repo, 'done', 't1', { slice: id }), /no tasks\.yaml/);
+});
+
+test('mint: a title with no alphanumerics is refused rather than minting a danglingid', () => {
+  const repo = mkTmpRepo();
+  assert.throws(() => mint(repo, '???', {}), /at least one alphanumeric/);
+  assert.throws(() => mint(repo, '', {}), /title is required/);
+});
+
+test('free-form event list is a subset of the event-type enum (single source of truth)', () => {
+  const { event_types, free_form_events } = loadEnums();
+  assert.ok(free_form_events.length > 0);
+  for (const e of free_form_events) assert.ok(event_types.includes(e), `${e} is not a known event type`);
+  for (const owned of ['slice.created', 'slice.state_changed', 'gate.recorded', 'task.done', 'task.blocked'])
+    assert.ok(!free_form_events.includes(owned), `${owned} must stay owned by its dedicated command`);
 });

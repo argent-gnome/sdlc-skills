@@ -30,7 +30,7 @@ const commands = {
   index:   () => derive.writeIndex(need(root)),
   validate: () => { const errs = validate(need(root), args); errs.forEach(e => console.error(`${e.level}: ${e.path}: ${e.msg}`));
                     process.exit(errs.some(e => e.level === 'error') ? 1 : 0); },
-  render:  () => derive.renderDevState(need(root)),
+  render:  () => { if (pos[0] !== 'dev-state') throw new Error('usage: house render dev-state'); derive.renderDevState(need(root)); },
 };
 if (!commands[cmd]) { console.error(`usage: house <${Object.keys(commands).join('|')}>`); process.exit(2); }
 try { commands[cmd](); } catch (e) { console.error(`house ${cmd}: ${e.message}`); process.exit(1); }

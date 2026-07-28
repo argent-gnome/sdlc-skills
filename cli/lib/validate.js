@@ -40,7 +40,7 @@ export function validate(root, args) {
         err(join(mockups, f), 'mockup has external ref — self-containment contract violated');
     }
     const tasksFile = join(dir, 'tasks.yaml');
-    if (existsSync(tasksFile)) for (const t of readYaml(tasksFile).tasks ?? []) {
+    if (existsSync(tasksFile)) for (const t of readYaml(tasksFile)?.tasks ?? []) {
       if (!enums.task_states.includes(t.state)) err(tasksFile, `task ${t.id}: unknown state ${t.state}`);
       if (t.state === 'done' && !t.evidence) err(tasksFile, `task ${t.id}: done without evidence`);
       if ((t.state === 'blocked' || t.state === 'skipped') && !t.note && !t.skip_reason)
@@ -53,7 +53,9 @@ export function validate(root, args) {
   }
   const adrDir = join(root, 'docs/adr');
   if (existsSync(adrDir)) for (const f of readdirSync(adrDir).filter(f => f.endsWith('.md'))) {
-    const { data } = parseFrontmatter(readFileSync(join(adrDir, f), 'utf8'));
+    let data;
+    try { ({ data } = parseFrontmatter(readFileSync(join(adrDir, f), 'utf8'))); }      // a bad doc is a finding,
+    catch (e) { err(join(adrDir, f), `unparseable frontmatter: ${e.message.split('\n')[0]}`); continue; }  // not a crash
     if (data?.state && !enums.adr_states.includes(data.state)) err(join(adrDir, f), `unknown ADR state: ${data.state}`);
   }
   return errs;
