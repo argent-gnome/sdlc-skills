@@ -1,0 +1,16 @@
+schema_version: 1
+id: 0001-house-v2-s2-skills-rewrite
+title: house v2 S2 — skills rewrite
+kind: idea
+rigor: slice
+state: idea
+blocked_on: null
+appetite: null
+created: '2026-07-28'
+branch: slice/0001-house-v2-s2-skills-rewrite
+base_sha: null
+pr: null
+adrs: []
+artifacts: {}
+units: []
+kickoff: null
