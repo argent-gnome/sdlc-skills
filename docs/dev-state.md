@@ -18,10 +18,10 @@
 > (house v2 S1). Everything below it is hand-authored and preserved verbatim across renders. Work that predates
 > house v2 — or that has no minted slice id yet — lives here because the generator cannot derive it.
 
-## Active slice (hand-authored — no minted slice id yet)
-- none — S1 shipped.
-- **Next action:** shape house v2 S2 (skills rewrite + doctrine v2 + hooks) in a `house-shaper` session — slice
-  `0001-house-v2-s2-skills-rewrite` minted as idea, S2 carry list in [`roadmap.md`](roadmap.md#s2-carry-list--fold-forward-from-s1).
+## Active slice (hand-authored)
+- **`0001-house-v2-s2-skills-rewrite`** — house v2 S2 — **shaped 2026-07-28, state `ready`** (spec approved, plan-check GO_WITH_FIXES folded, `tasks.yaml` authored). Appetite 3 sessions.
+- **Next action:** build it in a `house-orchestrator` session — plan @ `docs/slices/0001-house-v2-s2-skills-rewrite/plan.md`, 3 units, **first unit = CLI enablers** (U1-T1 = the `renderDevState` letter-gap fix, the S1 GO condition).
+- Shaping decisions: [ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md) (`house2-*` alongside v1 · advisory-only hooks · `slice.shipped` wins).
 
 ## Slated (hand-authored — no minted slice id yet)
 - **house v2 S3** — migrate the proving pair (sdlc-skills + edge-scanner) → [`roadmap.md`](roadmap.md)

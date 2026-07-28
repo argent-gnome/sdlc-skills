@@ -16,18 +16,25 @@ same truth. See [ADR-0002](adr/0002-house-v2-state-first-redesign.md).
 
 Shaped 2026-07-28. Spec: [`superpowers/specs/2026-07-28-house-v2-design.md`](superpowers/specs/2026-07-28-house-v2-design.md).
 Decision: [ADR-0002](adr/0002-house-v2-state-first-redesign.md). The CLI ships before the skills, and both
-ship before the IDE — the contract must be true from a bare terminal on day one.
+ship before the IDE — the contract must be true from a bare terminal on day one. The program spec §4's
+**blocking** hooks and the v1→canonical skill cutover are both pushed to **S3+** per
+[ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md): S2 ships advisory hooks and `house2-*` skills
+alongside untouched v1.
 
 | # | Slice | Status |
 |---|---|---|
 | S1 | **Kernel + `house` CLI** — `schema/enums.yaml`, slice-dir scaffold, events.jsonl, `house new/init/event/gate/task/state/status/list/next/validate/index/render`. Dogfooded on this repo. Plan: [`superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md`](superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md) | **Shipped 2026-07-28** — [PR #6](https://github.com/argent-gnome/sdlc-skills/pull/6) merged to `main` (`4a6a906`); retro: [`retros/2026-07-28-house-v2-s1-kernel-cli-retro.md`](retros/2026-07-28-house-v2-s1-kernel-cli-retro.md). All 11 plan tasks shipped TDD, 43/43 tests, `house validate` exit 0, repo dogfooded (`.house/`, slice `0001` minted, dev-state generated). Merge gate **GO** with one condition (the `renderDevState` letter-gap) plus findings folded to the [S2 carry list](#s2-carry-list--fold-forward-from-s1). Two deviations (test script under Node 26; a real silent-drop bug in the plan's literal `renderDevState`, fixed) + spec drift on `slice.merged`/roadmap-lint/ADR `status:` — all recorded in the plan's As-built section |
-| S2 | **Skills rewrite + doctrine v2 + hooks** — shaper/orchestrator/builder as thin actors over shared state; canonical stage table, one rigor dial, take/suppress/own composition contract; hooks wired into `.claude/settings.json` | Slated — carries from S1: see [the S2 carry list](#s2-carry-list--fold-forward-from-s1) below |
+| S2 | **Skills rewrite + doctrine v2 + hooks** — shaper/orchestrator/builder as thin actors over shared state; canonical stage table, one rigor dial, take/suppress/own composition contract; hooks wired into `.claude/settings.json`. Slice `[0001]` — spec: [`slices/0001-house-v2-s2-skills-rewrite/spec.md`](slices/0001-house-v2-s2-skills-rewrite/spec.md); plan: [`slices/0001-house-v2-s2-skills-rewrite/plan.md`](slices/0001-house-v2-s2-skills-rewrite/plan.md) | **Shaped 2026-07-28 — ready to build.** Appetite **3 sessions**, 3 units (CLI enablers → doctrine v2 + three `house2-*` skills → smoke slice), 18 tasks in `tasks.yaml`. Spec user-approved (`gates/spec_review.yaml`); plan-check **GO_WITH_FIXES** (`gates/plan_check.yaml`) with all 5 must-fix + 7 advisories folded into the plan. Shaping decisions — `house2-*` coexistence, advisory-only hooks, `slice.shipped` over `slice.merged` — recorded in [ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md). Carries from S1: see [the S2 carry list](#s2-carry-list--fold-forward-from-s1) below |
 | S3 | **Migrate the proving pair** — `house init` + `house adopt` + active-slice adoption on sdlc-skills and edge-scanner | Slated |
 | S4+ | **The desktop IDE** — shaped as its own slice against a contract already true on disk (workspace, side pane, webview mockups, approvals inbox, terminal panes); gets its own shaping pass and its own repo | Slated — blocked on S1–S3 |
 
 ### S2 carry list — fold-forward from S1
 
 Everything S1 deliberately left on the floor, in one place so nothing is carried in a conversation.
+
+> **Status (2026-07-28):** every item below is now **bound into the S2 spec/plan** as a numbered requirement
+> (R-1 … R-14) in [`slices/0001-house-v2-s2-skills-rewrite/spec.md`](slices/0001-house-v2-s2-skills-rewrite/spec.md).
+> The list stays here as the durable record of what was carried and why — it is not deleted when S2 ships.
 
 **Must not be lost — the S1 merge-gate GO condition:**
 

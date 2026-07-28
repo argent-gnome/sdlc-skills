@@ -10,7 +10,8 @@ created: '2026-07-28'
 branch: slice/0001-house-v2-s2-skills-rewrite
 base_sha: null
 pr: null
-adrs: []
+adrs:
+  - 0004-house2-coexistence-and-advisory-hooks
 artifacts: {}
 units: []
 kickoff: null
