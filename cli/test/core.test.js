@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ulid, parseFrontmatter, serializeFrontmatter, repoRoot } from '../lib/core.js';
+import { ulid, parseFrontmatter, serializeFrontmatter, repoRoot, appendEvent, readEvents } from '../lib/core.js';
 import { mkTmpRepo } from './helpers.js';
 
 test('ulid: 26 chars, Crockford base32, monotonic-ish lexical order', () => {
@@ -28,4 +28,21 @@ test('repoRoot: walks up to the dir containing .house', () => {
   const repo = mkTmpRepo();                       // creates <tmp>/.house/ + docs/slices/
   assert.equal(repoRoot(`${repo}/docs/slices`), repo);
   assert.equal(repoRoot('/'), null);
+});
+
+test('events: append writes one JSON line with ulid id + ISO ts; read returns in order', () => {
+  const repo = mkTmpRepo();
+  appendEvent(repo, 'slice.created', { slice: '0001-x', actor: 'shaper', payload: { kind: 'slice' } });
+  appendEvent(repo, 'gate.recorded', { slice: '0001-x', payload: { gate: 'plan_check', verdict: 'GO' } });
+  const ev = readEvents(repo);
+  assert.equal(ev.length, 2);
+  assert.equal(ev[0].event, 'slice.created');
+  assert.match(ev[0].id, /^[0-9A-HJKMNP-TV-Z]{26}$/);
+  assert.ok(!Number.isNaN(Date.parse(ev[0].ts)));
+  assert.equal(ev[1].payload.verdict, 'GO');
+});
+
+test('events: unknown event type throws (enum enforced at the only writer)', () => {
+  const repo = mkTmpRepo();
+  assert.throws(() => appendEvent(repo, 'made.up', { slice: 'x' }), /unknown event type/);
 });

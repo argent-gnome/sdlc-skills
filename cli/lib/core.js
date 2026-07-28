@@ -44,6 +44,8 @@ export function repoRoot(from = process.cwd()) {
 }
 
 export function appendEvent(root, event, fields) {
+  const { event_types } = loadEnums();
+  if (!event_types.includes(event)) throw new Error(`unknown event type: ${event}`);
   const line = JSON.stringify({ id: ulid(), ts: new Date().toISOString(), event, ...fields });
   appendFileSync(join(root, '.house', 'events.jsonl'), line + '\n');
   return JSON.parse(line);
