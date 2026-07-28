@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { mkTmpRepo } from './helpers.js';
 import { mint, recordGate } from '../lib/slices.js';
 import { writeYaml } from '../lib/core.js';
-import { buildIndex, writeIndex, status, next } from '../lib/derive.js';
+import { buildIndex, writeIndex, status, next, renderDevState } from '../lib/derive.js';
 
 function seed() {
   const repo = mkTmpRepo();
@@ -47,4 +47,24 @@ test('status --json: one line per slice with state + progress', () => {
   const s = JSON.parse(status(repo, { json: true }));
   assert.equal(s.slices[0].id, id);
   assert.equal(s.slices[0].state, 'shaping');
+});
+
+test('render dev-state: generated top from index; hand-authored block between markers preserved', () => {
+  const { repo, id } = seed();
+  const dsPath = join(repo, 'docs/dev-state.md');
+  writeFileSync(dsPath, ['# x — dev state', '', '<!-- house:manual -->', '## Gotchas', '- editing repo file IS the live skill',
+    '<!-- /house:manual -->', ''].join('\n'));
+  renderDevState(repo);
+  const out = readFileSync(dsPath, 'utf8');
+  assert.match(out, new RegExp(`## Active\\b[\\s\\S]*${id}`));       // generated section lists the slice
+  assert.match(out, /## In-flight/);                                 // all four doctrine sections render
+  assert.match(out, /editing repo file IS the live skill/);          // manual block survived
+  renderDevState(repo);                                              // idempotent
+  assert.equal(readFileSync(dsPath, 'utf8'), out);
+});
+
+test('render dev-state: REFUSES when hand-authored content sits outside the manual markers (no silent drops)', () => {
+  const { repo } = seed();
+  writeFileSync(join(repo, 'docs/dev-state.md'), '# x — dev state\n\n## Rogue hand section\n- precious content\n');
+  assert.throws(() => renderDevState(repo), /outside .* markers/);
 });
