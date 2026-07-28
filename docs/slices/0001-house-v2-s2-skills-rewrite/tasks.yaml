@@ -1,0 +1,85 @@
+tasks:
+  - id: U1-T1
+    title: renderDevState positional parse (S1 GO condition) + Parked section + shared test run() helper
+    state: todo
+    verify: cd cli && npm test
+  - id: U1-T2
+    title: house block/unblock + gate auto-clear, blocked_on shape pinned
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T1]
+  - id: U1-T3
+    title: house artifact — artifact state machine writer
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T2]
+  - id: U1-T4
+    title: house unit — dispatch/heartbeat/finalize + incremental reports
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T3]
+  - id: U1-T5
+    title: house pr + terminal slice events + house log with skip count
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T4]
+  - id: U1-T6
+    title: read side — status <id> --json, next --slice, validate --json
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T5]
+  - id: U1-T7
+    title: validate ride-alongs — roadmap lint, style url(), tasks.yaml structure, blocked_on rule, ADR status slot
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T6]
+  - id: U1-T8
+    title: kickoff-brief schema + validation
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T7]
+  - id: U1-T9
+    title: house hook — advisory hooks, hook.degraded, init settings merge
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U1-T8]
+  - id: U1-T10
+    title: install.sh — npm install + link the house bin
+    state: todo
+    verify: ./install.sh && house validate
+    depends_on: [U1-T9]
+  - id: U2-T12
+    title: doctrine v2 — judgment-only, points at enums, settled contradictions
+    state: todo
+    verify: house validate
+    depends_on: [U1-T10]
+  - id: U2-T13
+    title: skills/house2-shaper/SKILL.md
+    state: todo
+    verify: house validate
+    depends_on: [U2-T12]
+  - id: U2-T14
+    title: skills/house2-orchestrator/SKILL.md
+    state: todo
+    verify: house validate
+    depends_on: [U2-T12]
+  - id: U2-T15
+    title: skills/house2-builder/SKILL.md + .house/gates.yml + model_profile seed
+    state: todo
+    verify: house validate
+    depends_on: [U2-T12]
+  - id: U2-T16
+    title: keep-verbatim ledger audit — every rule has a home
+    state: todo
+    verify: house validate
+    depends_on: [U2-T13, U2-T14, U2-T15]
+  - id: U3-T17
+    title: smoke slice — end-to-end through the three house2-* skills
+    state: todo
+    verify: house validate --strict
+    depends_on: [U2-T16]
+  - id: U3-T18
+    title: S2 closeout — full bar, gating, merge-gate review, retro
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [U3-T17]

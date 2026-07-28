@@ -3,8 +3,8 @@ id: "0001-house-v2-s2-skills-rewrite"
 kind: spec
 slice: "0001-house-v2-s2-skills-rewrite"
 title: "house v2 S2 — skills rewrite"
-status: "shaped 2026-07-28; awaiting user review"
-state: awaiting_review
+status: "shaped 2026-07-28; user-approved"
+state: approved
 ---
 # Spec — house v2 S2 — skills rewrite
 

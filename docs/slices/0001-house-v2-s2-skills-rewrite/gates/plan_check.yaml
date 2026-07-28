@@ -1,0 +1,21 @@
+gate: plan_check
+verdict: GO_WITH_FIXES
+by: plan-check-reviewer
+recorded_at: '2026-07-28T21:35:12.919Z'
+notes: 5-lens review; 5 must-fix + 7 advisories folded into plan (commitments); A7 recorded
+must_fix:
+  - MF1 GEN_HEADERS generator-only
+  - MF2 shared test run()/yaml helpers
+  - MF3 kickoff check below tasksFile
+  - MF4 parked/abandoned rule into doctrine §6 + ledger
+  - MF5 model_profile seeded + absent-key behavior
+advisory_folded:
+  - A1 helper hoist
+  - A2 arrow grep exemption
+  - A3 blocked_on validate rule
+  - A4 roadmap-lint claim corrected
+  - A5 unclosed-marker error
+  - A6 hook stdin try
+  - A8 idea offers no work
+advisory_recorded:
+  - A7 doctrine-before-SKILL.md install window

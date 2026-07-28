@@ -1,2 +1,5 @@
 {"id":"01KYN2SNXJMB2J326X9Q8VCBYV","ts":"2026-07-28T19:21:33.362Z","event":"slice.created","slice":"0001-house-v2-s2-skills-rewrite","actor":"shaper","payload":{"kind":"idea","rigor":"slice"}}
 {"id":"01KYN98RTYGN75KH0K2STDE9GT","ts":"2026-07-28T21:14:39.326Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"house-shaper","payload":{"to":"shaping"}}
+{"id":"01KYN9D4EF2C9DQTCNRQ8DD9G8","ts":"2026-07-28T21:17:02.287Z","event":"gate.recorded","slice":"0001-house-v2-s2-skills-rewrite","actor":"jake","payload":{"gate":"spec_review","verdict":"approved"}}
+{"id":"01KYNAEDGRNDC1GECV5K5SBE3Y","ts":"2026-07-28T21:35:12.921Z","event":"gate.recorded","slice":"0001-house-v2-s2-skills-rewrite","actor":"plan-check-reviewer","payload":{"gate":"plan_check","verdict":"GO_WITH_FIXES"}}
+{"id":"01KYNAEDJD3X43AF48ZPH6RRHQ","ts":"2026-07-28T21:35:12.973Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"house-shaper","payload":{"to":"ready"}}

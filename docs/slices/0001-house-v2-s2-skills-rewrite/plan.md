@@ -67,11 +67,30 @@ every task boundary; both independently re-run by the merge-gate reviewer.
 - Modify: `cli/lib/derive.js:45-75`
 - Test: `cli/test/derive.test.js`
 
+- [ ] **Step 0: Hoist one shared `run()` into `cli/test/helpers.js`** (plan-check MF2/A1 — today only
+`cli.test.js` has a `run()`; four files are about to need it, hooks with stdin). Append to `helpers.js`:
+
+```js
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+export { readYaml, writeYaml } from '../lib/core.js';     // so tests never hand-roll js-yaml
+
+const BIN = fileURLToPath(new URL('../bin/house.js', import.meta.url));
+export const run = (cwd, ...a) => {
+  const opts = typeof a.at(-1) === 'object' ? a.pop() : {};   // run(dir, 'hook', 'x', {input: '…'})
+  try { return { out: execFileSync(process.execPath, [BIN, ...a], { cwd, encoding: 'utf8', ...opts }), code: 0 }; }
+  catch (e) { return { out: `${e.stdout ?? ''}${e.stderr ?? ''}`, code: e.status }; }
+};
+```
+
+Every test below imports `{ run, readYaml, writeYaml, mkTmpRepo }` from `./helpers.js`. Existing test
+files keep their local helpers untouched (no churn in green tests); only NEW tests use the shared one.
+
 - [ ] **Step 1: Write the failing tests**
 
 ```js
-// append to cli/test/derive.test.js (it already imports mkTmpRepo from ./helpers.js and a run() helper;
-// if this file's run() differs, copy the one from cli/test/cli.test.js verbatim)
+// append to cli/test/derive.test.js — add: import { run, readYaml, mkTmpRepo } from './helpers.js';
+// (derive.test.js has NO run() today — do not assume one)
 test('render dev-state: refuses content wedged between generated block and manual marker (MF6 letter-gap)', () => {
   const dir = mkTmpRepo();
   run(dir, 'new', 'First slice');
@@ -147,11 +166,14 @@ export function renderDevState(root) {
   // pre-manual region must be one the generator itself emits — anything else is named and refused.
   if (cur) {
     const manStart = cur.indexOf('<!-- house:manual -->');
-    const manEnd = manual === null ? -1 : cur.indexOf('<!-- /house:manual -->');
+    const manEnd = cur.indexOf('<!-- /house:manual -->');
+    if (manStart !== -1 && manEnd === -1)                          // fail closed with an HONEST message (A5)
+      throw new Error('dev-state.md has an opening <!-- house:manual --> but no closing marker — fix the markers first');
     const pre = manStart === -1 ? cur : cur.slice(0, manStart);
     const tail = manStart === -1 ? '' : cur.slice(manEnd + '<!-- /house:manual -->'.length);
-    const GEN_HEADERS = new Set(['## Active', '## In-flight', '## Slated', '## Parked', '## Done',
-      '## Done (hand-authored history — slices with no slice.yaml to derive from)']);
+    // ONLY headings the generator itself emits — whitelisting anything hand-authored here would let that
+    // exact heading be accepted outside the markers and silently deleted on rewrite (plan-check MF1)
+    const GEN_HEADERS = new Set(['## Active', '## In-flight', '## Slated', '## Parked', '## Done']);
     const stray = [];
     for (const l of pre.split('\n')) {
       const t = l.trim();
@@ -232,8 +254,7 @@ test('unblock: manual clear; refuses when not blocked; block refuses unknown gat
 });
 ```
 
-If `slices.test.js` lacks a `run()`/`readYaml` helper, copy `run()` from `cli/test/cli.test.js` and use
-`js-yaml` + `readFileSync` for `readYaml` exactly as the existing tests in that file do.
+All new tests in `slices.test.js` import `{ run, readYaml, mkTmpRepo }` from `./helpers.js` (Task 1 Step 0).
 
 - [ ] **Step 2: Run to verify failure**
 
@@ -696,7 +717,7 @@ export function status(root, args, id = args?._id ?? null) {
 }
 export const list = (root, args) => status(root, args, null);       // list stays the whole-repo projection
 
-const WORKABLE = ['shaping', 'ready', 'building', 'gating', 'live_check', 'idea'];
+const WORKABLE = ['shaping', 'ready', 'building', 'gating', 'live_check'];   // idea = pre-shaping, offers no work (A8)
 export function next(root, args) {
   const idx = buildIndex(root);
   const pool = idx.slices.filter(s => WORKABLE.includes(s.state))   // parked/abandoned never offer work
@@ -736,6 +757,8 @@ git commit -m "feat(cli): read side — status <id> --json, next --slice, valida
 - [ ] **Step 1: Write the failing tests**
 
 ```js
+// append to cli/test/validate.test.js — this file tests validate() as a library and has NO run()/yaml
+// helpers of its own (plan-check MF2): add `import { run, readYaml, writeYaml, mkTmpRepo } from './helpers.js';`
 test('validate: roadmap [NNNN] refs must exist; style-attr url() breaks self-containment; tasks.yaml structure', () => {
   const dir = mkTmpRepo();
   run(dir, 'new', 'Vali');
@@ -757,6 +780,18 @@ test('validate: roadmap [NNNN] refs must exist; style-attr url() breaks self-con
   assert.match(msgs, /error:.*duplicate task id/);
   assert.match(msgs, /error:.*depends_on.*T9/);
   assert.match(msgs, /warning:.*unknown key.*frobnicate/);
+});
+
+test('validate: hand-written blocked_on off the pinned shape is a finding (A3 — the enum gets a consumer)', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Blocko');
+  const manPath = join(dir, 'docs/slices/0001-blocko/slice.yaml');
+  const man = readYaml(manPath);
+  man.blocked_on = { gate: 'spec_review', vibes: 'bad' };          // stray key, missing note/since
+  writeYaml(manPath, man);
+  const r = run(dir, 'validate', '--json');
+  assert.equal(r.code, 1);
+  assert.match(JSON.parse(r.out).findings.map(f => f.msg).join('\n'), /blocked_on.*vibes/);
 });
 ```
 
@@ -791,6 +826,17 @@ Extend the tasks.yaml block (after the existing per-task checks):
     }
 ```
 
+Inside the per-slice loop (anywhere after `man` is read), give `blocked_on_fields` its consumer (A3 —
+a normative-looking enum with zero readers is drift bait):
+
+```js
+    if (man.blocked_on != null) {
+      if (typeof man.blocked_on !== 'object') err(manFile, `blocked_on: bare values are retired — use house block`);
+      else for (const k of Object.keys(man.blocked_on)) if (!enums.blocked_on_fields.includes(k))
+        err(manFile, `blocked_on: unknown key '${k}' (shape is pinned in schema/enums.yaml)`);
+    }
+```
+
 After the ADR loop, add the roadmap lint (spec §3.5: "validate checks only that referenced ids exist"):
 
 ```js
@@ -807,8 +853,10 @@ After the ADR loop, add the roadmap lint (spec §3.5: "validate checks only that
 `cli/templates/adr.md`: add a `status: "{{DATE}} — proposed"` line to the frontmatter, directly above the
 existing `state:` line (spec §3.3: free-text `status:` + closed `state:` enum on every artifact).
 
-- [ ] **Step 4: Run suite; also run `house validate` on THIS repo** (the roadmap lint now fires here —
-`docs/roadmap.md` references `0001` which exists, so it must stay green). Expected: PASS / exit 0.
+- [ ] **Step 4: Run suite; also run `house validate` on THIS repo.** Note (plan-check A4): the current
+`docs/roadmap.md` contains **zero** `[NNNN]` references, so the lint fires vacuously here — green proves
+only that it doesn't false-positive. The lint's real exercise is the unit test; the reconcile step will
+add real `[0001]` references to the roadmap later. Expected: PASS / exit 0.
 
 - [ ] **Step 5: Commit**
 
@@ -836,7 +884,7 @@ test('validate: kickoff brief — required fields, version int, tasks must exist
   const man = readYaml(manPath);
   man.kickoff = { version: 'one', unit: '01', tasks: ['T1', 'T9'], stakes: 'low', attended: true };
   // missing scope_guards; version not an int; T9 does not exist
-  writeFileSync(manPath, yaml.dump(man));
+  writeYaml(manPath, man);                                         // helpers re-export (Task 1 Step 0)
   const r = run(dir, 'validate', '--json');
   assert.equal(r.code, 1);
   const msgs = JSON.parse(r.out).findings.map(f => f.msg).join('\n');
@@ -879,7 +927,9 @@ import { fileURLToPath } from 'node:url';
 const kickoffSchema = readYaml(fileURLToPath(new URL('../schema/kickoff.yaml', import.meta.url)));
 ```
 
-Inside the per-slice loop, after the artifact checks:
+Inside the per-slice loop, **after the tasks.yaml structural checks — i.e. below the existing
+`const tasksFile = join(dir, 'tasks.yaml')` declaration** (placing it above `tasksFile` is a TDZ
+`ReferenceError` — plan-check MF3):
 
 ```js
     if (man.kickoff != null) {
@@ -1057,14 +1107,16 @@ and must never exit non-zero. Add to the dispatch table:
 
 ```js
   hook: () => {
-    const out = hooks.run(repoRoot(), pos[0], readFileSync(0, 'utf8'));
+    let stdin = '';
+    try { stdin = readFileSync(0, 'utf8'); } catch { /* TTY / no stdin (EAGAIN) — a hook never exits non-zero (A6) */ }
+    const out = hooks.run(repoRoot(), pos[0], stdin);
     if (out) console.log(out);
   },
 ```
 
 with `import * as hooks from '../lib/hooks.js';` and `readFileSync` imported from `node:fs` at top.
-Note: `readFileSync(0, …)` blocks for stdin — Claude Code always pipes hook stdin (even empty), and the
-tests pass `input:`; nothing else invokes `house hook`.
+The inner try matters: bin's global catch exits 1, and a stdin-less manual invocation must not violate
+"a hook never costs a session" (plan-check A6). Claude Code always pipes hook stdin; tests pass `input:`.
 
 `cli/lib/slices.js` — in `init()`, add the settings merge (call it at the end of `init`):
 
@@ -1191,7 +1243,10 @@ for enum literals and find zero.**
 6. **The doc model & routing table** (carried from v1, updated): one job per doc; slice artifacts live in
    `docs/slices/<id>/` (literal paths, no placeholders); `docs/superpowers/` is retired for new work;
    roadmap = durable strategy; dev-state = generated + manual marker block; ADRs = the why. The
-   dev-state allowlist: hand content lives ONLY between the manual markers.
+   dev-state allowlist: hand content lives ONLY between the manual markers. The third settled
+   contradiction lives here (plan-check MF4): **`parked` renders as its own dev-state section;
+   `abandoned` renders nowhere** — its history is the event log + the slice dir, `house list` still
+   shows it.
 7. **Composition contract (take / suppress / own).** Take: TDD's iron law; brainstorming's dialogue.
    Suppress: writing-plans' execution menu + worktree assumption; brainstorming's forced terminal
    transition; `finishing-a-development-branch` and `executing-plans` drop from the loops entirely.
@@ -1203,9 +1258,11 @@ for enum literals and find zero.**
    dispatched at stage transitions, session end, and merges.
 
 - [ ] **Step 2: Mechanical check** — from repo root:
-`grep -nE '\b(idea|shaping|ready|building|gating|live_check|shipped|parked|abandoned)\b.*\b(idea|shaping|ready|building|gating|live_check|shipped|parked|abandoned)\b' skills/house2-orchestrator/references/doctrine.md`
-Expected: zero hits — no line enumerates two or more state names (single mentions in prose rows are fine;
-a *list* is a restated enum). Same spot-check for verdict lists (`GO.*NO_GO`, `approved.*changes_requested`).
+`grep -nE '\b(idea|shaping|ready|building|gating|live_check|shipped|parked|abandoned)\b.*\b(idea|shaping|ready|building|gating|live_check|shipped|parked|abandoned)\b' skills/house2-orchestrator/references/doctrine.md | grep -v '→'`
+Expected: zero hits — no line enumerates two or more state names. The `grep -v '→'` exempts
+transition-arrow pointers (plan-check A2: §2's mandated loop-back line "the legal `building → shaping`
+edge" names two states and is a pointer at a `state_transitions` edge, not a restated enum). Same
+spot-check for verdict lists (`GO.*NO_GO`, `approved.*changes_requested`).
 
 - [ ] **Step 3: Commit**
 
@@ -1279,9 +1336,10 @@ list. `wc -l` target: ≤ 90.
    `house log --slice <id>`) → one action → write (`house unit/gate/state/block` + events). A fresh
    session resumes from records alone — the long-lived session is an optimization, never the substrate.
 4. **Dispatch:** `house unit <id> dispatch --title …`; hand the builder ONLY the kickoff brief (its
-   schema is the contract — nothing rides in prose beside it); builder model per `modelProfile` in
-   `.house/config.yaml` (Opus; reviewers Fable; on Fable outage: halt at `gate.requested`, never
-   downgrade — doctrine §3).
+   schema is the contract — nothing rides in prose beside it); builder model per `model_profile` in
+   `.house/config.yaml` (Opus; reviewers Fable). **Absent `model_profile` key ⇒ use ADR-0001's
+   fable-profile defaults and note it in the dispatch** (plan-check MF5); a *Fable outage* is the
+   different case: halt at `gate.requested`, never downgrade — doctrine §3.
 5. **Gates:** every hard-gate halt = `house block <id> --gate <name>`; resolution comes via
    `house gate … --verdict …` (auto-clears). Verdict-producing workflows must WRITE their verdict files
    (`gates/*.yaml` via `house gate`) — an unrecorded gate did not run.
@@ -1307,6 +1365,17 @@ builder-payload field list (the kickoff schema owns it); no model-name string li
 
 **Files:**
 - Create: `skills/house2-builder/SKILL.md`, `.house/gates.yml`
+
+- [ ] **Step 0: Seed `model_profile` into this repo's `.house/config.yaml`** (plan-check MF5 — T14 reads
+a key nothing writes; the T17 smoke run must find it). Append to the existing file (hand-edit is correct
+here: config.yaml is operator-owned, not kernel-owned):
+
+```yaml
+model_profile:                # ADR-0001 fable-profile; the orchestrator reads this at dispatch
+  builder: claude-opus-4-8
+  reviewer: claude-fable-5
+  fallback: opus-profile      # Fable outage ⇒ halt at gate.requested for hard gates, never downgrade
+```
 
 - [ ] **Step 1: Write `.house/gates.yml`** (this repo's stack — the minimal schema IS this file's shape):
 
@@ -1387,6 +1456,7 @@ may resolve to "dropped."** If a home is missing, go back and add the rule befor
 - [ ] "I didn't get to it" is a deviation, not a skip → orchestrator §8
 - [ ] compile-at-every-task-boundary → builder §2
 - [ ] scope guards as first-class negative space → shaper §9 + kickoff `scope_guards`
+- [ ] parked renders / abandoned doesn't (third settled contradiction) → doctrine §6 (plan-check MF4)
 
 - [ ] Commit any fixes: `git commit -am "docs(skills): keep-verbatim ledger audit — every rule has a home"`
 
@@ -1420,6 +1490,16 @@ reference. Any gap = a v2-skill bug — fix the skill, not the record, and re-ru
 validate before `shipped`).
 
 ---
+
+## Plan-check (2026-07-28): GO_WITH_FIXES — all folded
+
+Must-fix folded: MF1 GEN_HEADERS whitelist trimmed to generator-only · MF2 shared run()/yaml helpers in
+helpers.js · MF3 kickoff-check placement below tasksFile · MF4 third settled contradiction → doctrine §6
++ ledger tick · MF5 model_profile seeded + absent-key behavior stated. Advisories folded (each now a
+commitment): A1 helper hoist · A2 transition-arrow grep exemption · A3 blocked_on validate rule ·
+A4 roadmap-lint claim corrected · A5 unclosed-marker error · A6 hook stdin try · A8 idea offers no work.
+Recorded, not folded: A7 (between T12 and T14, `house2-orchestrator/` briefly has doctrine but no
+SKILL.md — harmless, same builder session).
 
 ## Plan self-review (completed at write time)
 
