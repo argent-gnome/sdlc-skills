@@ -1,0 +1,38 @@
+slice_states: [idea, shaping, ready, building, gating, live_check, shipped, parked, abandoned]
+artifact_states: [todo, draft, awaiting_review, approved, done, skipped, superseded]
+task_states: [todo, doing, done, blocked, skipped]
+kinds: [slice, decision, idea, hotfix, spike-only, docs-only]
+tiers: [decision, patch, slice, high, epic]
+gate_verdicts:
+  spec_review: [approved, changes_requested]
+  mockup_signoff: [approved, changes_requested]
+  plan_check: [GO, GO_WITH_FIXES, NO_GO]
+  merge_gate: [GO, NO_GO, INCONCLUSIVE]
+  live_check: [approved, changes_requested]
+  adr_review: [approved, changes_requested]
+passing_verdicts:             # FAIL-CLOSED: forward motion requires the latest record ∈ this list (INCONCLUSIVE is NOT a pass)
+  spec_review: [approved]
+  mockup_signoff: [approved]
+  plan_check: [GO, GO_WITH_FIXES]
+  merge_gate: [GO]
+  live_check: [approved]
+  adr_review: [approved]
+adr_states: [proposed, accepted, deprecated, superseded]
+event_types: [slice.created, slice.state_changed, slice.shipped, slice.abandoned, artifact.written,
+  gate.requested, gate.recorded, unit.dispatched, unit.heartbeat, unit.report,
+  task.done, task.blocked, work.discovered, deviation.raised, session.started, session.ended]
+free_form_events:             # the ONLY types `house event` may write — the rest are owned by a dedicated command
+  [work.discovered, deviation.raised, gate.requested, artifact.written,
+   unit.dispatched, unit.heartbeat, unit.report, session.started, session.ended]
+state_transitions:            # from → allowed to (blocked_on is orthogonal, not a state)
+  idea: [shaping, parked, abandoned]
+  shaping: [ready, parked, abandoned]
+  ready: [building, shaping, parked, abandoned]
+  building: [gating, shaping, parked, abandoned]
+  gating: [live_check, shipped, building, parked, abandoned]
+  live_check: [shipped, building, parked, abandoned]
+  parked: [shaping, ready, abandoned]
+required_gates:               # entry preconditions checked by `house state`
+  ready: [spec_review, plan_check]
+  live_check: [merge_gate]    # merge-gate gates the EXIT from gating, not just shipped
+  shipped: [merge_gate]
