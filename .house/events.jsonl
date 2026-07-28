@@ -18,3 +18,5 @@
 {"id":"01KYNCV4W48VMES5VMGTHSHE7T","ts":"2026-07-28T22:17:07.204Z","event":"unit.heartbeat","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"01","note":"tasks U1-T1…U1-T10 complete; self-review folded (3 test gaps closed); docs reconciled"}}
 {"id":"01KYNCWKPPQ833B6WJHAJS88WC","ts":"2026-07-28T22:17:55.158Z","event":"unit.report","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"01","result":"DONE"}}
 {"id":"01KYND61SHHH804FYTY5NTM3VJ","ts":"2026-07-28T22:23:04.497Z","event":"unit.dispatched","slice":"0001-house-v2-s2-skills-rewrite","actor":"orchestrator","payload":{"unit":"02","title":"doctrine v2 + the three house2-* skills"}}
+{"id":"01KYNDDEW50JR986T7QM0DF66H","ts":"2026-07-28T22:27:07.269Z","event":"unit.heartbeat","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"02","note":"unit 2 start: task 12 doctrine v2"}}
+{"id":"01KYNDGG2R073PWPED98G1KFGK","ts":"2026-07-28T22:28:46.809Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T12","cmd":"house validate"}}

@@ -111,10 +111,15 @@ tasks:
       at: '2026-07-28T22:09:15.767Z'
   - id: U2-T12
     title: doctrine v2 — judgment-only, points at enums, settled contradictions
-    state: todo
+    state: done
     verify: house validate
     depends_on:
       - U1-T10
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:28:46.807Z'
   - id: U2-T13
     title: skills/house2-shaper/SKILL.md
     state: todo
