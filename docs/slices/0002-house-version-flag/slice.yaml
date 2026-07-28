@@ -3,12 +3,12 @@ id: 0002-house-version-flag
 title: house --version flag
 kind: slice
 rigor: patch
-state: ready
+state: building
 blocked_on: null
 appetite: 1 session
 created: '2026-07-28'
 branch: slice/0002-house-version-flag
-base_sha: null
+base_sha: d023fc1cccb5f01ef495791cc8cfab2db792b882
 pr: null
 adrs: []
 artifacts:
@@ -18,7 +18,12 @@ artifacts:
   plan:
     state: approved
     updated: '2026-07-28'
-units: []
+units:
+  - id: '01'
+    title: house --version pre-dispatch flag
+    state: building
+    result: null
+    dispatched: '2026-07-28T23:19:33.315Z'
 kickoff:
   version: 1
   unit: '01'

@@ -44,3 +44,6 @@
 {"id":"01KYNG07AFVYMRY181DR21TKDF","ts":"2026-07-28T23:12:19.279Z","event":"session.ended","actor":"hook","payload":{"session_id":"ecba9410-9e57-4e57-9e26-477e5b562b0f"}}
 {"id":"01KYNG07AJ3VQ06RM9RQXP5MM2","ts":"2026-07-28T23:12:19.282Z","event":"session.started","actor":"hook","payload":{"source":"clear","session_id":"bf9c65e2-d365-4671-9e7d-af50255fede5"}}
 {"id":"01KYNG2NZTM5FS3JRXJER3PMDJ","ts":"2026-07-28T23:13:39.834Z","event":"slice.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"to":"ready"}}
+{"id":"01KYNGDF4FWXFKZZ1B0D92KZ2V","ts":"2026-07-28T23:19:33.263Z","event":"slice.pr_set","slice":"0002-house-version-flag","actor":"orchestrator","payload":{"pr":null,"base_sha":"d023fc1cccb5f01ef495791cc8cfab2db792b882"}}
+{"id":"01KYNGDF653ZGYMB9SCFA3HX0T","ts":"2026-07-28T23:19:33.317Z","event":"unit.dispatched","slice":"0002-house-version-flag","actor":"orchestrator","payload":{"unit":"01","title":"house --version pre-dispatch flag"}}
+{"id":"01KYNGDKG5RTXQX1FV3E5P8VP6","ts":"2026-07-28T23:19:37.733Z","event":"slice.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"to":"building"}}
