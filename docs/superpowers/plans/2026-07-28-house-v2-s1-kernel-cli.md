@@ -88,7 +88,7 @@ required_gates:               # entry preconditions checked by `house state`
 **Files:**
 - Create: `cli/package.json`, `cli/lib/core.js`, `cli/test/core.test.js`, `cli/test/helpers.js`, `cli/schema/enums.yaml` (content above)
 
-- [ ] **Step 1: Scaffold the package**
+- [x] **Step 1: Scaffold the package**
 
 ```bash
 mkdir -p cli/{bin,lib,schema,templates,test} && cd cli && npm init -y >/dev/null
@@ -96,7 +96,7 @@ npm pkg set name=house-cli version=0.1.0 type=module bin.house=./bin/house.js sc
 npm install js-yaml@4
 ```
 
-- [ ] **Step 2: Write failing tests for core**
+- [x] **Step 2: Write failing tests for core**
 
 ```js
 // cli/test/core.test.js
@@ -150,12 +150,12 @@ export function mkTmpRepo() {
 }
 ```
 
-- [ ] **Step 3: Run tests, verify they fail**
+- [x] **Step 3: Run tests, verify they fail**
 
 Run: `cd cli && npm test`
 Expected: FAIL — `Cannot find module '../lib/core.js'`
 
-- [ ] **Step 4: Implement core.js**
+- [x] **Step 4: Implement core.js**
 
 ```js
 // cli/lib/core.js
@@ -218,7 +218,7 @@ export function loadEnums() {
 }
 ```
 
-- [ ] **Step 5: Run tests, verify pass; commit**
+- [x] **Step 5: Run tests, verify pass; commit**
 
 Run: `cd cli && npm test` — Expected: PASS (4 tests)
 
@@ -232,7 +232,7 @@ git commit -m "feat(cli): core primitives — ulid, frontmatter, repoRoot, event
 **Files:**
 - Modify: `cli/test/core.test.js` (append tests)
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```js
 test('events: append writes one JSON line with ulid id + ISO ts; read returns in order', () => {
@@ -253,9 +253,9 @@ test('events: unknown event type throws (enum enforced at the only writer)', () 
 });
 ```
 
-- [ ] **Step 2: Run, verify the second test fails** — Expected: FAIL (no enum check yet)
+- [x] **Step 2: Run, verify the second test fails** — Expected: FAIL (no enum check yet)
 
-- [ ] **Step 3: Enforce the enum in appendEvent**
+- [x] **Step 3: Enforce the enum in appendEvent**
 
 In `cli/lib/core.js`, at the top of `appendEvent` add:
 
@@ -264,7 +264,7 @@ In `cli/lib/core.js`, at the top of `appendEvent` add:
   if (!event_types.includes(event)) throw new Error(`unknown event type: ${event}`);
 ```
 
-- [ ] **Step 4: Run tests → PASS; commit**
+- [x] **Step 4: Run tests → PASS; commit**
 
 ```bash
 git add cli/lib/core.js cli/test/core.test.js
@@ -277,7 +277,7 @@ git commit -m "feat(cli): event-type enum enforced at the single OBSERVED-layer 
 - Create: `cli/bin/house.js`
 - Test: `cli/test/slices.test.js`
 
-- [ ] **Step 1: Failing test (drive init through the lib so tests stay in-process)**
+- [x] **Step 1: Failing test (drive init through the lib so tests stay in-process)**
 
 ```js
 // cli/test/slices.test.js
@@ -302,7 +302,7 @@ test('init: scaffolds .house, docs/slices, gitattributes union-merge, gitignore 
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement `init` in `cli/lib/slices.js`**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement `init` in `cli/lib/slices.js`**
 
 ```js
 // cli/lib/slices.js
@@ -326,7 +326,7 @@ export function init(dir) {
 }
 ```
 
-- [ ] **Step 4: Wire the CLI entry with a dispatch table**
+- [x] **Step 4: Wire the CLI entry with a dispatch table**
 
 ```js
 #!/usr/bin/env node
@@ -367,7 +367,7 @@ if (!commands[cmd]) { console.error(`usage: house <${Object.keys(commands).join(
 try { commands[cmd](); } catch (e) { console.error(`house ${cmd}: ${e.message}`); process.exit(1); }
 ```
 
-- [ ] **Step 5: Run tests → the init test PASSES (derive/validate imports may need empty stubs — create `cli/lib/derive.js` and `cli/lib/validate.js` exporting empty functions now, filled in Tasks 7–10). Commit.**
+- [x] **Step 5: Run tests → the init test PASSES (derive/validate imports may need empty stubs — create `cli/lib/derive.js` and `cli/lib/validate.js` exporting empty functions now, filled in Tasks 7–10). Commit.**
 
 ```bash
 git add cli/bin/house.js cli/lib/slices.js cli/lib/derive.js cli/lib/validate.js cli/test/slices.test.js
@@ -380,7 +380,7 @@ git commit -m "feat(cli): house init + command dispatch skeleton"
 - Modify: `cli/lib/slices.js`, `cli/test/slices.test.js`
 - Create: `cli/templates/spec.md`, `cli/templates/adr.md`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 test('mint: allocates 0001, 0002… scanning slices dir; slugifies; scaffolds dir + manifest + spec; emits slice.created', () => {
@@ -408,7 +408,7 @@ test('mint --adr: allocates in docs/adr with its own series, MADR-lite frontmatt
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // append to cli/lib/slices.js
@@ -497,7 +497,7 @@ superseded_by: null
 <!-- how a health sweep would check the code still obeys this -->
 ```
 
-- [ ] **Step 4: Run tests → PASS.  Step 5: Commit**
+- [x] **Step 4: Run tests → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/slices.js cli/templates/ cli/test/slices.test.js
@@ -509,7 +509,7 @@ git commit -m "feat(cli): house new — mkdir-locked monotonic allocator for sli
 **Files:**
 - Modify: `cli/lib/slices.js`, `cli/test/slices.test.js`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 test('recordGate: writes gates/<name>.yaml + gate.recorded event; rejects unknown gate/verdict', () => {
@@ -533,7 +533,7 @@ test('emit: house event passes through with slice + parsed payload', () => {
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // append to cli/lib/slices.js
@@ -567,7 +567,7 @@ export function emit(root, type, args) {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.  Step 5: Commit**
+- [x] **Step 4: Run → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/slices.js cli/test/slices.test.js
@@ -579,7 +579,7 @@ git commit -m "feat(cli): gate records + generic event emit — an unrecorded ga
 **Files:**
 - Modify: `cli/lib/slices.js`, `cli/test/slices.test.js`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 test('task done: runs --evidence-cmd, records exit/summary, flips state; REFUSES on nonzero exit', () => {
@@ -611,7 +611,7 @@ test('task block: requires a note', () => {
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // append to cli/lib/slices.js
@@ -642,7 +642,7 @@ export function taskCmd(root, action, taskId, args) {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.  Step 5: Commit**
+- [x] **Step 4: Run → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/slices.js cli/test/slices.test.js
@@ -654,7 +654,7 @@ git commit -m "feat(cli): evidence-gated task ticks — the CLI runs the verify 
 **Files:**
 - Modify: `cli/lib/slices.js`, `cli/test/slices.test.js`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 test('setState: legal transition writes manifest + event; illegal transition refused', () => {
@@ -688,7 +688,7 @@ test('setState: INCONCLUSIVE merge-gate is NOT a pass (fail-closed)', () => {
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // append to cli/lib/slices.js
@@ -712,7 +712,7 @@ export function setState(root, id, to, args) {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.  Step 5: Commit**
+- [x] **Step 4: Run → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/slices.js cli/test/slices.test.js
@@ -724,7 +724,7 @@ git commit -m "feat(cli): state-transition guard — forward motion requires non
 **Files:**
 - Create: `cli/lib/derive.js` (replace stub), `cli/test/derive.test.js`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 // cli/test/derive.test.js
@@ -780,7 +780,7 @@ test('status --json: one line per slice with state + progress', () => {
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // cli/lib/derive.js
@@ -827,7 +827,7 @@ export function next(root, args) {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.  Step 5: Commit**
+- [x] **Step 4: Run → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/derive.js cli/test/derive.test.js
@@ -839,7 +839,7 @@ git commit -m "feat(cli): derived layer — deterministic index, status/list/nex
 **Files:**
 - Create: `cli/lib/validate.js` (replace stub), `cli/test/validate.test.js`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```js
 // cli/test/validate.test.js
@@ -893,7 +893,7 @@ test('validate --strict: NEEDS CLARIFICATION blocks (but not inside HTML comment
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // cli/lib/validate.js
@@ -959,7 +959,7 @@ export function validate(root, args) {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.  Step 5: Commit**
+- [x] **Step 4: Run → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/validate.js cli/test/validate.test.js
@@ -971,7 +971,7 @@ git commit -m "feat(cli): house validate — the linter the doctrine allowlist n
 **Files:**
 - Modify: `cli/lib/derive.js`, `cli/test/derive.test.js`
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 ```js
 test('render dev-state: generated top from index; hand-authored block between markers preserved', () => {
@@ -995,7 +995,7 @@ test('render dev-state: REFUSES when hand-authored content sits outside the manu
 });
 ```
 
-- [ ] **Step 2: Run → FAIL.  Step 3: Implement**
+- [x] **Step 2: Run → FAIL.  Step 3: Implement**
 
 ```js
 // append to cli/lib/derive.js
@@ -1026,7 +1026,7 @@ export function renderDevState(root) {
 }
 ```
 
-- [ ] **Step 4: Run → PASS.  Step 5: Commit**
+- [x] **Step 4: Run → PASS.  Step 5: Commit**
 
 ```bash
 git add cli/lib/derive.js cli/test/derive.test.js
@@ -1039,7 +1039,7 @@ git commit -m "feat(cli): dev-state as a generated projection with a preserved m
 - Create: `cli/README.md`
 - Repo effects: `.house/`, `docs/slices/0001-*/`, `.gitattributes`, `.gitignore`
 
-- [ ] **Step 1: Link + init + smoke the real repo**
+- [x] **Step 1: Link + init + smoke the real repo**
 
 ```bash
 cd cli && npm link && cd ..
@@ -1049,7 +1049,7 @@ house status
 ```
 Expected: `0001-house-v2-s2-skills-rewrite  [idea]  0/0  house v2 S2 — skills rewrite`
 
-- [ ] **Step 2: Spawn-based CLI smoke test (exit-code contract)**
+- [x] **Step 2: Spawn-based CLI smoke test (exit-code contract)**
 
 ```js
 // cli/test/cli.test.js
@@ -1083,14 +1083,14 @@ test('cli: exit 2 outside a repo + on unknown cmd; 0 on init/new/status; 1 on va
 
 Run: `cd cli && npm test` — Expected: PASS including the new spawn test.
 
-- [ ] **Step 3: Full-suite + validate green on the real repo**
+- [x] **Step 3: Full-suite + validate green on the real repo**
 
 Run: `cd cli && npm test && cd .. && house validate && house index && house render dev-state`
 Expected: all tests PASS · validate exit 0 · `.house/index.json` written · dev-state regenerated with manual block intact (FIRST wrap the existing Infra/Gotchas/Process sections in `<!-- house:manual -->` markers by hand — the renderer refuses to run while content sits outside them; that refusal firing here is the feature working).
 
-- [ ] **Step 4: Write `cli/README.md`** — one screen: install (`npm link`), the command table (one line each), the three-layer contract diagram, and "the files are the contract; the CLI is a convenience."
+- [x] **Step 4: Write `cli/README.md`** — one screen: install (`npm link`), the command table (one line each), the three-layer contract diagram, and "the files are the contract; the CLI is a convenience."
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add cli/README.md .house/events.jsonl .gitattributes .gitignore docs/slices/ docs/dev-state.md
@@ -1098,6 +1098,93 @@ git commit -m "feat(cli): dogfood — sdlc-skills initialized as the first house
 ```
 
 ---
+
+## As-built (reconciled 2026-07-28 — branch `feat/house-v2-s1-kernel-cli`, draft [PR #6](https://github.com/argent-gnome/sdlc-skills/pull/6))
+
+All 11 tasks were implemented in order, TDD, and every step above ran — the checkboxes are ticked as-built.
+Apart from the one deviation below, every file was implemented exactly as this plan's literal code specified.
+
+### Deviation D1 — the test script (Task 1, Step 1)
+
+The plan specifies `scripts.test="node --test test/"`. **Under Node 26** (this machine's runtime, `v26.0.0`) a
+bare directory argument to `node --test` is no longer accepted — it is resolved as a module and the run dies
+with `Error: Cannot find module '…/cli/test'` before a single test executes.
+
+**Shipped instead:** `"test": "node --test test/*.test.js"` (unquoted, so the *shell* expands the glob and
+the script does not depend on Node's own `--test` glob support, which postdates the plan's Node ≥ 20 floor). It runs the whole suite correctly, and it has
+the side benefit of not treating `test/helpers.js` (a fixture module, not a test file) as a test. Every
+`npm test` invocation named elsewhere in this plan works unchanged. No test, assertion, or behaviour changed —
+this is a runner-invocation fix, not a scope or contract change.
+
+### Additions beyond the plan's literal file list
+
+Two small files the plan did not enumerate, both hygiene rather than behaviour:
+
+- **`cli/.gitignore`** containing `node_modules/`. The plan installs `js-yaml` (Task 1, Step 1) but never says
+  to ignore the installed dependency; without this file the whole `node_modules/` tree shows up as committable.
+- **The root `.gitignore` gained `.claude/worktrees/`** alongside the `.house/index.json` line that `house init`
+  writes. This build's own worktree lives under `.claude/worktrees/`, and would otherwise show as untracked
+  noise in every `git status` on the repo. `docs/health/.gitkeep` was also created — a scaffold directory the
+  doctrine's doc-model expects that the repo was missing.
+
+### Deviation D2 — the self-review found a real bug in the plan's literal `renderDevState` code
+
+The plan's Task 10 code was implemented verbatim and its tests passed — but the shipped renderer **silently
+dropped hand-authored content appended after the closing `<!-- /house:manual -->` marker**, which is precisely
+the loss MF6 was folded in to prevent. Cause: the leftover probe removed the manual block *before* stripping
+the generated one, leaving the generated block's lookahead with only the end-anchor to stop at, so it swallowed
+everything past the closing marker. The plan's own test only covered the never-yet-rendered file, so the
+mutant "delete the refusal entirely" was killed while the real bug survived.
+
+**Resolution:** the MF6 *commitment* outranks the plan's literal code. The probe now strips the generated
+block first (while the opening marker is still present to anchor its lookahead), and two tests cover the
+append-after-render and wedged-between-title-and-generated cases. Verified end-to-end through the installed
+binary: `house render dev-state` exits 1 and the content is still on disk.
+
+### Other self-review fixes folded (not re-waived)
+
+Crash paths and undefended rules found by the same pass, all fixed in
+`fix(cli): close self-review findings`:
+
+- A placeholder `tasks.yaml` with no `tasks:` key — exactly what the shaper writes at handoff per
+  interpretation #1 — crashed `index`/`status`/`next`/`render` simultaneously; a stray `.DS_Store` in
+  `gates/` did the same. Both now degrade gracefully.
+- `execSync`'s default 1MB `maxBuffer` made a **passing** evidence command report as `exit null` and the tick
+  be refused — any real `npm test`/`pytest -v` hits this. Raised to 64MB with a 15-minute timeout.
+- `readEvents` threw on one torn JSONL line (an interrupted append, or a `merge=union` artifact), making the
+  entire OBSERVED log unreadable. Unparseable lines are now skipped, never fatal.
+- A missing `--slice` surfaced as a path `TypeError`; malformed ADR frontmatter threw out of `validate`
+  instead of being reported as a finding.
+- `FREE_FORM` was an enum-shaped list restated in `slices.js`, against this plan's header rule that
+  `enums.yaml` is where "every other file imports it, nothing restates it." Moved to `free_form_events` in
+  the schema with a subset test. The *concept* stays separate — advisory A2 is about which types `house
+  event` may write, which is not the same set as which types exist.
+- Rules asserted in code but undefended by the suite now have discriminating tests: the declared `verify:`
+  command is actually executed (MF1's locked fallback), `GO_WITH_FIXES` passes `plan_check` (MF2 pinned on
+  both sides), `required_gates.shipped`, index sort order and top-level key set, same-millisecond ULID
+  ordering, the shipped-slice validate rules, id/dirname mismatch, orphan directories, `@import` mockup refs.
+- `house render <anything>` rendered dev-state regardless of the subcommand; a title that slugs to nothing
+  (`house new "???"`) minted the id `0001-`. Both refused now.
+
+Test count went from the plan's 25 to **43**. No spec rule changed — every fix either restores a commitment
+the plan already made or defends one the suite was not defending.
+
+### Spec drift observed — flagged, NOT edited
+
+Three places where the approved spec (`docs/superpowers/specs/2026-07-28-house-v2-design.md`) says something
+the shipped S1 code does not do. None are S1 scope errors; each is recorded here for the S2 pass to resolve —
+the spec was deliberately left unchanged rather than retro-fitted to the code:
+
+1. **`slice.merged` vs `slice.shipped`.** Spec §3.5 names **`slice.merged`** as "the single event that flips
+   spec state to shipped". The shipped `schema/enums.yaml` event list (locked at planning, plan-check approved)
+   carries **`slice.shipped`** and has no `slice.merged`. The merge-triggered projection itself is S2/S3 work
+   (it needs the hooks + `gh pr` facts), so nothing is broken today — but the event name has to be reconciled
+   in one direction before that projection is written.
+2. **The roadmap contract is not linted.** Spec §3.5 gives `docs/roadmap.md` a light contract ("backlog items
+   may carry `[NNNN]` ids; `house validate` checks only that referenced ids exist"). `lib/validate.js` ships no
+   roadmap rule. Already recorded as deferred in the Self-Review below; noted here so it is not lost.
+3. **ADR template has no `status:`.** Spec §3.3 requires every artifact to carry both a free-text `status:` and
+   the closed `state:` enum. `templates/spec.md` carries both; `templates/adr.md` carries only `state:`.
 
 ## Acceptance (S1 done when all true)
 
