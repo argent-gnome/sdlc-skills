@@ -8,6 +8,11 @@ import * as hooks from '../lib/hooks.js';
 import { validate } from '../lib/validate.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
+if (cmd === '--version') {                        // pre-dispatch: must work outside a house repo
+  const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  console.log(pkg.version);
+  process.exit(0);
+}
 const args = {};                                  // --k v / --k / positionals
 const pos = [];
 for (let i = 0; i < rest.length; i++) {
