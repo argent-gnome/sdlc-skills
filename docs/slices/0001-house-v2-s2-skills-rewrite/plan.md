@@ -1568,6 +1568,32 @@ One ledger row resolves to a slightly different place than the ledger's wording:
 (read-doctrine-on-demand) lives in each skill's doctrine pointer block, immediately above §1 Preflight**,
 rather than inside §1 itself — present in all three files, as required.
 
+## As-built — Unit 3, T17 (partial — reconciled 2026-07-28; T18 still open)
+
+T17 is **done** (evidence: `house validate --strict` exit 0, recorded by `house task done`; suite at
+67/67). The smoke slice minted as `0002-house-version-flag` ran the whole arc through the three v2 skills:
+shaped by `house2-shaper` (spec_review halt → user approval → plan + plan-check GO_WITH_FIXES → kickoff v1
+→ `ready`), then `building` → `gating` (merge gate **GO, zero findings**, reviewer re-ran everything
+personally) → `live_check` (user-approved) → `shipped`. Deviations and drift, recorded rather than
+absorbed:
+
+- **Unit 03's record is finalized `BLOCKED`, yet T17 is ticked.** The unit halted correctly at the 0002
+  spec_review hard gate and was finalized BLOCKED (`units/03-report.md`). After the user approved the
+  gate, the orchestrator drove the smoke to `shipped` and ticked T17 **inline** — no re-dispatch, since
+  the unit was orchestrator-driven by design. Recorded as a `deviation.raised` event on this slice; the
+  BLOCKED finalize stands as the honest record of the halt, not an error to rewrite.
+- **T17 Step 2's "merge it," as-built: no PR.** The smoke branch `slice/0002-house-version-flag` was
+  ff-merged into this slice's branch at `2c2d16b`, so the smoke's two-file diff rides THIS slice's
+  merge-gate diff; 0002's own merge gate ran per-slice on its records (base_sha `d023fc1`).
+- **T17 Step 4 did not happen: no `artifact.written` smoke-evidence event exists on this slice.** The
+  planned attach (`house event artifact.written --slice 0001-house-v2-s2-skills-rewrite --payload
+  '{"kind":"smoke-evidence","slice":"0002-house-version-flag"}'`) has no matching line in
+  `.house/events.jsonl` — the nearest records are U3-T17's `task.done` and the `deviation.raised` that
+  names 0002. **Open for the orchestrator to emit before the S2 merge gate** (OBSERVED is writer-owned; a
+  doc reconcile cannot append events).
+- Three `work.discovered` findings from the smoke were recorded on 0002 at gating and routed to the
+  roadmap backlog (see `docs/roadmap.md`).
+
 ## Plan-check (2026-07-28): GO_WITH_FIXES — all folded
 
 Must-fix folded: MF1 GEN_HEADERS whitelist trimmed to generator-only · MF2 shared run()/yaml helpers in

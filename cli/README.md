@@ -81,6 +81,7 @@ reports the problem instead of throwing.
 | `house validate [--strict] [--json]` | Lint the repo: enum drift, orphan files, skips without reasons, done-without-evidence, external mockup refs (incl. style-attr `url()`), ADR states, `blocked_on` shape, `tasks.yaml` structure, kickoff-brief structure, roadmap `[NNNN]` refs pointing at slices that exist. `--strict` also blocks on `[NEEDS CLARIFICATION]`. |
 | `house render dev-state` | Regenerate the Active/In-flight/Slated/Parked/Done half of `docs/dev-state.md`. |
 | `house hook <event>` | Hook entry point (stdin JSON → stdout JSON) — see below. |
+| `house --version` | Print `cli/package.json`'s `version` to stdout, exit 0. Pre-dispatch: works from any cwd, house repo or not (slice `0002`). |
 
 **Exit codes:** `0` clean · `1` command error or red `validate` · `2` usage error / not a house repo.
 `house hook` is the exception: it **never** exits non-zero and prints nothing outside a house repo.

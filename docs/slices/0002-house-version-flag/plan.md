@@ -120,3 +120,21 @@ Reconciled alongside this section: the spec's own frontmatter still read `status
 written by `house artifact` and backed by an `artifact.state_changed` event) was the correct layer, so the
 DECLARED frontmatter was brought up to it, matching slice `0001`'s approved-spec convention. This plan had
 no frontmatter block at all; one was added in the same shape.
+
+## As-built — gating → shipped (reconciled 2026-07-28)
+
+The slice ran the full back half in-session: `gating` (merge gate **GO**, `gates/merge_gate.yaml` — all
+four lenses, **zero findings**; the reviewer re-ran `cd cli && npm test` 67/67, `house validate` exit 0,
+and the manual `--version` checks in-repo, out-of-repo, and the `bogus` exit-2 path personally) →
+`live_check` (halted at `gate.requested` for the user; **approved**, `gates/live_check.yaml` — the user ran
+`house --version` live: stdout `0.1.0`, no stderr) → `shipped` (`slice.shipped` recorded).
+
+**Merge shape (as-built): no PR.** `pr: null` is correct, not an omission — the branch
+`slice/0002-house-version-flag` was fast-forward-merged into `slice/0001-house-v2-s2-skills-rewrite` at
+`2c2d16b`, so this slice's two-file diff rides S2's merge-gate diff to `main` while its own gates ran
+per-slice on this slice's records (base_sha `d023fc1` on the manifest bounds the reviewed diff).
+
+At gating, three `work.discovered` findings from the smoke were recorded on this slice and routed to the
+roadmap backlog ("Backlog — discovered in the `[0002]` smoke run" in `docs/roadmap.md`): the validator
+artifact/frontmatter drift cross-check, `house gate --payload` being dropped from the events.jsonl copy of
+`gate.recorded`, and `house validate --strict`'s lack of per-slice scoping. None block anything here.
