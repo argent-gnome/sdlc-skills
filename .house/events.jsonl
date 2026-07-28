@@ -56,3 +56,5 @@
 {"id":"01KYNH0K6DR62A6B2K530RDFB9","ts":"2026-07-28T23:30:00.013Z","event":"gate.recorded","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"merge_gate","verdict":"GO"}}
 {"id":"01KYNH1TMJA6NFPFNC893756D7","ts":"2026-07-28T23:30:40.402Z","event":"slice.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"to":"live_check"}}
 {"id":"01KYNH1TP6K7FJXQJX9BRCNVT6","ts":"2026-07-28T23:30:40.454Z","event":"gate.requested","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"live_check","note":"awaiting user confirmation of house --version in the real environment"}}
+{"id":"01KYNH7MFQ2SQR2Y1V8916RMP0","ts":"2026-07-28T23:33:50.711Z","event":"gate.recorded","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"live_check","verdict":"approved"}}
+{"id":"01KYNH7MFS93D05P252N778A7A","ts":"2026-07-28T23:33:50.713Z","event":"slice.unblocked","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"live_check","via":"gate.recorded"}}
