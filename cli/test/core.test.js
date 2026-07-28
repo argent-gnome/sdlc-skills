@@ -9,6 +9,18 @@ test('ulid: 26 chars, Crockford base32, monotonic-ish lexical order', () => {
   assert.ok(b >= a);
 });
 
+test('ulid: same-millisecond ids are STRICTLY increasing (a purely random suffix would not be)', () => {
+  // pin the clock so both ids share a timestamp prefix — this is the case where a naive
+  // random-suffix implementation orders events wrongly ~50% of the time in the same tick
+  const t = 1753660800000;
+  const ids = Array.from({ length: 50 }, () => ulid(t));
+  assert.equal(new Set(ids).size, 50, 'same-ms ids must be unique');
+  assert.deepEqual(ids, [...ids].sort(), 'same-ms ids must sort into emission order');
+  assert.equal(ids[0].slice(0, 10), ids[49].slice(0, 10), 'same-ms ids share the time prefix');
+  for (const id of ids) assert.match(id, /^[0-9A-HJKMNP-TV-Z]{26}$/);
+  assert.ok(ulid(t + 1) > ids[49], 'a later millisecond still sorts after');
+});
+
 test('frontmatter: round-trips YAML + body', () => {
   const doc = '---\nid: "0007"\nstate: draft\n---\n\n# Title\nbody\n';
   const { data, body } = parseFrontmatter(doc);

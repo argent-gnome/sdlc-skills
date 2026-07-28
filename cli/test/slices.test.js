@@ -121,3 +121,15 @@ test('setState: INCONCLUSIVE merge-gate is NOT a pass (fail-closed)', () => {
   recordGate(repo, 'merge_gate', { slice: id, verdict: 'INCONCLUSIVE', by: 'agent' });
   assert.throws(() => setState(repo, id, 'live_check', {}), /not a passing verdict/);
 });
+
+test('setState: shipped also demands the merge_gate record — the rigor dial can never skip it', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing8', { rigor: 'patch' });             // lowest non-decision tier
+  recordGate(repo, 'spec_review', { slice: id, verdict: 'approved', by: 'human' });
+  recordGate(repo, 'plan_check', { slice: id, verdict: 'GO', by: 'agent' });
+  setState(repo, id, 'ready', {}); setState(repo, id, 'building', {}); setState(repo, id, 'gating', {});
+  assert.throws(() => setState(repo, id, 'shipped', {}), /missing gate record for 'shipped': merge_gate/);
+  recordGate(repo, 'merge_gate', { slice: id, verdict: 'GO', by: 'reviewer' });
+  setState(repo, id, 'shipped', {});
+  assert.equal(readYaml(join(repo, `docs/slices/${id}/slice.yaml`)).state, 'shipped');
+});

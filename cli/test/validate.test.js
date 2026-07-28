@@ -46,3 +46,45 @@ test('validate --strict: NEEDS CLARIFICATION blocks (but not inside HTML comment
   writeFileSync(join(repo, 'docs/adr/0001-x.md'), '---\nid: "0001"\nkind: adr\nstate: vibing\n---\n# ADR-0001 — x\n');
   assert.match(validate(repo, {}).map(e => e.msg).join(' '), /unknown ADR state/);
 });
+
+test('validate: a shipped slice needs a merge_gate record and (above patch tier) a retro', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'shipping', {});                          // rigor defaults to 'slice'
+  const dir = join(repo, 'docs/slices', id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.state = 'shipped';
+  writeYaml(join(dir, 'slice.yaml'), man);
+  let msgs = validate(repo, {}).map(e => e.msg).join(' | ');
+  assert.match(msgs, /shipped without a merge_gate record/);
+  assert.match(msgs, /shipped slice-tier without retro\.md/);
+
+  mkdirSync(join(dir, 'gates'), { recursive: true });
+  writeYaml(join(dir, 'gates/merge_gate.yaml'), { gate: 'merge_gate', verdict: 'GO' });
+  writeFileSync(join(dir, 'retro.md'), '# retro\n');
+  assert.deepEqual(validate(repo, {}).filter(e => e.level === 'error'), []);
+
+  // patch tier is exempt from the retro rule ONLY — the merge_gate record is never optional
+  const id2 = mint(repo, 'patching', { rigor: 'patch' });
+  const dir2 = join(repo, 'docs/slices', id2);
+  const man2 = readYaml(join(dir2, 'slice.yaml'));
+  man2.state = 'shipped';
+  writeYaml(join(dir2, 'slice.yaml'), man2);
+  msgs = validate(repo, {}).map(e => e.msg).join(' | ');
+  assert.match(msgs, /shipped without a merge_gate record/);
+  assert.doesNotMatch(msgs, /shipped slice-tier without retro\.md/);
+});
+
+test('validate: blocked/skipped tasks need a note or reason', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'noteless', {});
+  const dir = join(repo, 'docs/slices', id);
+  writeYaml(join(dir, 'tasks.yaml'), { tasks: [
+    { id: 't1', title: 'a', state: 'blocked', depends_on: [] },                       // no note
+    { id: 't2', title: 'b', state: 'skipped', depends_on: [] },                       // no reason
+    { id: 't3', title: 'c', state: 'blocked', note: 'upstream flake', depends_on: [] },
+    { id: 't4', title: 'd', state: 'skipped', skip_reason: 'obsolete', depends_on: [] } ] });
+  const msgs = validate(repo, {}).filter(e => /without a note\/reason/.test(e.msg)).map(e => e.msg);
+  assert.equal(msgs.length, 2);                                   // only t1 and t2 — a blanket rule would flag 4
+  assert.match(msgs.join(' '), /task t1: blocked/);
+  assert.match(msgs.join(' '), /task t2: skipped/);
+});
