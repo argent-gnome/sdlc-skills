@@ -107,3 +107,22 @@ export function taskCmd(root, action, taskId, args) {
   } else throw new Error(`unknown task action: ${action}`);
   writeYaml(file, doc);
 }
+
+export function setState(root, id, to, args) {
+  const { slice_states, state_transitions, required_gates, passing_verdicts } = loadEnums();
+  if (!slice_states.includes(to)) throw new Error(`unknown state: ${to}`);
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const allowed = state_transitions[man.state] ?? [];
+  if (!allowed.includes(to)) throw new Error(`illegal transition: ${man.state} → ${to}`);
+  for (const gate of required_gates[to] ?? []) {
+    const gf = join(dir, 'gates', `${gate}.yaml`);
+    if (!existsSync(gf)) throw new Error(`missing gate record for '${to}': ${gate} (an unrecorded gate is an unpassed gate)`);
+    const rec = readYaml(gf);
+    if (!passing_verdicts[gate].includes(rec.verdict))          // fail-closed: only an explicit pass advances
+      throw new Error(`gate ${gate}: '${rec.verdict}' is not a passing verdict`);
+  }
+  man.state = to;
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'slice.state_changed', { slice: id, actor: args.actor ?? 'agent', payload: { to } });
+}

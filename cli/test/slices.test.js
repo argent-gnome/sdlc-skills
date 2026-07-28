@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { init, mint, recordGate, emit, taskCmd } from '../lib/slices.js';
+import { init, mint, recordGate, emit, taskCmd, setState } from '../lib/slices.js';
 import { readYaml, writeYaml, readEvents, parseFrontmatter } from '../lib/core.js';
 import { mkTmpRepo } from './helpers.js';
 
@@ -90,4 +90,34 @@ test('task block: requires a note', () => {
   assert.throws(() => taskCmd(repo, 'block', 't1', { slice: id }), /note required/);
   taskCmd(repo, 'block', 't1', { slice: id, note: 'flaky upstream' });
   assert.equal(readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks[0].state, 'blocked');
+});
+
+test('setState: legal transition writes manifest + event; illegal transition refused', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing5', {});                              // state: shaping
+  assert.throws(() => setState(repo, id, 'building', {}), /illegal transition/);   // shaping → building not allowed
+  assert.throws(() => setState(repo, id, 'ready', {}), /missing gate/);            // needs spec_review + plan_check
+  recordGate(repo, 'spec_review', { slice: id, verdict: 'approved', by: 'human' });
+  recordGate(repo, 'plan_check', { slice: id, verdict: 'GO', by: 'agent' });
+  setState(repo, id, 'ready', {});
+  assert.equal(readYaml(join(repo, `docs/slices/${id}/slice.yaml`)).state, 'ready');
+  assert.equal(readEvents(repo).at(-1).event, 'slice.state_changed');
+});
+
+test('setState: refused while a required gate holds a blocking verdict', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing6', {});
+  recordGate(repo, 'spec_review', { slice: id, verdict: 'approved', by: 'human' });
+  recordGate(repo, 'plan_check', { slice: id, verdict: 'NO_GO', by: 'agent' });
+  assert.throws(() => setState(repo, id, 'ready', {}), /not a passing verdict/);
+});
+
+test('setState: INCONCLUSIVE merge-gate is NOT a pass (fail-closed)', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing7', {});
+  recordGate(repo, 'spec_review', { slice: id, verdict: 'approved', by: 'human' });
+  recordGate(repo, 'plan_check', { slice: id, verdict: 'GO', by: 'agent' });
+  setState(repo, id, 'ready', {}); setState(repo, id, 'building', {}); setState(repo, id, 'gating', {});
+  recordGate(repo, 'merge_gate', { slice: id, verdict: 'INCONCLUSIVE', by: 'agent' });
+  assert.throws(() => setState(repo, id, 'live_check', {}), /not a passing verdict/);
 });
