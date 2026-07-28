@@ -3,7 +3,7 @@ id: 0002-house-version-flag
 title: house --version flag
 kind: slice
 rigor: patch
-state: shaping
+state: ready
 blocked_on: null
 appetite: 1 session
 created: '2026-07-28'
@@ -15,5 +15,27 @@ artifacts:
   spec:
     state: approved
     updated: '2026-07-28'
+  plan:
+    state: approved
+    updated: '2026-07-28'
 units: []
-kickoff: null
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+  scope_guards:
+    - NOT `-v` or `house version` aliases.
+    - NOT version output in `house status` / `house --help` / usage text.
+    - NOT any change to other commands' parsing or exit codes.
+    - NOT a general flag-parsing layer or a version constant in `cli/lib/`.
+  stakes: >-
+    Low. Worst plausible wrong turn is printing a version that drifts from cli/package.json (a
+    second source of truth) or breaking the unknown-command exit-2 contract that existing tests and
+    scripts rely on.
+  attended: false
+  plan_check_commitments:
+    - >-
+      Test asserts `--version` output/exit inside a house-tracked repo (spec R-1 scenario 1), not
+      only outside (plan_check GO_WITH_FIXES must-fix).
+  stack: node

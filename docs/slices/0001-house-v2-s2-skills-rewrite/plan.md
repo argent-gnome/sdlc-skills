@@ -1305,8 +1305,10 @@ idea/slice/decision needing shaping in a `.house/` repo". Then, in order:
    `house gate plan_check --slice <id> --verdict <GO|GO_WITH_FIXES|NO_GO> --payload '{"must_fix":[…],"advisory_folded":[…]}'`.
    A folded-in advisory is a commitment.
 9. **Handoff:** write the kickoff block (schema: `cli/schema/kickoff.yaml`) into `slice.yaml`, bump
-   `version` on every reissue; `house validate --strict` must be green (no `[NEEDS CLARIFICATION`
-   markers); `house state <id> ready`. Hand to a `house2-orchestrator` session.
+   `version` on every reissue; `house validate --strict` must be green (no `NEEDS CLARIFICATION`
+   markers — bracket omitted here so this mention does not trip the naive substring check in
+   `cli/lib/validate.js`, a false positive found by the 0002 smoke run); `house state <id> ready`.
+   Hand to a `house2-orchestrator` session.
 
 Keep-verbatim rules this file owns (from the R-11 ledger): session-shape economics · research-dispatch
 contract · brainstorm-cannot-be-a-subagent · read-doctrine-on-demand · folded-advisory-is-a-commitment ·

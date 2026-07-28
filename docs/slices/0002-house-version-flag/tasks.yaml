@@ -1,0 +1,5 @@
+tasks:
+  - id: T1
+    title: "house --version pre-dispatch flag: print cli/package.json version, exit 0 (R-1, R-2)"
+    state: todo
+    verify: cd cli && npm test

@@ -37,3 +37,10 @@
 {"id":"01KYNF3JJX2M91VAMVBR53SD7H","ts":"2026-07-28T22:56:40.541Z","event":"gate.recorded","slice":"0002-house-version-flag","actor":"user","payload":{"gate":"spec_review","verdict":"approved"}}
 {"id":"01KYNF3JJZC96PSBVDK4ESHQ7H","ts":"2026-07-28T22:56:40.543Z","event":"slice.unblocked","slice":"0002-house-version-flag","actor":"user","payload":{"gate":"spec_review","via":"gate.recorded"}}
 {"id":"01KYNF3JP3KTVN1648MEKB8JZD","ts":"2026-07-28T22:56:40.643Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"spec","from":"awaiting_review","to":"approved"}}
+{"id":"01KYNF93AVEGMSFFHQZ44DYQJG","ts":"2026-07-28T22:59:41.531Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"plan","from":"todo","to":"draft"}}
+{"id":"01KYNF93CDQYVRPSM7SV275JV7","ts":"2026-07-28T22:59:41.581Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"plan","from":"draft","to":"awaiting_review"}}
+{"id":"01KYNF9R6K4JRKXCE4G5A5AH8W","ts":"2026-07-28T23:00:02.899Z","event":"gate.recorded","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"plan_check","verdict":"GO_WITH_FIXES"}}
+{"id":"01KYNFAKQ524BXCR0D7XMD8J2K","ts":"2026-07-28T23:00:31.077Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"plan","from":"awaiting_review","to":"approved"}}
+{"id":"01KYNG07AFVYMRY181DR21TKDF","ts":"2026-07-28T23:12:19.279Z","event":"session.ended","actor":"hook","payload":{"session_id":"ecba9410-9e57-4e57-9e26-477e5b562b0f"}}
+{"id":"01KYNG07AJ3VQ06RM9RQXP5MM2","ts":"2026-07-28T23:12:19.282Z","event":"session.started","actor":"hook","payload":{"source":"clear","session_id":"bf9c65e2-d365-4671-9e7d-af50255fede5"}}
+{"id":"01KYNG2NZTM5FS3JRXJER3PMDJ","ts":"2026-07-28T23:13:39.834Z","event":"slice.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"to":"ready"}}
