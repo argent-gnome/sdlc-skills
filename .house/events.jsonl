@@ -9,3 +9,4 @@
 {"id":"01KYNBTNVBDT4CZ2CRD2G22CYF","ts":"2026-07-28T21:59:23.243Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T3","cmd":"cd cli && npm test"}}
 {"id":"01KYNBWBVF0JTF5FJR6KBHK3V6","ts":"2026-07-28T22:00:18.543Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T4","cmd":"cd cli && npm test"}}
 {"id":"01KYNBYV51YXDCBJ3KX9SBT10M","ts":"2026-07-28T22:01:39.745Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T5","cmd":"cd cli && npm test"}}
+{"id":"01KYNC0Y2ZTB6PPKP8XFPBSRR0","ts":"2026-07-28T22:02:48.287Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T6","cmd":"cd cli && npm test"}}

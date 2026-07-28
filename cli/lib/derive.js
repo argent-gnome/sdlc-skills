@@ -27,16 +27,23 @@ export function buildIndex(root) {
 export function writeIndex(root) {
   writeFileSync(join(root, '.house/index.json'), JSON.stringify(buildIndex(root), null, 2) + '\n');
 }
-export function status(root, args) {
+export function status(root, args, id = args?._id ?? null) {
   const idx = buildIndex(root);
-  if (args.json) return JSON.stringify({ slices: idx.slices.map(({ tasks, ...s }) => s) }, null, 2);
-  return idx.slices.map(s => `${s.id}  [${s.state}]  ${s.progress.done}/${s.progress.total}  ${s.title}` +
+  const picked = id ? idx.slices.filter(s => s.id === id) : idx.slices;
+  if (id && !picked.length) throw new Error(`no such slice: ${id}`);
+  if (args.json)                                                    // single-slice view keeps tasks; repo view drops them
+    return JSON.stringify({ slices: picked.map(({ tasks, ...s }) => id ? { ...s, tasks } : s) }, null, 2);
+  return picked.map(s => `${s.id}  [${s.state}]  ${s.progress.done}/${s.progress.total}  ${s.title}` +
     (s.blocked_on ? `  ⛔ ${s.blocked_on.gate ?? s.blocked_on}` : '')).join('\n') || '(no slices)';
 }
-export const list = status;                        // same projection; list keeps tasks out either way
+export const list = (root, args) => status(root, args, null);       // list stays the whole-repo projection
+
+const WORKABLE = ['shaping', 'ready', 'building', 'gating', 'live_check'];   // idea = pre-shaping, offers no work (A8)
 export function next(root, args) {
   const idx = buildIndex(root);
-  const ready = idx.slices.flatMap(s => (s.tasks ?? [])
+  const pool = idx.slices.filter(s => WORKABLE.includes(s.state))   // parked/abandoned never offer work
+    .filter(s => !args.slice || s.id === args.slice);
+  const ready = pool.flatMap(s => (s.tasks ?? [])
     .filter(t => t.state === 'todo' && (t.depends_on ?? []).every(d => s.tasks.find(x => x.id === d)?.state === 'done'))
     .map(t => ({ slice: s.id, id: t.id, title: t.title })));
   return args.json ? JSON.stringify(ready, null, 2) : ready.map(t => `${t.slice} ${t.id} ${t.title}`).join('\n') || '(nothing ready)';

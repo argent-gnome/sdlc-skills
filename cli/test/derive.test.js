@@ -169,3 +169,30 @@ test('log: filters by slice, surfaces skip count, --json shape', () => {
   assert.equal(j.skipped, 1);
   assert.ok(Array.isArray(j.events));
 });
+
+test('status <id>: single-slice JSON includes tasks; unknown id refuses', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Solo');
+  run(dir, 'new', 'Noise');
+  const j = JSON.parse(run(dir, 'status', '0001-solo', '--json').out);
+  assert.equal(j.slices.length, 1);
+  assert.equal(j.slices[0].id, '0001-solo');
+  assert.ok('tasks' in j.slices[0]);                               // single-slice view carries tasks
+  assert.equal(run(dir, 'status', '0009-ghost').code, 1);
+});
+
+test('next --slice: only the named slice; excludes parked/abandoned slices repo-wide', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Busy');
+  run(dir, 'new', 'Idle');
+  const tasks = 'tasks:\n  - id: T1\n    title: do busy thing\n    state: todo\n    verify: "true"\n';
+  writeFileSync(join(dir, 'docs/slices/0001-busy/tasks.yaml'), tasks);
+  writeFileSync(join(dir, 'docs/slices/0002-idle/tasks.yaml'),
+    'tasks:\n  - id: T1\n    title: do idle thing\n    state: todo\n    verify: "true"\n');
+  run(dir, 'state', '0002-idle', 'parked');
+  const scoped = run(dir, 'next', '--slice', '0001-busy');
+  assert.match(scoped.out, /do busy thing/);
+  assert.doesNotMatch(scoped.out, /idle/);
+  const all = run(dir, 'next');
+  assert.doesNotMatch(all.out, /idle/);                            // parked never surfaces as ready work
+});

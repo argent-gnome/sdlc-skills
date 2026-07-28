@@ -30,12 +30,16 @@ const commands = {
   unit:    () => { const r = slices.unitCmd(need(root), pos[0], pos[1], pos[2], args); if (r) console.log(r); },
   pr:      () => slices.prCmd(need(root), pos[0], args),
   log:     () => console.log(derive.log(need(root), args)),
-  status:  () => console.log(derive.status(need(root), args)),
+  status:  () => console.log(derive.status(need(root), args, pos[0] ?? null)),
   list:    () => console.log(derive.list(need(root), args)),
   next:    () => console.log(derive.next(need(root), args)),
   index:   () => derive.writeIndex(need(root)),
-  validate: () => { const errs = validate(need(root), args); errs.forEach(e => console.error(`${e.level}: ${e.path}: ${e.msg}`));
-                    process.exit(errs.some(e => e.level === 'error') ? 1 : 0); },
+  validate: () => {
+    const errs = validate(need(root), args);
+    if (args.json) console.log(JSON.stringify({ errors: errs.filter(e => e.level === 'error').length, findings: errs }, null, 2));
+    else errs.forEach(e => console.error(`${e.level}: ${e.path}: ${e.msg}`));
+    process.exit(errs.some(e => e.level === 'error') ? 1 : 0);
+  },
   render:  () => { if (pos[0] !== 'dev-state') throw new Error('usage: house render dev-state'); derive.renderDevState(need(root)); },
 };
 if (!commands[cmd]) { console.error(`usage: house <${Object.keys(commands).join('|')}>`); process.exit(2); }

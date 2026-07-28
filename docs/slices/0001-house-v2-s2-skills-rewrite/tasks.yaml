@@ -54,10 +54,15 @@ tasks:
       at: '2026-07-28T22:01:39.744Z'
   - id: U1-T6
     title: read side — status <id> --json, next --slice, validate --json
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T5
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1789.482125
+      at: '2026-07-28T22:02:48.286Z'
   - id: U1-T7
     title: >-
       validate ride-alongs — roadmap lint, style url(), tasks.yaml structure, blocked_on rule, ADR
