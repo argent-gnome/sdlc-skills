@@ -223,3 +223,20 @@ test('unblock: manual clear; refuses when not blocked; block refuses unknown gat
   const man = readYaml(join(dir, 'docs/slices/0001-blocky/slice.yaml'));
   assert.equal(man.blocked_on, null);
 });
+
+test('artifact: walks the state machine, refuses illegal jumps, records skip reasons', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Arty');
+  // spec R-2 scenario: todo → approved is an illegal jump, named with the legal transitions
+  const bad = run(dir, 'artifact', '0001-arty', 'spec', 'approved');
+  assert.equal(bad.code, 1);
+  assert.match(bad.out, /illegal transition/);
+  assert.equal(run(dir, 'artifact', '0001-arty', 'spec', 'draft').code, 0);
+  assert.equal(run(dir, 'artifact', '0001-arty', 'spec', 'awaiting_review').code, 0);
+  assert.equal(run(dir, 'artifact', '0001-arty', 'spec', 'approved').code, 0);
+  const man = readYaml(join(dir, 'docs/slices/0001-arty/slice.yaml'));
+  assert.equal(man.artifacts.spec.state, 'approved');
+  assert.equal(run(dir, 'artifact', '0001-arty', 'mockups', 'skipped').code, 1);   // skip needs --reason
+  assert.equal(run(dir, 'artifact', '0001-arty', 'mockups', 'skipped', '--reason', 'CLI slice, no UI').code, 0);
+  assert.match(readFileSync(join(dir, '.house/events.jsonl'), 'utf8'), /"artifact\.state_changed"/);
+});

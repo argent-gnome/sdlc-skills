@@ -99,6 +99,25 @@ export function block(root, id, args) {
     payload: { gate: args.gate, note: man.blocked_on.note } });
 }
 
+export function artifactCmd(root, id, name, to, args) {
+  if (!name || !to) throw new Error('usage: house artifact <slice-id> <name> <state> [--reason …]');
+  const { artifact_states, artifact_transitions } = loadEnums();
+  if (!artifact_states.includes(to)) throw new Error(`unknown artifact state: ${to}`);
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const cur = man.artifacts?.[name]?.state ?? 'todo';
+  const allowed = artifact_transitions[cur] ?? [];
+  if (!allowed.includes(to))
+    throw new Error(`artifact '${name}': illegal transition ${cur} → ${to} (allowed: ${allowed.join(', ') || 'none'})`);
+  if (to === 'skipped' && !args.reason) throw new Error(`artifact '${name}': skip requires --reason`);
+  man.artifacts = man.artifacts ?? {};
+  man.artifacts[name] = { ...(man.artifacts[name] ?? {}), state: to,
+    ...(args.reason ? { skip_reason: args.reason } : {}), updated: new Date().toISOString().slice(0, 10) };
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'artifact.state_changed', { slice: id, actor: args.actor ?? 'agent',
+    payload: { artifact: name, from: cur, to } });
+}
+
 export function unblock(root, id, args) {
   const dir = sliceDir(root, id);
   const man = readYaml(join(dir, 'slice.yaml'));

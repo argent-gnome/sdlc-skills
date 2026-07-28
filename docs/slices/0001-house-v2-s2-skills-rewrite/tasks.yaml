@@ -21,10 +21,15 @@ tasks:
       at: '2026-07-28T21:58:37.631Z'
   - id: U1-T3
     title: house artifact — artifact state machine writer
-    state: todo
+    state: done
     verify: cd cli && npm test
     depends_on:
       - U1-T2
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 977.251459
+      at: '2026-07-28T21:59:23.242Z'
   - id: U1-T4
     title: house unit — dispatch/heartbeat/finalize + incremental reports
     state: todo

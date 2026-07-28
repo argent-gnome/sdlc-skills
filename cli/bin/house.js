@@ -26,6 +26,7 @@ const commands = {
   state:   () => slices.setState(need(root), pos[0], pos[1], args),
   block:   () => slices.block(need(root), pos[0], args),
   unblock: () => slices.unblock(need(root), pos[0], args),
+  artifact: () => slices.artifactCmd(need(root), pos[0], pos[1], pos[2], args),
   status:  () => console.log(derive.status(need(root), args)),
   list:    () => console.log(derive.list(need(root), args)),
   next:    () => console.log(derive.next(need(root), args)),
