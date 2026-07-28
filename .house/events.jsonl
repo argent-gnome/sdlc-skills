@@ -28,3 +28,8 @@
 {"id":"01KYNEJ20WXQXZ9MPCKQ8M1ZN7","ts":"2026-07-28T22:47:06.524Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T16","cmd":"house validate"}}
 {"id":"01KYNEKXKMZ32CSEC6PMNYG0KP","ts":"2026-07-28T22:48:07.540Z","event":"unit.report","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"02","result":"DONE"}}
 {"id":"01KYNEQFBDEDAJR9H3FY0KD72E","ts":"2026-07-28T22:50:04.013Z","event":"unit.dispatched","slice":"0001-house-v2-s2-skills-rewrite","actor":"orchestrator","payload":{"unit":"03","title":"smoke slice + closeout (orchestrator-driven)"}}
+{"id":"01KYNES4JWAWR66PR1T76W78S4","ts":"2026-07-28T22:50:58.524Z","event":"slice.created","slice":"0002-house-version-flag","actor":"shaper","payload":{"kind":"slice","rigor":"patch"}}
+{"id":"01KYNETJZSK5FP6CRXZQ3QF0S1","ts":"2026-07-28T22:51:46.041Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"spec","from":"todo","to":"draft"}}
+{"id":"01KYNETK1DWFT63X5YGQD2ZYYR","ts":"2026-07-28T22:51:46.093Z","event":"artifact.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"artifact":"spec","from":"draft","to":"awaiting_review"}}
+{"id":"01KYNETXJ7JMYKEECE45X64VKE","ts":"2026-07-28T22:51:56.872Z","event":"gate.requested","slice":"0002-house-version-flag","actor":"agent","payload":{}}
+{"id":"01KYNETXKWH1950FE43KNPQTFW","ts":"2026-07-28T22:51:56.924Z","event":"gate.requested","slice":"0002-house-version-flag","actor":"agent","payload":{"gate":"spec_review","note":"awaiting user verdict on spec review"}}
