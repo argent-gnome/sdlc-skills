@@ -20,7 +20,7 @@ ship before the IDE — the contract must be true from a bare terminal on day on
 
 | # | Slice | Status |
 |---|---|---|
-| S1 | **Kernel + `house` CLI** — `schema/enums.yaml`, slice-dir scaffold, events.jsonl, `house new/init/event/gate/task/state/status/list/next/validate/index/render`. Dogfooded on this repo. Plan: [`superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md`](superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md) | **Built — in review** — all 11 plan tasks shipped TDD on `feat/house-v2-s1-kernel-cli`; suite green, `house validate` exit 0, repo dogfooded (`.house/`, slice `0001` minted, dev-state generated). Draft [PR #6](https://github.com/argent-gnome/sdlc-skills/pull/6) — **unmerged**; merge gate passed 2026-07-28, verdict **GO** with one condition (the `renderDevState` letter-gap) plus findings folded to the [S2 carry list](#s2-carry-list--fold-forward-from-s1). Two deviations (test script under Node 26; a real silent-drop bug in the plan's literal `renderDevState`, fixed) + spec drift on `slice.merged`/roadmap-lint/ADR `status:` — all recorded in the plan's As-built section |
+| S1 | **Kernel + `house` CLI** — `schema/enums.yaml`, slice-dir scaffold, events.jsonl, `house new/init/event/gate/task/state/status/list/next/validate/index/render`. Dogfooded on this repo. Plan: [`superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md`](superpowers/plans/2026-07-28-house-v2-s1-kernel-cli.md) | **Shipped 2026-07-28** — [PR #6](https://github.com/argent-gnome/sdlc-skills/pull/6) merged to `main` (`4a6a906`); retro: [`retros/2026-07-28-house-v2-s1-kernel-cli-retro.md`](retros/2026-07-28-house-v2-s1-kernel-cli-retro.md). All 11 plan tasks shipped TDD, 43/43 tests, `house validate` exit 0, repo dogfooded (`.house/`, slice `0001` minted, dev-state generated). Merge gate **GO** with one condition (the `renderDevState` letter-gap) plus findings folded to the [S2 carry list](#s2-carry-list--fold-forward-from-s1). Two deviations (test script under Node 26; a real silent-drop bug in the plan's literal `renderDevState`, fixed) + spec drift on `slice.merged`/roadmap-lint/ADR `status:` — all recorded in the plan's As-built section |
 | S2 | **Skills rewrite + doctrine v2 + hooks** — shaper/orchestrator/builder as thin actors over shared state; canonical stage table, one rigor dial, take/suppress/own composition contract; hooks wired into `.claude/settings.json` | Slated — carries from S1: see [the S2 carry list](#s2-carry-list--fold-forward-from-s1) below |
 | S3 | **Migrate the proving pair** — `house init` + `house adopt` + active-slice adoption on sdlc-skills and edge-scanner | Slated |
 | S4+ | **The desktop IDE** — shaped as its own slice against a contract already true on disk (workspace, side pane, webview mockups, approvals inbox, terminal panes); gets its own shaping pass and its own repo | Slated — blocked on S1–S3 |
@@ -59,6 +59,15 @@ Everything S1 deliberately left on the floor, in one place so nothing is carried
 - **D1 portability record** — `node --test test/*.test.js` relies on POSIX shell glob expansion; on
   Windows + Node 20 the pattern would reach Node literally (Node's own `--test` globbing is 21+). Record-only:
   the no-CI, local-macOS-only setup ([ADR-0003](adr/0003-no-hosted-ci-local-verification.md)) makes it moot today.
+
+## Locked conventions
+
+Settled in the v1 (Pieces A–C) redesign and still binding — they constrain S2's doctrine v2 rewrite:
+
+- **Doctrine scope = focused** (docs + hygiene), not a general style guide.
+- **Enforcement = active self-checks at the gates**, process-level prose rather than scripts (the `house` CLI
+  now backs this with machine-checkable state, but the gates stay the enforcement point).
+- **`roadmap.md` = the blessed-canonical name** for the durable-strategy doc.
 
 ## Deferred (recorded, not lost)
 
