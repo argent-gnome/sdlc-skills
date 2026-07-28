@@ -47,3 +47,5 @@
 {"id":"01KYNGDF4FWXFKZZ1B0D92KZ2V","ts":"2026-07-28T23:19:33.263Z","event":"slice.pr_set","slice":"0002-house-version-flag","actor":"orchestrator","payload":{"pr":null,"base_sha":"d023fc1cccb5f01ef495791cc8cfab2db792b882"}}
 {"id":"01KYNGDF653ZGYMB9SCFA3HX0T","ts":"2026-07-28T23:19:33.317Z","event":"unit.dispatched","slice":"0002-house-version-flag","actor":"orchestrator","payload":{"unit":"01","title":"house --version pre-dispatch flag"}}
 {"id":"01KYNGDKG5RTXQX1FV3E5P8VP6","ts":"2026-07-28T23:19:37.733Z","event":"slice.state_changed","slice":"0002-house-version-flag","actor":"agent","payload":{"to":"building"}}
+{"id":"01KYNGG7NGAG8RMN6MN9YF7330","ts":"2026-07-28T23:21:03.920Z","event":"task.done","slice":"0002-house-version-flag","actor":"builder","payload":{"task":"T1","cmd":"cd cli && npm test"}}
+{"id":"01KYNGSQK9FC3CDE021SA7ZJPK","ts":"2026-07-28T23:26:15.145Z","event":"unit.report","slice":"0002-house-version-flag","actor":"builder","payload":{"unit":"01","result":"DONE"}}

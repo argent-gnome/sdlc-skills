@@ -3,8 +3,8 @@ id: "0002-house-version-flag"
 kind: spec
 slice: "0002-house-version-flag"
 title: "house --version flag"
-status: "shaping"
-state: draft
+status: "shaped 2026-07-28; user-approved"
+state: approved
 ---
 # Spec — house --version flag
 

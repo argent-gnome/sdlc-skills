@@ -1,3 +1,11 @@
+---
+id: "0002-house-version-flag"
+kind: plan
+slice: "0002-house-version-flag"
+title: "house --version flag — implementation plan"
+status: "planned 2026-07-28; plan-check GO_WITH_FIXES folded"
+state: approved
+---
 # house --version Implementation Plan
 
 > **For agentic workers:** executed by a house2-builder under a kickoff brief — not by
@@ -87,3 +95,28 @@ gate+verdict), so this section and the kickoff `plan_check_commitments` are the 
   stdout/exit assertions) → T1 steps 1/3; R-2 → step 1's `frobnicate` assertion + full suite in step 4.
 - Placeholder scan: none — all code shown.
 - Type consistency: single task; test helper `run` already exists in `cli/test/cli.test.js`.
+
+---
+
+## As-built — Unit 1 (reconciled 2026-07-28, branch `slice/0002-house-version-flag`, commit `35c32d1`)
+
+**No deviations.** T1 landed as the literal code in steps 1 and 3 above — the five-line pre-dispatch block
+in `cli/bin/house.js` (inserted directly after `const [cmd, ...rest] = process.argv.slice(2);`, before arg
+parsing and `repoRoot()`) and the one appended test in `cli/test/cli.test.js`, verbatim. Two files
+touched, 18 lines added, no new files and no new dependencies, exactly as the plan's Architecture line
+predicted. Nothing under `cli/lib/` was touched, and no scope guard was approached.
+
+The plan-check must-fix carried in the kickoff brief (`plan_check_commitments`) is satisfied in the
+shipped test: it asserts `--version` **twice** — once from a bare `mkdtempSync` tmpdir that is not a house
+repo (spec R-1 scenario 2) and once from a `mkTmpRepo()` house-tracked repo (spec R-1 scenario 1) — plus
+the `frobnicate` exit-2 assertion that guards R-2.
+
+Both stack gates green at the task boundary: `cd cli && npm test` → **67/67 pass** (66 → 67, the one new
+test), `house validate` → **exit 0**. Evidence is recorded on T1 in `tasks.yaml` by `house task done`; the
+matching `task.done` event is in `.house/events.jsonl`.
+
+Reconciled alongside this section: the spec's own frontmatter still read `status: "shaping"` /
+`state: draft` after the user approved it — the operational record (`slice.yaml` artifact `spec: approved`,
+written by `house artifact` and backed by an `artifact.state_changed` event) was the correct layer, so the
+DECLARED frontmatter was brought up to it, matching slice `0001`'s approved-spec convention. This plan had
+no frontmatter block at all; one was added in the same shape.
