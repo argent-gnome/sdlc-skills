@@ -28,6 +28,8 @@ const commands = {
   unblock: () => slices.unblock(need(root), pos[0], args),
   artifact: () => slices.artifactCmd(need(root), pos[0], pos[1], pos[2], args),
   unit:    () => { const r = slices.unitCmd(need(root), pos[0], pos[1], pos[2], args); if (r) console.log(r); },
+  pr:      () => slices.prCmd(need(root), pos[0], args),
+  log:     () => console.log(derive.log(need(root), args)),
   status:  () => console.log(derive.status(need(root), args)),
   list:    () => console.log(derive.list(need(root), args)),
   next:    () => console.log(derive.next(need(root), args)),

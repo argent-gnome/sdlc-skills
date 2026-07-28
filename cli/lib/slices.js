@@ -167,6 +167,19 @@ export function taskCmd(root, action, taskId, args) {
   writeYaml(file, doc);
 }
 
+export function prCmd(root, id, args) {
+  const dir = sliceDir(root, id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  const sha = args['base-sha'];
+  if ((!args.set || args.set === true) && (!sha || sha === true))
+    throw new Error('nothing to set: pass --set <pr-url> and/or --base-sha <sha>');
+  if (args.set && args.set !== true) man.pr = args.set;
+  if (sha && sha !== true) man.base_sha = sha;
+  writeYaml(join(dir, 'slice.yaml'), man);
+  appendEvent(root, 'slice.pr_set', { slice: id, actor: args.actor ?? 'orchestrator',
+    payload: { pr: man.pr, base_sha: man.base_sha } });
+}
+
 export function unitCmd(root, id, action, unitId, args) {
   const dir = sliceDir(root, id);
   const man = readYaml(join(dir, 'slice.yaml'));
@@ -227,4 +240,10 @@ export function setState(root, id, to, args) {
   man.state = to;
   writeYaml(join(dir, 'slice.yaml'), man);
   appendEvent(root, 'slice.state_changed', { slice: id, actor: args.actor ?? 'agent', payload: { to } });
+  // terminal transitions get their matching terminal event — `slice.shipped` finally has a producer
+  // (ADR-0004: the shipped enum beats program spec §3.5's `slice.merged`)
+  if (to === 'shipped')
+    appendEvent(root, 'slice.shipped', { slice: id, actor: args.actor ?? 'agent', payload: { pr: man.pr } });
+  if (to === 'abandoned')
+    appendEvent(root, 'slice.abandoned', { slice: id, actor: args.actor ?? 'agent', payload: {} });
 }

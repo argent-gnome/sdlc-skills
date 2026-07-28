@@ -48,7 +48,7 @@ test('events: append writes one JSON line with ulid id + ISO ts; read returns in
   const repo = mkTmpRepo();
   appendEvent(repo, 'slice.created', { slice: '0001-x', actor: 'shaper', payload: { kind: 'slice' } });
   appendEvent(repo, 'gate.recorded', { slice: '0001-x', payload: { gate: 'plan_check', verdict: 'GO' } });
-  const ev = readEvents(repo);
+  const ev = readEvents(repo).events;
   assert.equal(ev.length, 2);
   assert.equal(ev[0].event, 'slice.created');
   assert.match(ev[0].id, /^[0-9A-HJKMNP-TV-Z]{26}$/);
@@ -66,6 +66,16 @@ test('events: a truncated line (interrupted append / union-merge artifact) is sk
   appendEvent(repo, 'slice.created', { slice: '0001-x', actor: 'shaper', payload: {} });
   appendFileSync(join(repo, '.house/events.jsonl'), '{"id":"truncated","ts":"20\n');   // a torn write
   appendEvent(repo, 'task.done', { slice: '0001-x', actor: 'builder', payload: { task: 't1' } });
-  const ev = readEvents(repo);                                     // must not throw — the log is append-only truth
+  const ev = readEvents(repo).events;                                     // must not throw — the log is append-only truth
   assert.deepEqual(ev.map(e => e.event), ['slice.created', 'task.done']);
+});
+
+test('readEvents: returns skip count for torn lines instead of thinning OBSERVED silently', () => {
+  const dir = mkTmpRepo();
+  appendFileSync(join(dir, '.house/events.jsonl'),
+    '{"id":"X","ts":"2026-07-28T00:00:00Z","event":"work.discovered","slice":null,"payload":{}}\n' +
+    '{"torn line no close\n');
+  const { events, skipped } = readEvents(dir);
+  assert.equal(events.length, 1);
+  assert.equal(skipped, 1);
 });

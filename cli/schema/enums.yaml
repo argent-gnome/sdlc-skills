@@ -18,7 +18,7 @@ passing_verdicts:             # FAIL-CLOSED: forward motion requires the latest 
   live_check: [approved]
   adr_review: [approved]
 adr_states: [proposed, accepted, deprecated, superseded]
-event_types: [slice.created, slice.state_changed, slice.shipped, slice.abandoned, slice.unblocked,
+event_types: [slice.created, slice.state_changed, slice.shipped, slice.abandoned, slice.unblocked, slice.pr_set,
   artifact.written, artifact.state_changed, gate.requested, gate.recorded,
   unit.dispatched, unit.heartbeat, unit.report,
   task.done, task.blocked, work.discovered, deviation.raised, session.started, session.ended]

@@ -31,7 +31,7 @@ test('mint: allocates 0001, 0002… scanning slices dir; slugifies; scaffolds di
   const id2 = mint(repo, 'Second thing', { kind: 'idea' });
   assert.equal(id2, '0002-second-thing');
   assert.equal(readYaml(join(repo, 'docs/slices/0002-second-thing/slice.yaml')).state, 'idea');
-  const ev = readEvents(repo);
+  const ev = readEvents(repo).events;
   assert.deepEqual(ev.map(e => e.event), ['slice.created', 'slice.created']);
 });
 
@@ -51,7 +51,7 @@ test('recordGate: writes gates/<name>.yaml + gate.recorded event; rejects unknow
   const rec = readYaml(join(repo, `docs/slices/${id}/gates/plan_check.yaml`));
   assert.equal(rec.verdict, 'GO_WITH_FIXES');
   assert.ok(rec.recorded_at);
-  assert.equal(readEvents(repo).at(-1).payload.gate, 'plan_check');
+  assert.equal(readEvents(repo).events.at(-1).payload.gate, 'plan_check');
   assert.throws(() => recordGate(repo, 'vibes', { slice: id, verdict: 'GO' }), /unknown gate/);
   assert.throws(() => recordGate(repo, 'merge_gate', { slice: id, verdict: 'MAYBE' }), /invalid verdict/);
 });
@@ -60,7 +60,7 @@ test('emit: house event passes through with slice + parsed payload', () => {
   const repo = mkTmpRepo();
   const id = mint(repo, 'thing2', {});
   emit(repo, 'work.discovered', { slice: id, payload: '{"text":"found a thing","routed_to":"roadmap"}' });
-  assert.equal(readEvents(repo).at(-1).payload.text, 'found a thing');
+  assert.equal(readEvents(repo).events.at(-1).payload.text, 'found a thing');
   assert.throws(() => emit(repo, 'slice.created', { slice: id }), /owned by a dedicated command/);   // no second writer path
 });
 
@@ -101,7 +101,7 @@ test('setState: legal transition writes manifest + event; illegal transition ref
   recordGate(repo, 'plan_check', { slice: id, verdict: 'GO', by: 'agent' });
   setState(repo, id, 'ready', {});
   assert.equal(readYaml(join(repo, `docs/slices/${id}/slice.yaml`)).state, 'ready');
-  assert.equal(readEvents(repo).at(-1).event, 'slice.state_changed');
+  assert.equal(readEvents(repo).events.at(-1).event, 'slice.state_changed');
 });
 
 test('setState: refused while a required gate holds a blocking verdict', () => {
@@ -264,4 +264,26 @@ test('unit: dispatch allocates NN + report skeleton; heartbeat appends; finalize
   assert.match(ev, /"unit\.dispatched"/); assert.match(ev, /"unit\.heartbeat"/); assert.match(ev, /"unit\.report"/);
   // and `house event` may no longer forge unit lifecycle events
   assert.equal(run(dir, 'event', 'unit.report', '--slice', '0001-unity').code, 1);
+});
+
+test('pr: sets pr + base_sha; state shipped emits slice.shipped (spec R-3 scenario)', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Shippy');
+  assert.equal(run(dir, 'pr', '0001-shippy').code, 1);             // nothing to set — refuse
+  assert.equal(run(dir, 'pr', '0001-shippy', '--set', 'https://github.com/x/y/pull/9',
+    '--base-sha', 'abc123').code, 0);
+  const man = readYaml(join(dir, 'docs/slices/0001-shippy/slice.yaml'));
+  assert.equal(man.pr, 'https://github.com/x/y/pull/9');
+  assert.equal(man.base_sha, 'abc123');
+  // walk to shipped through the gate machinery, then check the terminal event
+  run(dir, 'gate', 'spec_review', '--slice', '0001-shippy', '--verdict', 'approved');
+  run(dir, 'gate', 'plan_check', '--slice', '0001-shippy', '--verdict', 'GO');
+  run(dir, 'state', '0001-shippy', 'ready');
+  run(dir, 'state', '0001-shippy', 'building');
+  run(dir, 'state', '0001-shippy', 'gating');
+  run(dir, 'gate', 'merge_gate', '--slice', '0001-shippy', '--verdict', 'GO');
+  assert.equal(run(dir, 'state', '0001-shippy', 'shipped').code, 0);
+  const ev = readFileSync(join(dir, '.house/events.jsonl'), 'utf8');
+  assert.match(ev, /"slice\.pr_set"/);
+  assert.match(ev, /"slice\.shipped"/);
 });

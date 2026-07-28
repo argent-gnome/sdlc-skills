@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, appendFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { mkTmpRepo, run, readYaml } from './helpers.js';
 import { mint, recordGate } from '../lib/slices.js';
@@ -153,4 +153,19 @@ test('render dev-state: parked gets its own section; abandoned renders nowhere',
   const ds = readFileSync(join(dir, 'docs/dev-state.md'), 'utf8');
   assert.match(ds, /## Parked\n- \*\*0001-parky\*\*/);
   assert.doesNotMatch(ds, /0002-deady/);                            // abandoned: events + slice dir only
+});
+
+test('log: filters by slice, surfaces skip count, --json shape', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Loggy');
+  run(dir, 'new', 'Other');
+  appendFileSync(join(dir, '.house/events.jsonl'), '{"garbage\n');
+  const r = run(dir, 'log', '--slice', '0001-loggy');
+  assert.equal(r.code, 0);
+  assert.match(r.out, /slice\.created/);
+  assert.doesNotMatch(r.out, /0002-other/);
+  assert.match(r.out, /1 unparseable line/);
+  const j = JSON.parse(run(dir, 'log', '--slice', '0001-loggy', '--json').out);
+  assert.equal(j.skipped, 1);
+  assert.ok(Array.isArray(j.events));
 });

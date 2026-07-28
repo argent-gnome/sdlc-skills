@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { readYaml } from './core.js';
+import { readYaml, readEvents } from './core.js';
 
 export function buildIndex(root) {
   const dir = join(root, 'docs/slices');
@@ -40,6 +40,16 @@ export function next(root, args) {
     .filter(t => t.state === 'todo' && (t.depends_on ?? []).every(d => s.tasks.find(x => x.id === d)?.state === 'done'))
     .map(t => ({ slice: s.id, id: t.id, title: t.title })));
   return args.json ? JSON.stringify(ready, null, 2) : ready.map(t => `${t.slice} ${t.id} ${t.title}`).join('\n') || '(nothing ready)';
+}
+
+export function log(root, args) {
+  const { events, skipped } = readEvents(root);
+  const rows = events.filter(e => !args.slice || e.slice === args.slice);
+  const shown = args.n ? rows.slice(-Number(args.n)) : rows;
+  if (args.json) return JSON.stringify({ skipped, events: shown }, null, 2);
+  const head = skipped ? [`(warning: ${skipped} unparseable line${skipped === 1 ? '' : 's'} skipped — OBSERVED is thinner than it looks)`] : [];
+  return head.concat(shown.map(e => `${e.ts}  ${e.event}  ${e.slice ?? '-'}  ${JSON.stringify(e.payload ?? {})}`))
+    .join('\n') || '(no events)';
 }
 
 export function renderDevState(root) {
