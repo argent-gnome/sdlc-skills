@@ -1,0 +1,17 @@
+gate: merge_gate
+verdict: GO
+by: agent
+recorded_at: '2026-07-28T23:30:00.011Z'
+notes: null
+lenses:
+  - seams
+  - spec-citation
+  - regression
+  - gate-compliance
+findings: []
+reruns:
+  tests: pass 67/67, fail 0 (cd cli && npm test)
+  validate: '0'
+  manual: >-
+    node cli/bin/house.js --version in-repo -> 0.1.0 exit 0; from non-house tmpdir -> 0.1.0 exit 0;
+    node cli/bin/house.js bogus -> usage on stderr exit 2

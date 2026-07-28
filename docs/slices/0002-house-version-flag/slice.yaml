@@ -3,8 +3,11 @@ id: 0002-house-version-flag
 title: house --version flag
 kind: slice
 rigor: patch
-state: gating
-blocked_on: null
+state: live_check
+blocked_on:
+  gate: live_check
+  note: awaiting user confirmation of house --version in the real environment
+  since: '2026-07-28'
 appetite: 1 session
 created: '2026-07-28'
 branch: slice/0002-house-version-flag
