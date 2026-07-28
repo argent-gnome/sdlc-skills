@@ -4,10 +4,7 @@ title: house --version flag
 kind: slice
 rigor: patch
 state: shaping
-blocked_on:
-  gate: spec_review
-  note: awaiting user verdict on spec review
-  since: '2026-07-28'
+blocked_on: null
 appetite: 1 session
 created: '2026-07-28'
 branch: slice/0002-house-version-flag
@@ -16,7 +13,7 @@ pr: null
 adrs: []
 artifacts:
   spec:
-    state: awaiting_review
+    state: approved
     updated: '2026-07-28'
 units: []
 kickoff: null
