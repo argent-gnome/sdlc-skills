@@ -24,3 +24,4 @@
 {"id":"01KYNDRQ0FZGT8A2DNAY4HX6AZ","ts":"2026-07-28T22:33:16.047Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T13","cmd":"house validate"}}
 {"id":"01KYNDYX4BTYKEQXC4VC6Q211W","ts":"2026-07-28T22:36:38.923Z","event":"unit.heartbeat","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"02","note":"T14 house2-orchestrator written (80 lines, greps clean)"}}
 {"id":"01KYNDYX7ME4NYJX42EMKHT4BV","ts":"2026-07-28T22:36:39.028Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T14","cmd":"house validate"}}
+{"id":"01KYNE20K83KQQPCP8VRRKK58W","ts":"2026-07-28T22:38:20.776Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T15","cmd":"house validate"}}

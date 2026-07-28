@@ -144,10 +144,15 @@ tasks:
       at: '2026-07-28T22:36:39.027Z'
   - id: U2-T15
     title: skills/house2-builder/SKILL.md + .house/gates.yml + model_profile seed
-    state: todo
+    state: done
     verify: house validate
     depends_on:
       - U2-T12
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:38:20.775Z'
   - id: U2-T16
     title: keep-verbatim ledger audit — every rule has a home
     state: todo
