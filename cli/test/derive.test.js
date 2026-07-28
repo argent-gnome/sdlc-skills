@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { mkTmpRepo } from './helpers.js';
+import { mkTmpRepo, run, readYaml } from './helpers.js';
 import { mint, recordGate } from '../lib/slices.js';
 import { writeYaml } from '../lib/core.js';
 import { buildIndex, writeIndex, status, next, renderDevState } from '../lib/derive.js';
@@ -117,4 +117,40 @@ test('index: slice dirs and gate files are sorted, and the top level has a fixed
   assert.deepEqual(Object.keys(idx), ['schema_version', 'slices']);         // no generated_at
   assert.deepEqual(idx.slices.map(s => s.id), [...idx.slices.map(s => s.id)].sort());
   assert.deepEqual(Object.keys(idx.slices[1].gates), ['merge_gate', 'spec_review']);   // sorted, not readdir order
+});
+
+test('render dev-state: refuses content wedged between generated block and manual marker (MF6 letter-gap)', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'First slice');
+  assert.equal(run(dir, 'render', 'dev-state').code, 0);           // baseline render
+  const p = join(dir, 'docs/dev-state.md');
+  const before = readFileSync(p, 'utf8');
+  writeFileSync(p, before.replace('<!-- house:manual -->', 'REMEMBER: wedged hand note\n<!-- house:manual -->'));
+  const r = run(dir, 'render', 'dev-state');
+  assert.equal(r.code, 1);                                          // v1 exits 0 here — discriminating input
+  assert.match(r.out, /wedged hand note/);                          // refusal names the content
+  assert.match(readFileSync(p, 'utf8'), /REMEMBER: wedged hand note/); // file untouched on refusal
+});
+
+test('render dev-state: refuses content after the closing manual marker (tail)', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'First slice');
+  run(dir, 'render', 'dev-state');
+  const p = join(dir, 'docs/dev-state.md');
+  writeFileSync(p, readFileSync(p, 'utf8') + '\nstray tail line\n');
+  const r = run(dir, 'render', 'dev-state');
+  assert.equal(r.code, 1);
+  assert.match(r.out, /stray tail line/);
+});
+
+test('render dev-state: parked gets its own section; abandoned renders nowhere', () => {
+  const dir = mkTmpRepo();
+  run(dir, 'new', 'Parky');                                         // 0001, state shaping
+  run(dir, 'new', 'Deady');                                         // 0002, state shaping
+  assert.equal(run(dir, 'state', '0001-parky', 'parked').code, 0);
+  assert.equal(run(dir, 'state', '0002-deady', 'abandoned').code, 0);
+  assert.equal(run(dir, 'render', 'dev-state').code, 0);
+  const ds = readFileSync(join(dir, 'docs/dev-state.md'), 'utf8');
+  assert.match(ds, /## Parked\n- \*\*0001-parky\*\*/);
+  assert.doesNotMatch(ds, /0002-deady/);                            // abandoned: events + slice dir only
 });
