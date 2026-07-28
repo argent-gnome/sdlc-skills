@@ -13,3 +13,4 @@
 {"id":"01KYNC3DBSXF4K4AJMWV2E82SK","ts":"2026-07-28T22:04:09.465Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T7","cmd":"cd cli && npm test"}}
 {"id":"01KYNC50J3BNB0H90MAG498256","ts":"2026-07-28T22:05:01.891Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T8","cmd":"cd cli && npm test"}}
 {"id":"01KYNCB8RTSE1F1RMS3GW9Z9V6","ts":"2026-07-28T22:08:26.907Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T9","cmd":"cd cli && npm test"}}
+{"id":"01KYNCCRFRJ0AJWPT7Z90NHKNK","ts":"2026-07-28T22:09:15.768Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U1-T10","cmd":"./install.sh && house validate"}}

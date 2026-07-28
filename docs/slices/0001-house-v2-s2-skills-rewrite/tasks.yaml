@@ -100,10 +100,15 @@ tasks:
       at: '2026-07-28T22:08:26.905Z'
   - id: U1-T10
     title: install.sh — npm install + link the house bin
-    state: todo
+    state: done
     verify: ./install.sh && house validate
     depends_on:
       - U1-T9
+    evidence:
+      cmd: ./install.sh && house validate
+      cmd_exit: 0
+      summary: Run /reload-skills (or restart Claude Code) to pick up the changes.
+      at: '2026-07-28T22:09:15.767Z'
   - id: U2-T12
     title: doctrine v2 — judgment-only, points at enums, settled contradictions
     state: todo
