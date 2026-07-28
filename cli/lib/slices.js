@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync, appendFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { execSync } from 'node:child_process';
 import { readYaml, writeYaml, appendEvent, loadEnums, parseFrontmatter } from './core.js';
 
 function ensureLine(file, line) {
@@ -81,4 +82,28 @@ export function emit(root, type, args) {
     throw new Error(`event '${type}' is owned by a dedicated command — not emittable via house event`);
   const payload = typeof args.payload === 'string' ? JSON.parse(args.payload) : (args.payload ?? {});
   return appendEvent(root, type, { slice: args.slice ?? null, actor: args.actor ?? 'agent', payload });
+}
+
+export function taskCmd(root, action, taskId, args) {
+  const dir = sliceDir(root, args.slice);
+  const file = join(dir, 'tasks.yaml');
+  const doc = readYaml(file);
+  const task = doc.tasks.find(t => t.id === taskId);
+  if (!task) throw new Error(`no such task: ${taskId}`);
+  if (action === 'done') {
+    if (task.state === 'done') throw new Error(`task ${taskId} already done — no silent re-ticks`);
+    const cmd = args['evidence-cmd'] ?? task.verify;   // verify: is the task's declared proof; --evidence-cmd overrides it
+    if (!cmd) throw new Error('evidence required: pass --evidence-cmd or set verify: on the task');
+    let out;
+    try { out = execSync(cmd, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }); }
+    catch (e) { throw new Error(`evidence command failed (exit ${e.status}): ${cmd}`); }
+    task.state = 'done';
+    task.evidence = { cmd, cmd_exit: 0, summary: out.trim().split('\n').at(-1) ?? '', at: new Date().toISOString() };
+    appendEvent(root, 'task.done', { slice: args.slice, actor: 'builder', payload: { task: taskId, cmd } });
+  } else if (action === 'block') {
+    if (!args.note) throw new Error('note required for a blocked task');
+    task.state = 'blocked'; task.note = args.note;
+    appendEvent(root, 'task.blocked', { slice: args.slice, actor: 'builder', payload: { task: taskId, note: args.note } });
+  } else throw new Error(`unknown task action: ${action}`);
+  writeYaml(file, doc);
 }

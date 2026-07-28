@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { init, mint, recordGate, emit } from '../lib/slices.js';
-import { readYaml, readEvents, parseFrontmatter } from '../lib/core.js';
+import { init, mint, recordGate, emit, taskCmd } from '../lib/slices.js';
+import { readYaml, writeYaml, readEvents, parseFrontmatter } from '../lib/core.js';
 import { mkTmpRepo } from './helpers.js';
 
 test('init: scaffolds .house, docs/slices, gitattributes union-merge, gitignore for index', () => {
@@ -62,4 +62,32 @@ test('emit: house event passes through with slice + parsed payload', () => {
   emit(repo, 'work.discovered', { slice: id, payload: '{"text":"found a thing","routed_to":"roadmap"}' });
   assert.equal(readEvents(repo).at(-1).payload.text, 'found a thing');
   assert.throws(() => emit(repo, 'slice.created', { slice: id }), /owned by a dedicated command/);   // no second writer path
+});
+
+test('task done: runs --evidence-cmd, records exit/summary, flips state; REFUSES on nonzero exit', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing3', {});
+  writeYaml(join(repo, `docs/slices/${id}/tasks.yaml`), { tasks: [
+    { id: 't1', title: 'a', state: 'todo', verify: 'true',  depends_on: [] },
+    { id: 't2', title: 'b', state: 'todo', verify: 'false', depends_on: ['t1'] } ] });
+  taskCmd(repo, 'done', 't1', { slice: id, 'evidence-cmd': 'echo ok' });
+  let tasks = readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks;
+  assert.equal(tasks[0].state, 'done');
+  assert.equal(tasks[0].evidence.cmd_exit, 0);
+  assert.throws(() => taskCmd(repo, 'done', 't1', { slice: id, 'evidence-cmd': 'echo ok' }), /already done/);  // no silent re-ticks
+  assert.throws(() => taskCmd(repo, 'done', 't2', { slice: id, 'evidence-cmd': 'exit 3' }), /evidence command failed/);
+  tasks = readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks;
+  assert.equal(tasks[1].state, 'todo');            // unchanged — the tick was refused
+  tasks.push({ id: 't5', title: 'e', state: 'todo', depends_on: [] });          // no verify: on the task
+  writeYaml(join(repo, `docs/slices/${id}/tasks.yaml`), { tasks });
+  assert.throws(() => taskCmd(repo, 'done', 't5', { slice: id }), /evidence required/);  // no verify + no --evidence-cmd = no tick
+});
+
+test('task block: requires a note', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'thing4', {});
+  writeYaml(join(repo, `docs/slices/${id}/tasks.yaml`), { tasks: [{ id: 't1', title: 'a', state: 'todo', verify: 'true', depends_on: [] }] });
+  assert.throws(() => taskCmd(repo, 'block', 't1', { slice: id }), /note required/);
+  taskCmd(repo, 'block', 't1', { slice: id, note: 'flaky upstream' });
+  assert.equal(readYaml(join(repo, `docs/slices/${id}/tasks.yaml`)).tasks[0].state, 'blocked');
 });
