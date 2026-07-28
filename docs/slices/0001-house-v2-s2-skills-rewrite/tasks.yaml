@@ -155,12 +155,17 @@ tasks:
       at: '2026-07-28T22:38:20.775Z'
   - id: U2-T16
     title: keep-verbatim ledger audit — every rule has a home
-    state: todo
+    state: done
     verify: house validate
     depends_on:
       - U2-T13
       - U2-T14
       - U2-T15
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-28T22:47:06.523Z'
   - id: U3-T17
     title: smoke slice — end-to-end through the three house2-* skills
     state: todo

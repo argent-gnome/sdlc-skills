@@ -1517,6 +1517,55 @@ from "Unit 2" onward is still forward-looking plan text. Deviations from the pla
   time; a one-off consequence of the bootstrap, not a pattern. Units 2 and 3 dispatch through the CLI up
   front, which is what the `SubagentStop` advisory reads.
 
+## As-built — Unit 2 (reconciled 2026-07-28, branch `slice/0001-house-v2-s2-skills-rewrite`)
+
+Tasks 12–16 were implemented in the plan's order (12 first, so no install window ever had a `SKILL.md`
+whose doctrine did not exist — plan-check advisory A7). Shipped: `skills/house2-orchestrator/references/
+doctrine.md` (194 lines, the 9 mandated sections), the three `house2-*` `SKILL.md` files, `.house/gates.yml`,
+and the `model_profile` seed in `.house/config.yaml`. `house validate` exit 0 and 66/66 tests at every task
+boundary; no file under `cli/` was touched.
+
+**Line-count targets met exactly:** shaper 90 (≤90), orchestrator 80 (≤80), builder 80 (≤80).
+
+**The point-never-restate greps come up empty** on all four new prose files — no line names two slice
+states, no verdict list (`GO.*NO_GO`, `approved.*changes_requested`), no old stage numbers, no
+`docs/superpowers/` path in any `SKILL.md`, and no model-name literal in the orchestrator skill. Exactly one
+line in the whole set matches the two-state pattern before the `grep -v '→'` filter, and it is the one the
+plan mandates: doctrine §2's "the legal `building → shaping` edge" (advisory A2's exemption, working as
+designed).
+
+Decisions taken inside the plan's latitude, recorded rather than absorbed:
+
+- **Hard gates and tiers are pointed at, not listed.** Plan §4 says "the list by *name* (pointer to
+  `gate_verdicts` keys)"; spec R-7's scenario says a grep for any literal list of gate names must return
+  zero. The scenario wins: doctrine §4 says "every key of `gate_verdicts` is a hard-gate rung" and sends the
+  reader to the schema. Same for the rigor dial — §3 describes the gradient in prose and points at `tiers`.
+  The stage table's gate-rung column likewise reads "⛔ its `required_gates` rung" rather than naming the
+  gates, which also avoids the `ready` row restating its own state name.
+- **`unit_results` is pointed at too** — the builder's finalize line reads `--result <a value from
+  unit_results>` instead of spelling the four-state enum, for the same reason. The fail-closed rule that
+  *depends* on the enum ("absence of a finalized record is UNKNOWN, never DONE") is stated in full.
+- **The auto-fix boundary is stated once, in `house2-orchestrator` §8**, which is the home the R-11 ledger
+  assigns it. Doctrine §8's hygiene checklist points there rather than restating it, honoring "stated ONCE".
+- **`docs/superpowers/` appears once in doctrine §6** — as the retirement notice the plan mandates ("retired
+  for new work"). The zero-paths rule is enforced on the three `SKILL.md` files, which are clean.
+- **No `install.sh` edit was needed.** It globs `skills/*/`, so the three new dirs symlink automatically;
+  `./install.sh` was re-run and all three resolve in `~/.claude/skills/` with `SKILL.md` and the doctrine
+  reachable at the path the skills cite.
+
+**Task 16 — R-11 ledger audit: 36/36 rows resolve to a real section; zero resolve to "dropped."** The audit
+was run mechanically (grep each rule's verbatim phrase in its assigned file) rather than by eye, which
+caught a class of defect worth recording: **five keep-verbatim phrases were split across a line wrap**, so
+they existed in the prose but could not be found by the grep a reviewer would run — rules 08 (redirect
+guard), 10 (five plan-check lenses), 22 (brainstorm-cannot-be-a-subagent), 23c (builder's
+read-doctrine-on-demand), 25 ("I didn't get to it"). All five were re-wrapped so each phrase sits on one
+line. A keep-verbatim rule that is not greppable fails R-11's audit scenario ("a reviewer can name the exact
+file + section"), so this was a real fix, not cosmetics.
+
+One ledger row resolves to a slightly different place than the ledger's wording: **rule 23
+(read-doctrine-on-demand) lives in each skill's doctrine pointer block, immediately above §1 Preflight**,
+rather than inside §1 itself — present in all three files, as required.
+
 ## Plan-check (2026-07-28): GO_WITH_FIXES — all folded
 
 Must-fix folded: MF1 GEN_HEADERS whitelist trimmed to generator-only · MF2 shared run()/yaml helpers in

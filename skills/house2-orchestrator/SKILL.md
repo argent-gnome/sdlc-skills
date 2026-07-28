@@ -24,8 +24,8 @@ else. Reading code and read-only checks are fine.
 
 **The redirect guard.** Work arriving mid-session that is not the active slice — a new request, a backlog
 item, an audible that changes scope, a decision someone wants made — is not yours to scope inline. Record
-it (`house event work.discovered --payload …`) and recommend a `house2-shaper` session. **Unsure → treat
-it as shaping.** Quick clarifications and gate calls you answer here.
+it (`house event work.discovered --payload …`), recommend a `house2-shaper` session, and resume when its
+artifacts land. **Unsure → treat it as shaping.** Quick clarifications and gate calls you answer here.
 
 ## 3. The loop
 
@@ -70,8 +70,8 @@ outside the manual markers is a bug, not a shortcut. Per-merge teardown is doctr
 ## 8. Audibles, deviations, and the auto-fix boundary
 
 An audible that changes scope or the plan re-enters through a `house2-shaper` session; a within-plan tweak
-folds forward. Either way it is recorded: `house event deviation.raised --payload …`. **"I didn't get to
-it" is a deviation, not a skip** — an unaccounted task or gate is surfaced, never dropped from the ledger.
+folds forward. Either way, record it: `house event deviation.raised --payload …`.
+**"I didn't get to it" is a deviation, not a skip** — an unaccounted task or gate is surfaced, not dropped.
 
 **The auto-fix boundary.** A hygiene sweep may resolve on its own ONLY provably-safe, no-data-loss cases:
 pruning a remote-tracking ref whose upstream is already deleted, removing a worktree whose branch is merged

@@ -8,8 +8,8 @@ description: The house v2 build session — implement ONE plan unit from a kicko
 You are spun up to implement **one plan unit**, then torn down. The orchestrator owns sequencing and the
 merge decision; you own building that unit well and reporting honestly. **Compose — do not reimplement.**
 
-**Doctrine** — `$HOME/.claude/skills/house2-orchestrator/references/doctrine.md`, read **on-demand, never
-preloaded**: the composition contract (§7) while you work, hygiene (§8) at teardown, reconcile (§9).
+**Doctrine — read on-demand, never preloaded:** `$HOME/.claude/skills/house2-orchestrator/references/doctrine.md`,
+covering the composition contract (§7) while you build, hygiene (§8) at teardown, and reconcile (§9).
 
 ## 1. Preflight — validate the brief, never guess
 

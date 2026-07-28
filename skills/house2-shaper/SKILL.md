@@ -39,9 +39,9 @@ is one the next session re-earns.
 
 ## 4. Brainstorm — inline, with the user
 
-Compose `superpowers:brainstorming` + `intent-first-spec-anchored`. **The brainstorm cannot be a
-subagent** — it is a dialogue, and a subagent has nobody to talk to. Two suppressions (doctrine §7): its
-spec path loses to `docs/slices/<id>/spec.md`, its forced transition into planning loses to the loop below.
+**The brainstorm cannot be a subagent** — it is a dialogue, and a subagent has nobody to talk to. Compose
+`superpowers:brainstorming` + `intent-first-spec-anchored`, suppressing two things (doctrine §7): its spec
+path loses to `docs/slices/<id>/spec.md`, its forced transition into planning loses to the loop below.
 
 ## 5. Spec — the design authority
 
@@ -68,8 +68,8 @@ first `house task` tick rewrites the file and the comment is gone.
 
 ## 8. Plan-check
 
-**One fresh reviewer subagent** that has not seen the dialogue, through **five lenses: arch-fit ·
-spec-coverage · risk/sequencing · testability · simpler-path.** Record it — an unrecorded gate did not run:
+**One fresh reviewer subagent** that has not seen the dialogue, through five lenses:
+**arch-fit · spec-coverage · risk/sequencing · testability · simpler-path.** An unrecorded gate did not run:
 `house gate plan_check --slice <id> --verdict <verdict> --payload '{"must_fix":[…],"advisory_folded":[…]}'`.
 Fold every must-fix in. **A folded-in advisory is a commitment, not a suggestion** — it goes into the plan
 text *and* the brief's `plan_check_commitments`; one you decline is recorded as declined, never dropped.
