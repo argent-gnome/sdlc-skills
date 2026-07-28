@@ -1,1 +1,2 @@
 {"id":"01KYN2SNXJMB2J326X9Q8VCBYV","ts":"2026-07-28T19:21:33.362Z","event":"slice.created","slice":"0001-house-v2-s2-skills-rewrite","actor":"shaper","payload":{"kind":"idea","rigor":"slice"}}
+{"id":"01KYN98RTYGN75KH0K2STDE9GT","ts":"2026-07-28T21:14:39.326Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"house-shaper","payload":{"to":"shaping"}}

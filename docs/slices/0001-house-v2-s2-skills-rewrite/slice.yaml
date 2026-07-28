@@ -3,9 +3,9 @@ id: 0001-house-v2-s2-skills-rewrite
 title: house v2 S2 — skills rewrite
 kind: idea
 rigor: slice
-state: idea
+state: shaping
 blocked_on: null
-appetite: null
+appetite: 3-sessions
 created: '2026-07-28'
 branch: slice/0001-house-v2-s2-skills-rewrite
 base_sha: null
