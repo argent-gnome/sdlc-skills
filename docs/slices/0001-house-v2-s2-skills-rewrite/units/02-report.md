@@ -10,4 +10,5 @@
 
 ## Result
 
-(pending — absence of a finalized result is fail-closed unknown, never DONE)
+**DONE** — Tasks 12-16 complete: doctrine v2 (194L, 9 sections) + house2-{shaper,orchestrator,builder} at 90/80/80 (targets met exactly) + .house/gates.yml + model_profile seed. Point-never-restate greps empty on all four files; R-11 ledger 36/36 resolved, zero dropped. house validate exit 0, 66/66 tests, no cli/ changes.
+- finalized: 2026-07-28T22:48:07.538Z

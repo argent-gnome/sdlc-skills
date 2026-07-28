@@ -22,7 +22,8 @@ units:
     finalized: '2026-07-28T22:17:55.153Z'
   - id: '02'
     title: doctrine v2 + the three house2-* skills
-    state: building
-    result: null
+    state: finalized
+    result: DONE
     dispatched: '2026-07-28T22:23:04.495Z'
+    finalized: '2026-07-28T22:48:07.535Z'
 kickoff: null

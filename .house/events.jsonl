@@ -26,3 +26,4 @@
 {"id":"01KYNDYX7ME4NYJX42EMKHT4BV","ts":"2026-07-28T22:36:39.028Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T14","cmd":"house validate"}}
 {"id":"01KYNE20K83KQQPCP8VRRKK58W","ts":"2026-07-28T22:38:20.776Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T15","cmd":"house validate"}}
 {"id":"01KYNEJ20WXQXZ9MPCKQ8M1ZN7","ts":"2026-07-28T22:47:06.524Z","event":"task.done","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"task":"U2-T16","cmd":"house validate"}}
+{"id":"01KYNEKXKMZ32CSEC6PMNYG0KP","ts":"2026-07-28T22:48:07.540Z","event":"unit.report","slice":"0001-house-v2-s2-skills-rewrite","actor":"builder","payload":{"unit":"02","result":"DONE"}}
