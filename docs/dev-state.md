@@ -38,6 +38,8 @@
 - **Three skills now:** `house-shaper` (fuzzy front end) · `house-orchestrator` (conductor) · `house-builder` (executor). `house-shaper` needs `./install.sh` re-run to symlink.
 - Runtime doctrine: `skills/house-orchestrator/references/doctrine.md`, cited by the orchestrator + builder + shaper via the `$HOME/.claude/skills/house-orchestrator/...` path.
 - **`house` CLI (v2 S1):** lives in `cli/`; install with `cd cli && npm link` (global `house` bin). Tests: `cd cli && npm test`. `install.sh` wiring is deferred to S2.
+- **No hosted CI — by decision** ([`docs/adr/0003-no-hosted-ci-local-verification.md`](adr/0003-no-hosted-ci-local-verification.md)). There is no `.github/workflows` and none is to be added. The verification bar is local and unchanged in rigor: `cd cli && npm test` green **+** `house validate` exit 0 — run by the builder, then **independently re-run by the merge-gate reviewer** (never trust the builder's report). Stage-8 "CI green" is permanently n/a here.
+- **GitHub repo settings:** auto-delete-head-branch is **ENABLED** on `argent-gnome/sdlc-skills` (the doctrine's repo-setup item is done) — merged PR branches are pruned by GitHub; the local branch + worktree are still yours to remove.
 
 ## Gotchas
 - `docs/*.html` are **hand-authored** (no generator) — mirror any `docs/*.md` prose change into the matching `.html` by hand.
