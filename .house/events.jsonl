@@ -3,3 +3,4 @@
 {"id":"01KYN9D4EF2C9DQTCNRQ8DD9G8","ts":"2026-07-28T21:17:02.287Z","event":"gate.recorded","slice":"0001-house-v2-s2-skills-rewrite","actor":"jake","payload":{"gate":"spec_review","verdict":"approved"}}
 {"id":"01KYNAEDGRNDC1GECV5K5SBE3Y","ts":"2026-07-28T21:35:12.921Z","event":"gate.recorded","slice":"0001-house-v2-s2-skills-rewrite","actor":"plan-check-reviewer","payload":{"gate":"plan_check","verdict":"GO_WITH_FIXES"}}
 {"id":"01KYNAEDJD3X43AF48ZPH6RRHQ","ts":"2026-07-28T21:35:12.973Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"house-shaper","payload":{"to":"ready"}}
+{"id":"01KYNBGQ9J8D5H959SA2RZ6TKM","ts":"2026-07-28T21:53:57.042Z","event":"slice.state_changed","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"to":"building"}}
