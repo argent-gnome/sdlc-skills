@@ -3,8 +3,11 @@ id: 0005-v2-onboarding-docs-quickstart-process-narrative
 title: v2 onboarding docs — quickstart + process narrative
 kind: docs-only
 rigor: patch
-state: gating
-blocked_on: null
+state: live_check
+blocked_on:
+  gate: live_check
+  note: awaiting user read-through of the two onboarding docs
+  since: '2026-07-29'
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0005-v2-onboarding-docs-quickstart-process-narrative
