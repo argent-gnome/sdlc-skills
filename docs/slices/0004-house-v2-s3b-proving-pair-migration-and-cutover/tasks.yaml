@@ -1,20 +1,33 @@
 tasks:
   - id: T1
-    title: "archive v1 + rename house2-* to canonical, one commit; intra-skill path fixes (R-1, R-2)"
-    state: todo
+    title: archive v1 + rename house2-* to canonical, one commit; intra-skill path fixes (R-1, R-2)
+    state: done
     verify: house validate && ! grep -rn 'house2' skills/ install.sh | grep -q .
+    evidence:
+      cmd: house validate && ! grep -rn 'house2' skills/ install.sh | grep -q .
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-29T18:42:06.673Z'
   - id: T2
-    title: "live-surface sweep to canonical names; roadmap/dev-state historical mentions justified (R-2)"
+    title: live-surface sweep to canonical names; roadmap/dev-state historical mentions justified (R-2)
     state: todo
-    verify: house validate && ! grep -rn 'house2' README.md cli/README.md docs/quickstart.md docs/process-v2.md | grep -q .
-    depends_on: [T1]
+    verify: >-
+      house validate && ! grep -rn 'house2' README.md cli/README.md docs/quickstart.md
+      docs/process-v2.md | grep -q .
+    depends_on:
+      - T1
   - id: T3
-    title: "install.sh prune step for dangling skill symlinks, scratch-tested, idempotent (R-3)"
+    title: install.sh prune step for dangling skill symlinks, scratch-tested, idempotent (R-3)
     state: todo
     verify: bash -n install.sh && grep -q 'prune' install.sh && house validate
-    depends_on: [T1]
+    depends_on:
+      - T1
   - id: T4
-    title: "banners reworded, ADR-0004 closure note, roadmap/dev-state truth (R-4, R-5)"
+    title: banners reworded, ADR-0004 closure note, roadmap/dev-state truth (R-4, R-5)
     state: todo
-    verify: house validate && ! grep -l 'still live' docs/process.md docs/process.html && grep -q 'Cutover executed' docs/adr/0004-house2-coexistence-and-advisory-hooks.md
-    depends_on: [T2, T3]
+    verify: >-
+      house validate && ! grep -l 'still live' docs/process.md docs/process.html && grep -q 'Cutover
+      executed' docs/adr/0004-house2-coexistence-and-advisory-hooks.md
+    depends_on:
+      - T2
+      - T3

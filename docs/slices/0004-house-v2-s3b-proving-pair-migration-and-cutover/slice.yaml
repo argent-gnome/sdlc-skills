@@ -18,5 +18,12 @@ artifacts:
   plan:
     state: awaiting_review
     updated: '2026-07-29'
-units: []
+units:
+  - id: '01'
+    title: >-
+      v2 cutover — archive v1, rename to canonical, sweep live surfaces, install.sh prune, close
+      records
+    state: building
+    result: null
+    dispatched: '2026-07-29T18:39:12.777Z'
 kickoff: null

@@ -47,7 +47,4 @@ fi
 
 echo
 echo "Installed: $(ls -1 "$SKILLS_SRC" | tr '\n' ' ')"
-echo "The workflow scriptPaths in house-orchestrator/SKILL.md assume the install dir is"
-echo "  $SKILLS_DST/house-orchestrator/workflows/"
-echo "If you installed elsewhere, update those two scriptPath lines (or symlink-install, which keeps them valid)."
 echo "Run /reload-skills (or restart Claude Code) to pick up the changes."
