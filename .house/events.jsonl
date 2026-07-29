@@ -100,3 +100,4 @@
 {"id":"01KYNP9V036FT97NFW2F3A3MMP","ts":"2026-07-29T01:02:25.796Z","event":"task.done","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"builder","payload":{"task":"T4","cmd":"cd cli && npm test"}}
 {"id":"01KYNP9V1VCT5T1469RFZKR88C","ts":"2026-07-29T01:02:25.852Z","event":"unit.heartbeat","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"builder","payload":{"unit":"01","note":"T3+T4 done: gate events carry record/detail/notes with --actor canonical; per-command FLAGS guard rejects unknown flags (72 tests green)"}}
 {"id":"01KYNPBK93HTBVJA4S3J6QVT4B","ts":"2026-07-29T01:03:23.427Z","event":"task.done","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"builder","payload":{"task":"T5","cmd":"house validate"}}
+{"id":"01KYNPSY75C3D4ZH278WGVZZC0","ts":"2026-07-29T01:11:13.381Z","event":"unit.report","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"builder","payload":{"unit":"01","result":"DONE"}}

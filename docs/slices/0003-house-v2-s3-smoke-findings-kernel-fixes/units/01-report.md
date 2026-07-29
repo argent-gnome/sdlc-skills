@@ -9,4 +9,5 @@
 
 ## Result
 
-(pending — absence of a finalized result is fail-closed unknown, never DONE)
+**DONE** — T1-T5 built verbatim to plan, zero deviations; suite 67->72 green, house validate exit 0; one pre-existing R-1 fence-stripper limitation surfaced to roadmap backlog
+- finalized: 2026-07-29T01:11:13.378Z
