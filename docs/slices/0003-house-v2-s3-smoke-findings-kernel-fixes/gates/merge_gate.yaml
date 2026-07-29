@@ -1,0 +1,28 @@
+gate: merge_gate
+verdict: GO
+by: reviewer
+recorded_at: '2026-07-29T01:16:17.823Z'
+notes: >-
+  GO: all five requirements verified by independent rerun; both on-record exceptions (strict handoff
+  deviation, nested-fence residual) verified against their records rather than re-raised
+lenses:
+  - seams
+  - spec-citation
+  - regression
+  - gate-compliance
+findings: []
+reruns:
+  tests: cd cli && npm test -> 72/72 pass, 0 fail
+  validate: house validate -> exit 0
+  strict_residual: >-
+    house validate --strict (repo-wide AND --slice 0003) -> exit 1 with exactly ONE error on
+    docs/slices/0003-.../plan.md; stripper simulation confirms sole surviving marker is T1 Step 1
+    fixture text re-exposed by the nested-fence early-close — matches the recorded residual exactly;
+    no other file trips strict
+  manual: >-
+    house --version -> 0.1.0 exit 0; validate --sliec x -> exit 1 unknown flag --sliec; validate
+    --slice 0099-nope -> exit 1 unknown slice; gate --actro -> exit 1 unknown flag --actro; scratch
+    repo: manifest approved vs frontmatter draft -> R-2 error exit 1; gate --actor reviewer +
+    payload + notes -> event carries by/record/detail/notes; legacy --by jake -> actor jake, no
+    detail key; log/status/next/render over pre-0003 thin gate.recorded events all exit 0; v1
+    house-* skills and merge-gate-panel.js/code-health-sweep.js zero-diff; test diffs append-only
