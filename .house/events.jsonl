@@ -78,3 +78,5 @@
 {"id":"01KYNJPGASQA3KDJYT2NN5BNQY","ts":"2026-07-28T23:59:26.553Z","event":"slice.shipped","slice":"0001-house-v2-s2-skills-rewrite","actor":"agent","payload":{"pr":"https://github.com/argent-gnome/sdlc-skills/pull/8"}}
 {"id":"01KYNKVZAVFA76P9TKGTBCVCEH","ts":"2026-07-29T00:19:54.331Z","event":"slice.created","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"shaper","payload":{"kind":"slice","rigor":"patch"}}
 {"id":"01KYNM0NY9FSSBF6BWKNER28QM","ts":"2026-07-29T00:22:28.553Z","event":"gate.recorded","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"jake","payload":{"gate":"adr_review","verdict":"approved"}}
+{"id":"01KYNMJTDBA383ZGSGVKNA8DH5","ts":"2026-07-29T00:32:22.955Z","event":"artifact.state_changed","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"agent","payload":{"artifact":"spec","from":"todo","to":"draft"}}
+{"id":"01KYNMJTF7T5J24GH62829QFTP","ts":"2026-07-29T00:32:23.015Z","event":"artifact.state_changed","slice":"0003-house-v2-s3-smoke-findings-kernel-fixes","actor":"agent","payload":{"artifact":"spec","from":"draft","to":"awaiting_review"}}

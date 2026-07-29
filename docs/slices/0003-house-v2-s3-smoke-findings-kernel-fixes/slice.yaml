@@ -2,7 +2,7 @@ schema_version: 1
 id: 0003-house-v2-s3-smoke-findings-kernel-fixes
 title: house v2 S3 — smoke findings kernel fixes
 kind: slice
-rigor: patch
+rigor: slice
 state: shaping
 blocked_on: null
 appetite: 1 session
@@ -11,6 +11,9 @@ branch: slice/0003-house-v2-s3-smoke-findings-kernel-fixes
 base_sha: null
 pr: null
 adrs: []
-artifacts: {}
+artifacts:
+  spec:
+    state: awaiting_review
+    updated: '2026-07-29'
 units: []
 kickoff: null
