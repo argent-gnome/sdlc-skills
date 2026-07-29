@@ -1,0 +1,192 @@
+<!doctype html>
+<!-- generated from process-v2.md — edit the markdown, then re-render this mirror -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the v2 process works</title>
+<style>
+  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --code:#f3f5f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2rem; margin: 0 0 .25em; letter-spacing:-.02em; }
+  h2 { font-size: 1.25rem; margin: 2.4em 0 .6em; padding-top:.6em; border-top:1px solid var(--line); }
+  a { color:var(--accent); }
+  .lede { color:var(--mut); font-size:1.05rem; margin-top:0; }
+  .nav { font-size:.9rem; margin-bottom:1.5em; }
+  .muted { color:var(--mut); }
+  table { border-collapse: collapse; width:100%; margin:1em 0; font-size:.94rem; }
+  th,td { text-align:left; padding:.5em .7em; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; }
+  code { background:var(--code); padding:.12em .4em; border-radius:5px; font-size:.88em; }
+  pre { background:var(--code); padding:16px 18px; border-radius:10px; overflow:auto; font-size:.84rem; line-height:1.5; border:1px solid var(--line); }
+  pre code { background:none; padding:0; font-size:1em; }
+  li { margin:.35em 0; }
+  footer { margin-top:3em; color:var(--mut); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="nav muted"><a href="index.html">home</a> ·
+  <a href="quickstart.html">quickstart</a> ·
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/archive/docs-v1/process.md">the v1 process</a> ·
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md">CLI reference</a></p>
+
+  <h1 id="how-the-v2-process-works">How the v2 process works</h1>
+
+  <p class="lede">The records on disk <strong>are</strong> the process. Three roles act over those records
+  — one turns fuzzy work into a reviewed spec and plan, one sequences the build and holds the gates, one
+  implements a single unit — and none of them is allowed to trust its own memory instead of the files.
+  Every gate between the stages fails closed, and the two judgments that cannot honestly be handed to a
+  machine reviewer stay with you.</p>
+
+  <p>That is the whole design. The rest of this page is why each piece is shaped the way it is.</p>
+
+  <h2 id="the-three-roles">The three roles</h2>
+
+  <p>Three separate sessions, named in the
+  <a href="quickstart.html#current-skill-names">quickstart's skill-names table</a>. They are separate
+  because context is paid for per message: a session that loads only its half of the lifecycle is a
+  session that stays cheap and stays focused.</p>
+
+  <p><strong>The shaper</strong> takes something fuzzy — an idea, a backlog line, an audible mid-build —
+  and turns it into work that can be built: a spec you approved, a plan, an independent plan-check
+  verdict, and a versioned kickoff brief. Or, when the thing is really a decision rather than a piece of
+  work, into an ADR. It is a session you run, and it converges by dialogue: one question at a time, before
+  it writes.</p>
+
+  <p><strong>The conductor</strong> drives one slice from ready to merged. It resumes from the records,
+  dispatches a build session per plan unit, holds every gate, runs the merge review, and reconciles the
+  docs. Its binding constraint: <strong>the conductor never edits product code.</strong> The moment it
+  does, the review it is about to hold stops being independent — it would be reviewing itself. Sequencing
+  and judging are its job; building is not.</p>
+
+  <p><strong>The builder</strong> implements exactly one unit, then is torn down. Its binding constraint is
+  the mirror image: <strong>it sees only its kickoff brief</strong> — the unit's tasks, the scope guards,
+  the stakes, whether the run is attended — never the conductor's transcript or the slice's whole history.
+  That is deliberate. A brief that has to be interpreted is a brief that will be interpreted differently
+  at the merge review, so a brief that is missing something is not guessed at; the builder stops and says
+  what is missing.</p>
+
+  <p>The asymmetry between those two constraints is what keeps the loop honest. The conductor cannot mark
+  its own homework, and the builder cannot quietly widen its own scope.</p>
+
+  <h2 id="records-first">Records first</h2>
+
+  <p>The substrate is three layers of files, with <strong>exactly one writer each</strong>:</p>
+
+  <ul>
+    <li><strong>Declared</strong> — the slice directory (<code>docs/slices/&lt;id&gt;/</code>): its
+    manifest, spec, plan, task list, gate records, and per-unit reports. Written by whichever role owns the
+    current step.</li>
+    <li><strong>Observed</strong> — the append-only event log at <code>.house/events.jsonl</code>. Written
+    only by the <code>house</code> CLI and its hooks. Nothing else appends, ever, which is what makes it
+    evidence rather than commentary.</li>
+    <li><strong>Derived</strong> — a rebuildable cache. Delete it, rebuild it, get the same bytes. It is
+    gitignored, because anything derivable is derived and never hand-written.</li>
+  </ul>
+
+  <p>Two consequences follow, and they are the point of the whole arrangement.</p>
+
+  <p><strong>A session that dies loses nothing.</strong> Any role can resume cold from the files alone —
+  <code>house status</code> for where things stand, <code>house next</code> for what is workable right now.
+  This is not a theory here: during the v2 skills build, a <code>/clear</code> killed the conductor
+  mid-slice; the in-flight subagent finished and wrote its records anyway, and a fresh conductor picked the
+  slice up from those records with nothing lost
+  (<a href="https://github.com/argent-gnome/sdlc-skills/blob/main/docs/slices/0001-house-v2-s2-skills-rewrite/retro.md">retro</a>).
+  It was an accident, not a drill.</p>
+
+  <p><strong>What you remember outside a record is already lost.</strong> Transcripts are never parsed as
+  state. A verdict that exists only in a conversation is not a verdict; a halt that was only announced is a
+  halt nobody can resume from. If it matters, some command wrote it down.</p>
+
+  <p>The anti-lock-in clause holds throughout: <code>git clone</code> plus a text editor stays sufficient.
+  The CLI makes the contract cheap to honor and hard to fake, but a rule you can only obey by running a
+  tool would be a bug in the rule.</p>
+
+  <h2 id="gates">Gates</h2>
+
+  <p>A gate is a rung the work cannot climb past without a <strong>record</strong> saying it passed.
+  <code>house state</code> refuses to advance a slice when the required record is absent, and refuses again
+  when the record exists but its verdict is not a passing one. Four rules govern them:</p>
+
+  <ul>
+    <li><strong>An unrecorded gate did not run.</strong> Not "the conductor remembers it passed" — the
+    record, or nothing.</li>
+    <li><strong>Unsure whether a gate is hard? Treat it as hard.</strong></li>
+    <li><strong>A reviewer that could not reach a verdict has not passed the work.</strong> Too few lenses
+    ran, the tests never finished, the diff was unreadable — every one of those means run it again.</li>
+    <li><strong>A false stop is cheap; a false pass is not.</strong> That asymmetry is the entire design
+    rationale.</li>
+  </ul>
+
+  <p>Two rungs are irreducibly yours and are never self-approved by any session: <strong>spec review</strong>
+  — you agreeing the thing being built is the right thing — and the <strong>live check</strong>, where you
+  exercise the behavior in the real environment before the work is called done.</p>
+
+  <p><strong>Running unattended never downgrades a gate.</strong> When a brief says the run is unattended, a
+  hard gate does not quietly reduce a review panel to one reviewer, or one reviewer to the builder's own
+  word. It halts and waits for a human, recording the request so the wait is visible. The same holds when
+  the reviewer model is simply unavailable: halt, don't downgrade.</p>
+
+  <p>Which gates exist, what verdicts each one accepts, and which of those verdicts actually count as
+  passing are <strong>not listed here on purpose</strong>. They live in
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/schema/enums.yaml"><code>cli/schema/enums.yaml</code></a>,
+  which is the sole normative source for them along with the legal state transitions. A second copy of a
+  list is a second source of truth, and a second source of truth always drifts — so this page points, and
+  never restates.</p>
+
+  <h2 id="where-the-heavy-work-runs">Where the heavy work runs</h2>
+
+  <p>Reading a diff is expensive; holding a verdict is cheap. So every heavy reading job runs in a
+  <strong>subagent</strong> that reads in its own context and returns only its conclusion:</p>
+
+  <table>
+    <thead>
+      <tr><th>dispatched job</th><th>what it reads</th><th>what comes back</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>research</td><td>the problem space, prior art, the codebase</td><td>a digest the shaper can act on</td></tr>
+      <tr><td>plan-check</td><td>the spec and the plan, before any code exists</td><td>a verdict plus findings to fold in</td></tr>
+      <tr><td>merge review</td><td>the slice diff against the spec</td><td>a verdict plus findings, each citing a rule</td></tr>
+      <tr><td>reconcile</td><td>the affected specs, plans, ADRs, roadmap, dev-state</td><td>a list of exactly what it changed</td></tr>
+    </tbody>
+  </table>
+
+  <p>The conductor therefore stays light across a long slice — it never loads a diff into its own context —
+  and the expensive reading dies with the subagent that did it.</p>
+
+  <p>The merge review is also where <strong>reviewer independence</strong> is bought, along three axes:
+  <em>perspective</em> — a fresh context that did not write the code; <em>architecture</em> — a different
+  model family than the one that built it, so the reviewer's blind spots are not the builder's; and
+  <em>context</em> — it reads the diff and the spec, never the build transcript. It re-runs the build and
+  the tests itself, because a builder's report is a claim and the reviewer's own green run is the
+  evidence.</p>
+
+  <p>The review is per slice, not per unit — the diff reviewed is the whole branch against the base commit
+  recorded when the branch was cut. The builder's own self-review still happens per unit, but it answers a
+  different question ("does this unit do what the plan said") and never substitutes for the slice-level
+  one.</p>
+
+  <h2 id="authorities">Authorities</h2>
+
+  <p>When this page and one of these disagree, this page is wrong.</p>
+
+  <ul>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/skills/house-orchestrator/references/doctrine.md">The doctrine</a></strong>
+    — the process law: the kernel contract, the stage table, the rigor dial, the gate rules, the doc
+    routing table. Read on demand by the sessions themselves, never preloaded.</li>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/schema/enums.yaml"><code>cli/schema/enums.yaml</code></a></strong>
+    — the sole normative source for states, gate names, verdicts, transitions, and event types.</li>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md"><code>cli/README.md</code></a></strong>
+    — every <code>house</code> command and the rules the code enforces rather than merely documents.</li>
+    <li><strong><a href="quickstart.html"><code>quickstart.md</code></a></strong> — starting a project,
+    seeding your gates file, adopting work that was shaped before the kernel existed.</li>
+  </ul>
+
+  <footer>House SDLC · <a href="index.html">home</a> · generated from <code>docs/process-v2.md</code> —
+  edit the markdown, then re-render this mirror.</footer>
+</div>
+</body>
+</html>

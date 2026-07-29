@@ -1,0 +1,199 @@
+<!doctype html>
+<!-- generated from quickstart.md — edit the markdown, then re-render this mirror -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quickstart — starting a project on the house process</title>
+<style>
+  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --code:#f3f5f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+  h1 { font-size: 2rem; margin: 0 0 .25em; letter-spacing:-.02em; }
+  h2 { font-size: 1.25rem; margin: 2.4em 0 .6em; padding-top:.6em; border-top:1px solid var(--line); }
+  a { color:var(--accent); }
+  .lede { color:var(--mut); font-size:1.05rem; margin-top:0; }
+  .nav { font-size:.9rem; margin-bottom:1.5em; }
+  .muted { color:var(--mut); }
+  table { border-collapse: collapse; width:100%; margin:1em 0; font-size:.94rem; }
+  th,td { text-align:left; padding:.5em .7em; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mut); font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; }
+  code { background:var(--code); padding:.12em .4em; border-radius:5px; font-size:.88em; }
+  pre { background:var(--code); padding:16px 18px; border-radius:10px; overflow:auto; font-size:.84rem; line-height:1.5; border:1px solid var(--line); }
+  pre code { background:none; padding:0; font-size:1em; }
+  li { margin:.35em 0; }
+  footer { margin-top:3em; color:var(--mut); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="nav muted"><a href="index.html">home</a> ·
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/archive/docs-v1/process.md">the v1 process</a> ·
+  <a href="process.html">how v2 works</a> ·
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md">CLI reference</a></p>
+
+  <h1 id="quickstart--starting-a-project-on-the-house-process">Quickstart — starting a project on the house process</h1>
+
+  <p class="lede">This page gets you from a clean machine to a repo that the house v2 kernel tracks, with
+  the first session ready to open. It assumes you have never seen this repo before. For <em>why</em> the
+  process is shaped this way, read <a href="process.html">process-v2.md</a> afterwards.</p>
+
+  <h2 id="what-you-need-once">What you need once</h2>
+
+  <p>Clone this repo and run the installer. It links the skills into <code>~/.claude/skills/</code> and
+  installs the <code>house</code> binary.</p>
+
+<pre><code>git clone https://github.com/argent-gnome/sdlc-skills ~/projects/sdlc-skills
+cd ~/projects/sdlc-skills
+./install.sh</code></pre>
+
+  <p>Confirm the CLI landed:</p>
+
+<pre><code>house --version      # prints a version, exit 0, from any directory</code></pre>
+
+  <p><code>house --version</code> works anywhere — inside a tracked repo or not. The working commands all
+  need a repo the kernel tracks (one with a <code>.house/</code> directory, which is what the CLI looks
+  for as it walks up from your working directory), and exit 2 when they can't find one. The hook entry
+  point is the deliberate exception: it stays silent and never fails outside a tracked repo, so it can
+  never break a session.</p>
+
+  <p>Then run <code>/reload-skills</code> (or restart Claude Code) so the skills are visible to a
+  session.</p>
+
+  <h2 id="new-project-four-commands">New project, four commands</h2>
+
+<pre><code>git init my-project &amp;&amp; cd my-project
+house init
+$EDITOR .house/gates.yml
+git add -A &amp;&amp; git commit -m "chore: house kernel scaffolding"</code></pre>
+
+  <ul>
+    <li><strong><code>git init</code></strong> — do this first. The kernel keeps its records in git, and
+    two of the files <code>house init</code> writes (<code>.gitattributes</code>,
+    <code>.gitignore</code>) only do their job inside a repo.</li>
+    <li><strong><code>house init</code></strong> — scaffolds <code>.house/</code> (the event log and the
+    gates file), <code>docs/slices/</code>, <code>docs/adr/</code>, a union-merge
+    <code>.gitattributes</code> so two sessions appending events don't conflict, a <code>.gitignore</code>
+    for the derived cache, and it <em>merges</em> an advisory hooks block into
+    <code>.claude/settings.json</code>. It is idempotent and never overwrites hooks you added
+    yourself.</li>
+    <li><strong>Edit <code>.house/gates.yml</code></strong> — the one file <code>house init</code> cannot
+    fill in for you. See the next section.</li>
+    <li><strong>Commit</strong> — the records are the process, so they belong in history from the first
+    commit.</li>
+  </ul>
+
+  <h2 id="seed-your-gates">Seed your gates</h2>
+
+  <p><code>.house/gates.yml</code> declares, per stack, the proof commands a build session must run green
+  before it may finish its unit. It is the repo's own bar. Where there is no hosted CI — as in this repo,
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/docs/adr/0003-no-hosted-ci-local-verification.md">by
+  decision</a> — this file <em>is</em> the verification bar rather than a convenience layered on top of
+  one.</p>
+
+  <p>A stanza is a stack key and an ordered list of named commands:</p>
+
+<pre><code>schema_version: 1
+stacks:
+  node:
+    gates:
+      - name: tests
+        cmd: cd cli &amp;&amp; npm test
+      - name: validate
+        cmd: house validate</code></pre>
+
+  <p>Add one key per stack in the repo (<code>node</code>, <code>python</code>, <code>ios</code>, whatever
+  you actually build). The build session runs <strong>every</strong> gate for its stack, in order, and
+  reports the real output.</p>
+
+  <p>The important property is that it <strong>fails closed</strong>: a build session handed a stack key
+  that is absent from this file — or handed no stack at all — stops and reports
+  <code>NEEDS_CONTEXT</code> naming the missing key. It never guesses a stack's gates, because guessing is
+  how a run silently applies the wrong bar and still reports green.</p>
+
+  <h2 id="then-invoke-the-shaper">Then invoke the shaper</h2>
+
+  <p>Open a Claude Code session in the new repo and invoke the shaper skill (names in the table below).
+  Answer its first question — it will ask what you are trying to build, one question at a time, and it
+  converges before it writes anything. What comes out is a spec you approve, a plan, a plan-check verdict
+  from an independent reviewer, and a kickoff brief for the first build unit.</p>
+
+  <p>You do not need to hold any of that in your head afterwards. Every later session — conductor or
+  builder, yours or a fresh one after a crash — resumes from the records on disk. <code>house status</code>
+  and <code>house next</code> tell a cold session where the work stands and what is workable right
+  now.</p>
+
+  <h2 id="adopting-already-shaped-work">Adopting already-shaped work</h2>
+
+  <p>If the project already has a spec and a plan written before the kernel existed, you do
+  <strong>not</strong> need a migration command — there isn't one, and there isn't going to be one (see
+  <em>adoption</em> in
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md">the CLI reference</a>,
+  which links the decision of record: the 2026-07-29 amendment to ADR-0004, also linked from the names
+  table below). Adoption is a judgment pass over existing artifacts, so it happens in a shaper
+  session:</p>
+
+  <ol>
+    <li>Run <code>house init</code> as above, so the repo is tracked.</li>
+    <li>Open a shaper session and tell it you are adopting existing work.</li>
+    <li>The shaper mints the slice (<code>house new</code>), imports the existing spec and plan into
+    <code>docs/slices/&lt;id&gt;/</code>, and records their provenance.</li>
+    <li><strong>You re-affirm <code>spec_review</code>.</strong> An approval that happened in an old
+    conversation is not a record; the user rung is re-run, not inherited.</li>
+    <li><strong>A fresh plan-check runs</strong> against the imported plan before the slice can go to
+    work.</li>
+  </ol>
+
+  <p>Adopted work counts as real work through the kernel — the gates were recorded, which is the only
+  thing that ever counted.</p>
+
+  <h2 id="current-skill-names">Current skill names</h2>
+
+  <table>
+    <thead>
+      <tr><th>skill</th><th>role</th><th>what the session does</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>house-shaper</code></td>
+        <td>shaper</td>
+        <td>fuzzy idea → spec, plan, plan-check, kickoff brief (or a recorded decision)</td>
+      </tr>
+      <tr>
+        <td><code>house-orchestrator</code></td>
+        <td>conductor</td>
+        <td>sequences one slice end to end: dispatches builders, holds the gates, reconciles</td>
+      </tr>
+      <tr>
+        <td><code>house-builder</code></td>
+        <td>builder</td>
+        <td>implements ONE unit from ONE kickoff brief, self-reviews, reports back</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>These are the canonical names, taken at the <strong>2026-07-29 cutover</strong>. The v1 trio that
+  held them before is retired and archived at
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/archive/skills-v1/README.md"><code>archive/skills-v1/</code></a>
+  — see
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/docs/adr/0004-house2-coexistence-and-advisory-hooks.md">ADR-0004</a>
+  (and its 2026-07-29 amendment on adoption) for the staging window that ended there.</p>
+
+  <h2 id="where-to-go-next">Where to go next</h2>
+
+  <ul>
+    <li><strong><a href="process.html">process-v2.md</a></strong> — how the system works: the roles, the
+    records, the gates, and why the heavy work runs in subagents.</li>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md">../cli/README.md</a></strong>
+    — every <code>house</code> command, and the three-layer state contract the CLI enforces.</li>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/schema/enums.yaml">../cli/schema/enums.yaml</a></strong>
+    — the normative list of states, gates, verdicts, and legal transitions. Nothing else restates them,
+    including this page.</li>
+  </ul>
+
+  <footer>House SDLC · <a href="index.html">home</a> · generated from <code>docs/quickstart.md</code> —
+  edit the markdown, then re-render this mirror.</footer>
+</div>
+</body>
+</html>
