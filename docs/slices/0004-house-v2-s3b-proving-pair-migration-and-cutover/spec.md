@@ -3,8 +3,8 @@ id: "0004-house-v2-s3b-proving-pair-migration-and-cutover"
 kind: spec
 slice: "0004-house-v2-s3b-proving-pair-migration-and-cutover"
 title: "house v2 S3b — v2 cutover (rename + v1 archive)"
-status: "shaping 2026-07-29 (unparked: cutover condition ruled satisfied)"
-state: draft
+status: "shaped 2026-07-29; user-approved"
+state: approved
 ---
 # Spec — v2 cutover: rename + v1 archive
 

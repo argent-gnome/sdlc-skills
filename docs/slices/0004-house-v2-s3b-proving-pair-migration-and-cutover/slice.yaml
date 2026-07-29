@@ -4,10 +4,7 @@ title: house v2 S3b — v2 cutover (rename + v1 archive)
 kind: slice
 rigor: slice
 state: shaping
-blocked_on:
-  gate: spec_review
-  note: awaiting user verdict on cutover spec
-  since: '2026-07-29'
+blocked_on: null
 appetite: 2 sessions
 created: '2026-07-29'
 branch: slice/0004-house-v2-s3b-proving-pair-migration-and-cutover
@@ -16,6 +13,9 @@ pr: null
 adrs: []
 artifacts:
   spec:
+    state: approved
+    updated: '2026-07-29'
+  plan:
     state: awaiting_review
     updated: '2026-07-29'
 units: []
