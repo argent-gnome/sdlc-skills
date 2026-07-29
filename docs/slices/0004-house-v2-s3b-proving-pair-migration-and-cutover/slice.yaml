@@ -23,7 +23,8 @@ units:
     title: >-
       v2 cutover — archive v1, rename to canonical, sweep live surfaces, install.sh prune, close
       records
-    state: building
-    result: null
+    state: finalized
+    result: DEVIATION
     dispatched: '2026-07-29T18:39:12.777Z'
+    finalized: '2026-07-29T19:07:41.734Z'
 kickoff: null
