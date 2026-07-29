@@ -14,7 +14,7 @@ tasks:
     verify: bash -n install.sh && grep -q 'prune' install.sh && house validate
     depends_on: [T1]
   - id: T4
-    title: "banners reworded, ADR-0004 closure note, roadmap/dev-state truth (R-4, R-5)"
+    title: "banners fully reworded (incl. parked claim), index.html footer, ADR-0004 closure note, board truth (R-4, R-5)"
     state: todo
-    verify: house validate && ! grep -l 'still live' docs/process.md docs/process.html && grep -q 'Cutover executed' docs/adr/0004-house2-coexistence-and-advisory-hooks.md
+    verify: house validate && ! grep -l 'still live' docs/process.md docs/process.html README.md | grep -q . && ! grep -l '0004, parked' docs/process.md docs/process.html | grep -q . && grep -q 'Cutover executed' docs/adr/0004-house2-coexistence-and-advisory-hooks.md
     depends_on: [T2, T3]
