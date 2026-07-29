@@ -14,7 +14,7 @@ tasks:
       at: '2026-07-29T22:59:48.423Z'
   - id: T2
     title: quickstart.html + process.html mirrors — faithful, self-contained, blob-linked (R-3)
-    state: todo
+    state: done
     verify: >-
       house validate && grep -q 'generated from' docs/quickstart.html && grep -q 'generated from'
       docs/process.html && ! grep -nE 'src="https?://|href="https?://' docs/quickstart.html
@@ -23,6 +23,16 @@ tasks:
       'github.com/argent-gnome/sdlc-skills/blob' | grep -q .
     depends_on:
       - T1
+    evidence:
+      cmd: >-
+        house validate && grep -q "generated from" docs/quickstart.html && grep -q "generated from"
+        docs/process.html && ! grep -nE "src=\"https?://|href=\"https?://" docs/quickstart.html
+        docs/process.html | grep -v "github.com/argent-gnome/sdlc-skills" | grep -q . && ! grep -nE
+        "href=\"[^\"]*\.md[\"#]" docs/quickstart.html docs/process.html | grep -v
+        "github.com/argent-gnome/sdlc-skills/blob" | grep -q .
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-29T23:03:27.034Z'
   - id: T3
     title: index.html rewritten for the current ecosystem + whole-site link check (R-2)
     state: todo

@@ -5,6 +5,7 @@
 
 ## Heartbeats
 - 2026-07-29T22:59:55.244Z — T1 done: six v1 page files git mv'd to archive/docs-v1/ + signpost README; links retargeted in README/quickstart/process-v2; M1 link-syntax grep clean
+- 2026-07-29T23:03:33.177Z — T2 done: quickstart.html + process.html mirrors hand-rendered, self-contained, 25/25 hrefs resolve, A4 anchor live, M2 clean
 
 ## Result
 
