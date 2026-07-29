@@ -1,8 +1,9 @@
 # The house SDLC — how it works
 
-> **This page describes the v1 process** — still live for repos that have not migrated. The v2
-> kernel-based process is proving out now: start with [quickstart](quickstart.md), understand it via
-> [process-v2](process-v2.md). The v2 rewrite of this page lands at the cutover (slice 0004, parked).
+> **This page describes the v1 process** — retired at the 2026-07-29 cutover; the v1 skills are
+> archived at [`archive/skills-v1/`](../archive/skills-v1/) and no longer install. The v2
+> kernel-based process is the live one: start with [quickstart](quickstart.md), understand it via
+> [process-v2](process-v2.md). Read this page as background on the lifecycle, not as instructions.
 
 *the house SDLC · [best practices](best-practices.md) · [case study](case-study.md)*
 

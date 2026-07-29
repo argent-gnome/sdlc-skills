@@ -69,6 +69,9 @@ archive, and the `install.sh` consequences of both.
 > to that repo, not to this program. The roadmap's stricter per-repo phrasing is reconciled to this
 > amendment — this ADR is the authority.
 
+*Cutover executed 2026-07-29 (slice `0004`): rename done, v1 archived at `archive/skills-v1/`,
+coexistence window closed.*
+
 **2. Hooks ship advisory-only in S2.** One `house hook <event>` subcommand (stdin JSON → stdout JSON),
 wired by `house init` as a *merged* block into `.claude/settings.json`:
 
