@@ -4,6 +4,7 @@
 - dispatched: 2026-07-29T18:39:12.778Z
 
 ## Heartbeats
+- 2026-07-29T18:42:20.763Z — T1 done: v1 archived to archive/skills-v1/ (byte-identical to base), v2 renamed to canonical house-*, intra-skill paths swept, install.sh v1-workflow echoes dropped. Commit ff623c4.
 
 ## Result
 

@@ -10,12 +10,19 @@ tasks:
       at: '2026-07-29T18:42:06.673Z'
   - id: T2
     title: live-surface sweep to canonical names; roadmap/dev-state historical mentions justified (R-2)
-    state: todo
+    state: done
     verify: >-
-      house validate && ! grep -rn 'house2' README.md cli/README.md docs/quickstart.md
-      docs/process-v2.md | grep -q .
+      ! sed 's/0004-house2-coexistence-and-advisory-hooks//g' README.md cli/README.md
+      docs/quickstart.md docs/process-v2.md | grep -q house2 && house validate
     depends_on:
       - T1
+    evidence:
+      cmd: >-
+        ! sed 's/0004-house2-coexistence-and-advisory-hooks//g' README.md cli/README.md
+        docs/quickstart.md docs/process-v2.md | grep -q house2 && house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-29T18:47:26.463Z'
   - id: T3
     title: install.sh prune step for dangling skill symlinks, scratch-tested, idempotent (R-3)
     state: todo

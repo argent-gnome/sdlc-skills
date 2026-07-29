@@ -3,30 +3,28 @@
 A lightweight, **plugin-free** set of Claude Code skills that run the house software-development lifecycle the
 same way every time — at a fraction of the per-message token cost of a plugin.
 
-**Six skills, two coexisting generations** ([ADR-0004](docs/adr/0004-house2-coexistence-and-advisory-hooks.md)),
-split along the way you actually work:
+**Three skills**, split along the way you actually work:
 
-- **`house-shaper`** / **`house2-shaper`** — a user-run shaping session for the fuzzy front end: research,
-  brainstorm, spec, plan, plan-check, and doc reconcile. Turns an idea into ready-to-build work (or a recorded
-  decision), then hands off to the orchestrator.
-- **`house-orchestrator`** / **`house2-orchestrator`** — the long-lived conductor session. Sequences a slice,
-  holds the gates, dispatches build sessions, reviews their work via subagents, and reconciles. Resumes cold
-  from a per-project `docs/dev-state.md` file (v1) or the `house` CLI's records (v2).
-- **`house-builder`** / **`house2-builder`** — an ephemeral build session that implements ONE plan unit (TDD +
-  stack gates + self-review + doc reconcile), then reports back and is torn down.
+- **`house-shaper`** — a user-run shaping session for the fuzzy front end: research, brainstorm, spec, plan,
+  plan-check, and doc reconcile. Turns an idea into ready-to-build work (or a recorded decision), then hands
+  off to the orchestrator.
+- **`house-orchestrator`** — the long-lived conductor session. Sequences a slice, holds the gates, dispatches
+  build sessions, reviews their work via subagents, and reconciles. Resumes cold from the `house` CLI's
+  records.
+- **`house-builder`** — an ephemeral build session that implements ONE plan unit (TDD + stack gates +
+  self-review + doc reconcile), then reports back and is torn down.
 
-The `house2-*` trio is the **house v2** rewrite: thin actors over a state-first kernel (the `house` CLI +
-on-disk records in `.house/`), with a judgment-only doctrine that never restates what the kernel's
-`cli/schema/enums.yaml` already owns. **They only run in a repo the kernel tracks** — one with a `.house/`
-directory (`house init` creates it) — and refuse otherwise, same as the `house-*` trio refuses once a repo
-has migrated. The two sets install side by side and don't touch each other; v1 is untouched, unarchived, and
-still the default until a repo migrates. The rename to canonical names and the v1 archive are a planned S3
-cutover, not done yet — see [`docs/roadmap.md`](docs/roadmap.md).
+These are **house v2**: thin actors over a state-first kernel (the `house` CLI + on-disk records in
+`.house/`), with a judgment-only doctrine that never restates what the kernel's `cli/schema/enums.yaml`
+already owns. **They only run in a repo the kernel tracks** — one with a `.house/` directory (`house init`
+creates it) — and refuse otherwise. The v1 trio that previously held these names was **retired at the
+2026-07-29 cutover** and is archived, outside the install path, at
+[`archive/skills-v1/`](archive/skills-v1/) — see
+[ADR-0004](docs/adr/0004-house2-coexistence-and-advisory-hooks.md) for the staging window that ended there.
 
 Reviews (plan-check, merge-gate, doc-reconcile) run as **subagents** — the diff/docs are read in *their*
-context and only the verdict returns, so the orchestrator stays light. Two heavier v1 reviews stay as **local
-workflows** (`skills/house-orchestrator/workflows/`): the high-stakes merge-gate **panel** and the advisory
-**code-health-sweep**. Nothing here depends on a plugin, marketplace, or external repo.
+context and only the verdict returns, so the orchestrator stays light. Nothing here depends on a plugin,
+marketplace, or external repo.
 
 ## Install
 
@@ -40,16 +38,17 @@ cd ~/projects/sdlc-skills
 Then `/reload-skills` (or restart Claude Code). Update later with `git pull` (symlink mode) or
 `git pull && ./install.sh copy`.
 
-> The two `Workflow({scriptPath: ...})` lines in `house-orchestrator/SKILL.md` use an absolute install path.
-> Symlink-install keeps them valid; if you copy-install elsewhere, update those two lines.
+`install.sh` also prunes stale links: any symlink in the install dir that points into this repo's `skills/`
+but no longer resolves is removed before linking, so a rename or an archive never leaves a dangling skill.
 
 ## How it works
 
 The docs are also published as web pages: **<https://argent-gnome.github.io/sdlc-skills/>**.
 
 New to **house v2**? Start with **[docs/quickstart.md](docs/quickstart.md)** (stand up a project on the
-kernel) and **[docs/process-v2.md](docs/process-v2.md)** (how the v2 loop works) — the three pages below
-describe the **v1** process, still live for repos that have not migrated.
+kernel) and **[docs/process-v2.md](docs/process-v2.md)** (how the v2 loop works). The three pages below
+describe the **v1** process, retired at the 2026-07-29 cutover — they are kept as background on the
+lifecycle and the token economics, not as instructions for a live loop.
 
 - **[docs/process.md](docs/process.md)** (or `docs/process.html`) — the full loop, the gates, and the
   three reviews, written so you can understand the system without reading the skills.

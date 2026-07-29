@@ -18,8 +18,8 @@ Shaped 2026-07-28. Spec: [`superpowers/specs/2026-07-28-house-v2-design.md`](sup
 Decision: [ADR-0002](adr/0002-house-v2-state-first-redesign.md). The CLI ships before the skills, and both
 ship before the IDE — the contract must be true from a bare terminal on day one. The program spec §4's
 **blocking** hooks and the v1→canonical skill cutover are both pushed to **S3+** per
-[ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md): S2 ships advisory hooks and `house2-*` skills
-alongside untouched v1.
+[ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md): S2 shipped advisory hooks and the v2 skills
+alongside untouched v1, under temporary `house2-*` names that were renamed to canonical at the S3b cutover.
 
 | # | Slice | Status |
 |---|---|---|
@@ -49,7 +49,7 @@ repos having driven real work through v2 end-to-end.
   that repo, not to this program.
 - **athlete-data replaces it as the second proving repo.** `house init` ran there **2026-07-29** (kernel
   scaffolding, ios/python `gates.yml`, `model_profile`, advisory hooks). Its first v2 slice is an
-  **adoption** of already-shaped work — its Slice 3 (engine) — via a `house2-shaper` session.
+  **adoption** of already-shaped work — its Slice 3 (engine) — via a `house-shaper` session.
 - **The migration half of S3b is gone.** sdlc-skills was already migrated and proven in S2/S3a (`[0002]`
   and `[0003]` both ran the full v2 loop), and athlete-data's onboarding happens *in athlete-data*, not as
   a unit of a slice in this repo. S3b keeps the cutover only.
