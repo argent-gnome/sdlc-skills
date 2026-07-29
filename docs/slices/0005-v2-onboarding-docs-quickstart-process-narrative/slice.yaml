@@ -3,13 +3,13 @@ id: 0005-v2-onboarding-docs-quickstart-process-narrative
 title: v2 onboarding docs — quickstart + process narrative
 kind: docs-only
 rigor: patch
-state: live_check
+state: shipped
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0005-v2-onboarding-docs-quickstart-process-narrative
 base_sha: 182448e068f10b225cce79e60d33571b9982d3e1
-pr: null
+pr: https://github.com/argent-gnome/sdlc-skills/pull/10
 adrs: []
 artifacts:
   spec:
