@@ -31,9 +31,16 @@ tasks:
       at: '2026-07-29T14:31:49.437Z'
   - id: T3
     title: v1 banner (process.md + process.html, blob links) + README inbound links (R-3)
-    state: todo
+    state: done
     verify: >-
       house validate && grep -q 'process-v2.md' docs/process.md && grep -q
       'blob/main/docs/process-v2' docs/process.html && grep -q 'quickstart' README.md
     depends_on:
       - T2
+    evidence:
+      cmd: >-
+        house validate && grep -q 'process-v2.md' docs/process.md && grep -q
+        'blob/main/docs/process-v2' docs/process.html && grep -q 'quickstart' README.md
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-29T14:32:56.089Z'
