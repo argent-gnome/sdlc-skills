@@ -4,10 +4,7 @@ title: v2 onboarding docs — quickstart + process narrative
 kind: docs-only
 rigor: patch
 state: shaping
-blocked_on:
-  gate: spec_review
-  note: awaiting user verdict on onboarding-docs spec
-  since: '2026-07-29'
+blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0005-v2-onboarding-docs-quickstart-process-narrative
@@ -16,6 +13,9 @@ pr: null
 adrs: []
 artifacts:
   spec:
+    state: approved
+    updated: '2026-07-29'
+  plan:
     state: awaiting_review
     updated: '2026-07-29'
 units: []

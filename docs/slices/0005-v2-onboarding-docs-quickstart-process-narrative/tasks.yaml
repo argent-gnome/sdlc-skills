@@ -1,0 +1,15 @@
+tasks:
+  - id: T1
+    title: "docs/quickstart.md — startup, gates seed, adoption path, names table (R-1)"
+    state: todo
+    verify: house validate
+  - id: T2
+    title: "docs/process-v2.md — roles, records-first, gates, subagent economics (R-2)"
+    state: todo
+    verify: house validate
+    depends_on: [T1]
+  - id: T3
+    title: "v1 banner on docs/process.md + docs/process.html, additions only (R-3)"
+    state: todo
+    verify: house validate
+    depends_on: [T2]

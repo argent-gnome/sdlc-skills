@@ -3,8 +3,8 @@ id: "0005-v2-onboarding-docs-quickstart-process-narrative"
 kind: spec
 slice: "0005-v2-onboarding-docs-quickstart-process-narrative"
 title: "v2 onboarding docs — quickstart + process narrative"
-status: "shaping 2026-07-29"
-state: draft
+status: "shaped 2026-07-29; user-approved"
+state: approved
 ---
 # Spec — v2 onboarding docs: quickstart + process narrative
 
