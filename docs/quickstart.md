@@ -1,6 +1,6 @@
 # Quickstart — starting a project on the house process
 
-*[the house SDLC](process.md) · [how v2 works](process-v2.md) · [CLI reference](../cli/README.md)*
+*[the v1 process](../archive/docs-v1/process.md) · [how v2 works](process-v2.md) · [CLI reference](../cli/README.md)*
 
 This page gets you from a clean machine to a repo that the house v2 kernel tracks, with the first
 session ready to open. It assumes you have never seen this repo before. For *why* the process is

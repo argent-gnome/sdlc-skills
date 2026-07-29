@@ -1,6 +1,6 @@
 # How the v2 process works
 
-*[quickstart](quickstart.md) · [the v1 process](process.md) · [CLI reference](../cli/README.md)*
+*[quickstart](quickstart.md) · [the v1 process](../archive/docs-v1/process.md) · [CLI reference](../cli/README.md)*
 
 The records on disk **are** the process. Three roles act over those records — one turns fuzzy work into
 a reviewed spec and plan, one sequences the build and holds the gates, one implements a single unit —
