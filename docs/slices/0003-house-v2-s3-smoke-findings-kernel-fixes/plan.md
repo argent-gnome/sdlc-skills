@@ -437,3 +437,12 @@ closes the outer fence early and leaves the fixture's own marker string exposed 
 exactly as R-1 specifies. Out of scope to fix here (the scope guards forbid a code change, and rewriting
 the fixture would weaken the test that proves R-1). Deferred to the roadmap backlog; the practical effect
 is that `0003`'s own handoff bar is `house validate` exit 0 plus a green suite, not `--strict`.
+
+**Shipped closure.** PR #9 — https://github.com/argent-gnome/sdlc-skills/pull/9 — merged to `main` at
+merge commit `6778532`, 2026-07-29T01:24:12Z; `slice.shipped` recorded, 5/5 tasks. Merge gate **GO with
+zero findings on the first pass**; `live_check` **user-approved**, the user hand-exercising every fix.
+The slice-tier `retro.md` was **enforced by the validator at ship** — the orchestrator flipped `shipped`
+before writing it, `house validate` went red, the retro was written, green again; the retro records that
+against itself. Branch `slice/0003-house-v2-s3-smoke-findings-kernel-fixes` deleted local and remote
+post-merge. The nested-fence residual above is carried in the roadmap backlog with a candidate fix,
+sequenced after S3a.
