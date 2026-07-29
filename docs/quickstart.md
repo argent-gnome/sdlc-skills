@@ -23,9 +23,12 @@ Confirm the CLI landed:
 house --version      # prints a version, exit 0, from any directory
 ```
 
-`house --version` works anywhere — inside a tracked repo or not. Every *other* `house` command needs a
-repo the kernel tracks, and exits 2 if it isn't in one. Then run `/reload-skills` (or restart Claude
-Code) so the skills are visible to a session.
+`house --version` works anywhere — inside a tracked repo or not. The working commands all need a repo
+the kernel tracks (one with a `.house/` directory, which is what the CLI looks for as it walks up from
+your working directory), and exit 2 when they can't find one. The hook entry point is the deliberate
+exception: it stays silent and never fails outside a tracked repo, so it can never break a session.
+
+Then run `/reload-skills` (or restart Claude Code) so the skills are visible to a session.
 
 ## New project, four commands
 
@@ -36,7 +39,8 @@ $EDITOR .house/gates.yml
 git add -A && git commit -m "chore: house kernel scaffolding"
 ```
 
-- **`git init`** — the kernel keeps its records in git. `house init` expects a repo to exist.
+- **`git init`** — do this first. The kernel keeps its records in git, and two of the files `house
+  init` writes (`.gitattributes`, `.gitignore`) only do their job inside a repo.
 - **`house init`** — scaffolds `.house/` (the event log and the gates file), `docs/slices/`,
   `docs/adr/`, a union-merge `.gitattributes` so two sessions appending events don't conflict, a
   `.gitignore` for the derived cache, and it *merges* an advisory hooks block into
