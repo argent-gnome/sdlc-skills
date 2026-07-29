@@ -14,8 +14,8 @@ mkdir -p "$SKILLS_DST"
 # Scope is deliberately narrow: a symlink is removed ONLY if it both (a) no longer resolves and
 # (b) points into THIS repo's skills/ dir. A dangling link belonging to some other tool is another
 # owner's business and is reported, not deleted; a working link and a real directory are untouched.
-# Without this, `git mv skills/house2-shaper skills/house-shaper` leaves ~/.claude/skills/house2-shaper
-# dangling in every repo on the machine, because the link loop below only ever creates.
+# Without this, renaming or archiving a skill dir leaves its old link dangling in the install dir on
+# every repo on the machine, because the link loop below only ever creates, never removes.
 for p in "$SKILLS_DST"/*; do
   if [ ! -L "$p" ]; then continue; fi          # real dir/file, or the unexpanded glob: leave alone
   if [ -e "$p" ]; then continue; fi            # target still resolves: still a live skill

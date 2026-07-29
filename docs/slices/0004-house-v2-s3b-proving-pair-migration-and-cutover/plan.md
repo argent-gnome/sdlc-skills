@@ -123,3 +123,96 @@ ln -s …`).
   each rather than trusting the sweep.
 - Ordering: T1 first (everything else references new paths), T2/T3 independent after it, T4 last
   (records describe the finished state).
+
+---
+
+## As-built — Unit 01 (reconciled 2026-07-29, branch `slice/0004-house-v2-s3b-proving-pair-migration-and-cutover`)
+
+T1–T4 all `done` with evidence in `tasks.yaml` (each verify chain run as written, exit 0); `house
+validate` exit **0**. Commits off `base_sha` `9a39d76`: `ff623c4` (T1) · `8a49e1b` (T2) · `4c61fca`
+(T3) · `4a4e411` (T4). Shipped surface: `archive/skills-v1/` (three v1 skills, the v1 doctrine and
+`dev-state.template.md`, the two orphaned workflow scripts, plus a new `README.md`); the three v2
+skills on canonical `house-*` names; `README.md` · `cli/README.md` · `docs/quickstart.md` ·
+`docs/process-v2.md` · `docs/roadmap.md` · `docs/dev-state.md` swept; `install.sh` +21/−3 (prune step
+in, v1-workflow echoes out); new `test/install-prune.sh`; `docs/process.md`/`.html` banners reworded;
+one dated cutover note in ADR-0004.
+
+**Read this section against the *approved* plan, not the copy above.** The slice branch was cut from
+`9a39d76`, which is the **pre-plan-check** draft of this file. The plan-check ran after that commit
+and landed on `main` as `cbacd82` — verdict **GO_WITH_FIXES**, record at `gates/plan_check.yaml`
+(on `main`), with M1–M3 and A1–A7 folded into `plan.md` and into `tasks.yaml`'s T4 `verify:`. The
+builder worked from the kickoff brief, which carried those folds, so the *work* is the folded plan's
+work; only this file lags. Nothing below re-litigates a fold — the folded plan is the authority, and
+the branch copy of `plan.md` is stale by construction.
+
+### Deviations from the plan as written
+
+- **(a) T2's verify as planned was UNSATISFIABLE and was corrected, not weakened.** T2 Step 3 asked
+  for `! grep -rn 'house2' README.md cli/README.md docs/quickstart.md docs/process-v2.md | grep -q .`
+  — zero `house2` hits across those four files. That can never be true: the **filename** of the
+  decision record, `docs/adr/0004-house2-coexistence-and-advisory-hooks.md`, contains the string
+  `house2`, all four files legitimately link it, and renaming that file is an explicit No-Go in both
+  the spec and this plan. The shipped check strips **only that one protected token** and then greps:
+  `! sed 's/0004-house2-coexistence-and-advisory-hooks//g' README.md cli/README.md docs/quickstart.md
+  docs/process-v2.md | grep -q house2`. Proven **discriminating**, not merely satisfiable: it passes
+  on the swept tree and **fails** on a copy of the tree with a `house2-shaper` reference reintroduced.
+  This is the containment defect the spec's own Problem statement names. Recorded as
+  `deviation.raised` at 18:47:21Z; spec R-2's scenario is reconciled to the same wording.
+
+- **(b) T3's verify as planned was a word-presence check; the behavioral test is now the verify.**
+  `tasks.yaml`'s T3 read `bash -n install.sh && grep -q 'prune' install.sh && house validate` — which
+  a comment containing the word "prune" satisfies. Plan-check **A3** committed the four-case scratch
+  test to *be* the verify, so it was scripted as **`test/install-prune.sh`** and wired in:
+  `bash -n install.sh && bash test/install-prune.sh && house validate`. `test/install-prune.sh` is a
+  **new file the plan's T3 `Files:` line did not anticipate** (it named only "Modify `install.sh`") —
+  an addition to the slice's shipped surface, recorded here rather than absorbed. The test is
+  hermetic (`CLAUDE_SKILLS_DIR` → a `mktemp -d`; the real `~/.claude/skills` is never touched) and
+  seeds four cases plus an idempotency re-run: (a) a dangling link into this repo's `skills/` must be
+  pruned, (b) a dangling link pointing **elsewhere** must survive, (c) a valid link must survive
+  resolving, (d) a real directory must be untouched. **(b) is the discriminating case** — the test
+  was confirmed to **FAIL** against a "prune every dangling link" implementation, which passes (a),
+  (c) and (d) while silently deleting another tool's links. That is M1's scope made executable.
+
+- **(c) T4's verify was strengthened beyond the plan text, per M2 and M3.** The plan's T4 Step 4
+  checked only `! grep -q 'still live' docs/process.md docs/process.html`. The shipped verify is
+  `! grep -in 'still live\|unarchived\|parked\|not done yet' README.md docs/process.md
+  docs/process.html` — it adds **`README.md`** (M3: `README.md`'s "still live" and "untouched,
+  unarchived, and still the default" lines carry no `house2` token, so no rename grep could ever
+  force them) and it adds the **"parked"** and "not done yet" phrases (M2: the banners also claimed
+  "The v2 rewrite of this page lands at the cutover (slice 0004, parked)", false the moment the slice
+  unparked). Case-insensitive, and it fails closed on any of the four phrases. Strictly a widening.
+
+### The `git log --follow` expectation in T1 Step 5 does not hold, and cannot
+
+T1 Step 5 asked that `git log --follow` "confirm renames (99%+ similarity)". **Git cannot pair these
+renames**, and no implementation choice would have changed that: v1 moved *out* of
+`skills/house-<role>/SKILL.md` and v2 moved *in* to the same paths **in one commit** (`ff623c4`, which
+the plan required precisely so no commit has two claimants to one name). Rename detection sees each
+canonical path as *modified*, not renamed, so `git log --follow skills/house-shaper/SKILL.md` and
+`git log --follow archive/skills-v1/house-shaper/SKILL.md` both walk back into the **v1** history —
+the v2 skills' true ancestry through `skills/house2-*` is not recoverable by `--follow`.
+
+Content integrity was therefore proven **directly against base `9a39d76`** instead of by trusting
+rename similarity: every moved file was diffed against its pre-move content, and the two invariants
+that matter both hold — the **archived v1 files are byte-identical** to their pre-move content
+(nothing was edited on the way into `archive/`), and the **v2 files are identical modulo the
+`house2-` → `house-` substitution** (the doctrine's text is unchanged; only path self-references
+moved). That evidence is on the T1 commit message. The verify that *did* run and pass is the one in
+`tasks.yaml`: `house validate && ! grep -rn 'house2' skills/ install.sh | grep -q .`
+
+### Outstanding — surfaced, not absorbed
+
+- **`docs/index.html` carries a stale "two skills" claim, and this slice did not own it.** Its lede
+  (line 28) says "plugin-free **pair** of Claude Code skills", line 44 says "these two skills", and
+  the footer reads *"two skills: `house-orchestrator` + `house-builder`"*. Three skills ship, on
+  canonical names, as of this cutover — so a **published live surface now carries a false claim**.
+  It is out of scope here on the letter of the spec: R-2's live-surface list does not name it, no
+  task touched it, no verify covers it, and the No-Gos bar a v2 rewrite of the v1 pages. Surfaced
+  rather than fixed, so the merge gate routes it deliberately instead of a doc reconcile absorbing
+  scope no gate reviewed. Recorded as a `work.discovered` event and in the roadmap backlog.
+
+  *(Provenance note: an earlier draft of this section asserted that this fix had been folded into
+  the approved plan as advisory "A5 / T4 Step 1b" and was lost when the branch was cut. That is
+  **not** supported by the records — the plan at base `9a39d76` contains no Step 1b and no A5, and
+  this slice has no `plan_check.yaml` gate record at all. The claim was removed rather than
+  inherited. The finding itself is real and independently verifiable by reading the file.)*
