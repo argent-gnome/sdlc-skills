@@ -3,7 +3,7 @@ id: 0006-public-pages-refresh-retire-v1-pages-publish-cur
 title: public pages refresh — retire v1 pages, publish current docs
 kind: docs-only
 rigor: patch
-state: building
+state: gating
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
