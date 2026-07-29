@@ -49,3 +49,11 @@ test('cli: --version prints package.json version, exit 0, works outside a repo',
   assert.equal(r2.out, `${pkg.version}\n`);
   assert.equal(run(dir, 'frobnicate').code, 2);                     // unknown-cmd path unchanged (R-2)
 });
+
+test('unknown flags fail closed (R-5)', () => {
+  const repo = mkTmpRepo();
+  const bad = run(repo, 'gate', 'merge_gate', '--slice', 'x', '--verdict', 'GO', '--actro', 'reviewer');
+  assert.equal(bad.code, 1);
+  assert.match(bad.out, /unknown flag --actro/);
+  assert.equal(run(repo, 'validate', '--strict').code, 0);          // known flags still parse
+});

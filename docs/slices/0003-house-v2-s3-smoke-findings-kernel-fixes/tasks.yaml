@@ -1,24 +1,55 @@
 tasks:
   - id: T1
-    title: "R-1 strict marker matcher (well-formed, handoff artifacts only) + --slice scoping fails closed"
-    state: todo
+    title: R-1 strict marker matcher (well-formed, handoff artifacts only) + --slice scoping fails closed
+    state: done
     verify: cd cli && npm test
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1961.038709
+      at: '2026-07-29T00:59:52.385Z'
   - id: T2
-    title: "R-2 approval-boundary cross-check between slice.yaml artifacts and doc frontmatter"
-    state: todo
+    title: R-2 approval-boundary cross-check between slice.yaml artifacts and doc frontmatter
+    state: done
     verify: cd cli && npm test
-    depends_on: [T1]
+    depends_on:
+      - T1
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1989.372875
+      at: '2026-07-29T01:00:45.458Z'
   - id: T3
-    title: "R-3/R-4 gate events reference their record (record/detail/notes); --actor canonical, --by alias"
-    state: todo
+    title: >-
+      R-3/R-4 gate events reference their record (record/detail/notes); --actor canonical, --by
+      alias
+    state: done
     verify: cd cli && npm test
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1933.086125
+      at: '2026-07-29T01:01:20.964Z'
   - id: T4
-    title: "R-5 unknown-flag guard — per-command FLAGS table in the dispatcher"
-    state: todo
+    title: R-5 unknown-flag guard — per-command FLAGS table in the dispatcher
+    state: done
     verify: cd cli && npm test
-    depends_on: [T3]
+    depends_on:
+      - T3
+    evidence:
+      cmd: cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1922.356333
+      at: '2026-07-29T01:02:25.794Z'
   - id: T5
-    title: "docs — cli/README.md + house2-shaper SKILL.md canonicalize --actor and scope the handoff bar"
-    state: todo
+    title: docs — cli/README.md + house2-shaper SKILL.md canonicalize --actor and scope the handoff bar
+    state: done
     verify: house validate
-    depends_on: [T2, T4]
+    depends_on:
+      - T2
+      - T4
+    evidence:
+      cmd: house validate
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-29T01:03:23.426Z'

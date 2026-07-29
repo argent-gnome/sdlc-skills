@@ -406,3 +406,34 @@ Verdict **GO_WITH_FIXES** (fresh Fable reviewer, five lenses; record at `gates/p
   the `commands` table keys exactly.
 - Ordering: T2 depends on T1 (same file, inherits scoping); T4 depends on T3 (encodes gate's final
   flags); T5 last. Suite compiles/passes at every task boundary.
+
+## As-built — Unit 01 (reconciled 2026-07-29, branch `slice/0003-house-v2-s3-smoke-findings-kernel-fixes`)
+
+T1–T5 all `done` with evidence in `tasks.yaml`; suite **67 → 72 tests**, `house validate` exit **0**.
+Commits off `base_sha` `474ba42`: `dc127eb` (T1) · `fbd8d6d` (T2) · `ccab5ff` (T3) · `611949a` (T4) ·
+`8b7e1d0` (T5).
+
+**Built exactly as planned.** Every task's Step-3 literal code landed verbatim — no edits to the
+sequencing, the seams, or the test assertions. The plan's five folded plan-check items all held: M1 (the
+dispatch precondition — `house validate` was green on 0003's own frontmatter before T1), M2 (T4's test
+uses `run(cwd, …)` → `{out, code}`), A1–A5.
+
+**Deviations from the plan: none.** Two things the plan did not say, recorded here rather than absorbed:
+
+- **Spec R-5 reconciled to the shipped exemption.** R-5's literal text was "every `house` command
+  rejects a flag it does not consume"; the shipped `FLAGS` table deliberately omits `hook`, and any
+  command absent from the table skips the guard. That narrowing was a plan-check advisory (A4) folded
+  into the plan and into the kickoff `plan_check_commitments`, but it never reached the spec. `spec.md`
+  R-5 now states it, citing ADR-0004 — a documentation reconcile, not a behavior change.
+- **The `FLAGS` table permits a superset of each command's real flags** (e.g. `--actor` on commands whose
+  writers currently ignore it). This is the plan's stated posture — over-permitting is harmless,
+  under-permitting breaks a suite test — not drift.
+
+**Known limitation of the R-1 matcher, surfaced by this very file.** `house validate --strict`, repo-wide
+*and* scoped to `0003`, reports one error on this `plan.md`. Cause: T1 Step 1's literal test fixture
+quotes a triple-backtick fence *inside* the fenced `js` block, so the non-greedy fence-stripping regex
+closes the outer fence early and leaves the fixture's own marker string exposed to the matcher. It is
+**pre-existing** — the old substring matcher flagged this file too — and the matcher is implemented
+exactly as R-1 specifies. Out of scope to fix here (the scope guards forbid a code change, and rewriting
+the fixture would weaken the test that proves R-1). Deferred to the roadmap backlog; the practical effect
+is that `0003`'s own handoff bar is `house validate` exit 0 plus a green suite, not `--strict`.

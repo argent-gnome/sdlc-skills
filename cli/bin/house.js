@@ -21,6 +21,25 @@ for (let i = 0; i < rest.length; i++) {
     if (i + 1 < rest.length && !rest[i + 1].startsWith('--')) { args[k] = rest[++i]; } else args[k] = true;
   } else pos.push(rest[i]);
 }
+// R-5: a silently-swallowed flag is the failure class this kernel exists to refuse.
+// Over-permitting here is harmless; under-permitting breaks a suite test — the 67-test net is the check.
+const FLAGS = {
+  init: [], 'new': ['kind', 'rigor', 'appetite', 'adr', 'actor'],
+  event: ['slice', 'payload', 'actor'],
+  gate: ['slice', 'verdict', 'actor', 'by', 'payload', 'notes'],
+  task: ['slice', 'evidence-cmd', 'note', 'skip-reason', 'actor'],
+  state: ['actor', 'note'], block: ['gate', 'note', 'actor'], unblock: ['note', 'actor'],
+  artifact: ['reason', 'note', 'actor'], unit: ['title', 'note', 'result', 'actor'],
+  pr: ['set', 'base-sha', 'actor'], log: ['slice', 'n', 'json'], status: ['json', 'slice'],
+  list: ['json'], next: ['slice', 'n', 'json'], index: [],
+  validate: ['strict', 'json', 'slice'], render: [],
+  // NO `hook` key (A4): hooks are advisory-only and never exit non-zero (ADR-0004, bin/house.js:51-53) —
+  // an absent key skips the guard entirely, which is the exemption, on purpose.
+};
+if (FLAGS[cmd]) for (const k of Object.keys(args)) if (!FLAGS[cmd].includes(k)) {
+  console.error(`house ${cmd}: unknown flag --${k}`);
+  process.exit(1);
+}
 const need = (root) => { if (!root) { console.error('not a house repo — run `house init`'); process.exit(2); } return root; };
 const root = cmd === 'init' ? process.cwd() : repoRoot();
 

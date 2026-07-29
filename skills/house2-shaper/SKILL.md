@@ -47,7 +47,7 @@ path loses to `docs/slices/<id>/spec.md`, its forced transition into planning lo
 
 Write `docs/slices/<id>/spec.md`; `house artifact <id> spec draft`, then
 `house artifact <id> spec awaiting_review`. ⛔ **The user reviews the written spec.** Then
-`house gate spec_review --slice <id> --verdict approved --by <user>` and
+`house gate spec_review --slice <id> --verdict approved --actor <user>` and
 `house artifact <id> spec approved`. **Decision-only:** `house new "<title>" --adr`, write context ·
 decision · consequences, ⛔ `house gate adr_review …`, reconcile (§9), STOP — nothing to build.
 
@@ -80,8 +80,8 @@ Write the `kickoff` block into `slice.yaml` per `cli/schema/kickoff.yaml`. **Tha
 contract** — nothing rides alongside it in prose, which is why sender and receiver can no longer diverge.
 Bump `version` on every reissue. **Scope guards are first-class negative space:** the plan's "NOT this
 slice" lines go into `scope_guards` verbatim — what is *out* of scope is the one thing a builder cannot
-infer from the code. Dispatch the doctrine §9 reconcile-subagent, then `house validate --strict` (green,
-no surviving `[NEEDS CLARIFICATION` marker) and `house state <id> ready`. Hand to a `house2-orchestrator`.
+infer from the code. Dispatch the doctrine §9 reconcile-subagent, then `house validate --strict --slice <id>`
+(green, no surviving `[NEEDS CLARIFICATION` marker) and `house state <id> ready`. Hand to a `house2-orchestrator`.
 
 ## Gates — never cross silently
 

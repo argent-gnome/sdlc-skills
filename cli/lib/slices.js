@@ -94,10 +94,14 @@ export function recordGate(root, gate, args) {
   const dir = sliceDir(root, args.slice);
   mkdirSync(join(dir, 'gates'), { recursive: true });
   const extra = typeof args.payload === 'string' ? JSON.parse(args.payload) : (args.payload ?? {});
-  const rec = { gate, verdict: args.verdict, by: args.by ?? 'agent',
+  const rec = { gate, verdict: args.verdict, by: args.actor ?? args.by ?? 'agent',   // R-4: --actor canonical, --by legacy alias
     recorded_at: new Date().toISOString(), notes: args.notes ?? null, ...extra };   // plan_check passes must_fix[]/advisory_folded[] here
   writeYaml(join(dir, 'gates', `${gate}.yaml`), rec);
-  appendEvent(root, 'gate.recorded', { slice: args.slice, actor: rec.by, payload: { gate, verdict: args.verdict } });
+  const payload = { gate, verdict: args.verdict, by: rec.by,
+    record: `docs/slices/${args.slice}/gates/${gate}.yaml` };                        // R-3: the event points at the record…
+  if (Object.keys(extra).length) payload.detail = Object.keys(extra);                // …and names what detail lives there
+  if (rec.notes) payload.notes = rec.notes;
+  appendEvent(root, 'gate.recorded', { slice: args.slice, actor: rec.by, payload });
   // auto-clear a blocked_on that names the gate just recorded — but ONLY on a passing verdict; a
   // changes_requested record is exactly when the block must hold (spec R-2)
   const man = readYaml(join(dir, 'slice.yaml'));

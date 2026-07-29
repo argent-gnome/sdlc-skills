@@ -3,13 +3,13 @@ id: 0003-house-v2-s3-smoke-findings-kernel-fixes
 title: house v2 S3 — smoke findings kernel fixes
 kind: slice
 rigor: slice
-state: ready
+state: live_check
 blocked_on: null
 appetite: 1 session
 created: '2026-07-29'
 branch: slice/0003-house-v2-s3-smoke-findings-kernel-fixes
-base_sha: null
-pr: null
+base_sha: 474ba422953218e98c9d5d6dd0cb94789b5433cd
+pr: https://github.com/argent-gnome/sdlc-skills/pull/9
 adrs: []
 artifacts:
   spec:
@@ -18,7 +18,13 @@ artifacts:
   plan:
     state: approved
     updated: '2026-07-29'
-units: []
+units:
+  - id: '01'
+    title: smoke-findings kernel fixes (T1-T5)
+    state: finalized
+    result: DONE
+    dispatched: '2026-07-29T00:58:01.848Z'
+    finalized: '2026-07-29T01:11:13.377Z'
 kickoff:
   version: 1
   unit: '01'

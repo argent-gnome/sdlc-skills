@@ -301,3 +301,26 @@ test('setState: abandoning emits the terminal slice.abandoned event too', () => 
   setState(repo, id2, 'parked', {});
   assert.deepEqual(readEvents(repo).events.at(-1).event, 'slice.state_changed');
 });
+
+test('recordGate R-3/R-4: event carries record ref + detail keys + notes; --actor wins, --by aliases', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'gated', {});
+  recordGate(repo, 'merge_gate', { slice: id, verdict: 'GO', actor: 'reviewer',
+    payload: '{"lenses":["seams"],"findings":[]}', notes: 'clean' });
+  const rec = readYaml(join(repo, 'docs/slices', id, 'gates/merge_gate.yaml'));
+  assert.equal(rec.by, 'reviewer');                                  // R-4: --actor honored
+  assert.deepEqual(rec.lenses, ['seams']);                           // payload still lands in the yaml
+  const ev = readFileSync(join(repo, '.house/events.jsonl'), 'utf8').trim().split('\n')
+    .map(JSON.parse).filter(e => e.event === 'gate.recorded').pop();
+  assert.equal(ev.actor, 'reviewer');
+  assert.equal(ev.payload.record, `docs/slices/${id}/gates/merge_gate.yaml`);   // R-3: reference, not blob
+  assert.deepEqual(ev.payload.detail, ['lenses', 'findings']);
+  assert.equal(ev.payload.notes, 'clean');
+  assert.equal(ev.payload.by, 'reviewer');
+  // legacy --by still works when --actor is absent
+  recordGate(repo, 'spec_review', { slice: id, verdict: 'approved', by: 'jake' });
+  const ev2 = readFileSync(join(repo, '.house/events.jsonl'), 'utf8').trim().split('\n')
+    .map(JSON.parse).filter(e => e.event === 'gate.recorded').pop();
+  assert.equal(ev2.actor, 'jake');
+  assert.equal(ev2.payload.detail, undefined);                       // no extra keys → no detail field
+});
