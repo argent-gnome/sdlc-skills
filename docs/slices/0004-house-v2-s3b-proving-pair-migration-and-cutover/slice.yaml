@@ -3,7 +3,7 @@ id: 0004-house-v2-s3b-proving-pair-migration-and-cutover
 title: house v2 S3b — v2 cutover (rename + v1 archive)
 kind: slice
 rigor: slice
-state: building
+state: gating
 blocked_on: null
 appetite: 2 sessions
 created: '2026-07-29'
