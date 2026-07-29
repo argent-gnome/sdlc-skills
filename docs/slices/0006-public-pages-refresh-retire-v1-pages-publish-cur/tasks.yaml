@@ -35,10 +35,18 @@ tasks:
       at: '2026-07-29T23:03:27.034Z'
   - id: T3
     title: index.html rewritten for the current ecosystem + whole-site link check (R-2)
-    state: todo
+    state: done
     verify: >-
       house validate && ! grep -inE 'two skills|pair of claude|dev-command-center' docs/index.html |
       grep -q . && grep -q 'house-shaper' docs/index.html && grep -q 'quickstart.html'
       docs/index.html && grep -q 'process.html' docs/index.html
     depends_on:
       - T2
+    evidence:
+      cmd: >-
+        house validate && ! grep -inE "two skills|pair of claude|dev-command-center" docs/index.html
+        | grep -q . && grep -q "house-shaper" docs/index.html && grep -q "quickstart.html"
+        docs/index.html && grep -q "process.html" docs/index.html
+      cmd_exit: 0
+      summary: ''
+      at: '2026-07-29T23:05:34.896Z'
