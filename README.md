@@ -47,6 +47,10 @@ Then `/reload-skills` (or restart Claude Code). Update later with `git pull` (sy
 
 The docs are also published as web pages: **<https://argent-gnome.github.io/sdlc-skills/>**.
 
+New to **house v2**? Start with **[docs/quickstart.md](docs/quickstart.md)** (stand up a project on the
+kernel) and **[docs/process-v2.md](docs/process-v2.md)** (how the v2 loop works) — the three pages below
+describe the **v1** process, still live for repos that have not migrated.
+
 - **[docs/process.md](docs/process.md)** (or `docs/process.html`) — the full loop, the gates, and the
   three reviews, written so you can understand the system without reading the skills.
 - **[docs/best-practices.md](docs/best-practices.md)** (or `docs/best-practices.html`) — the general

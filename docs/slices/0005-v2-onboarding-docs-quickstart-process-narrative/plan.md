@@ -141,3 +141,51 @@ Verdict **GO_WITH_FIXES** (fresh Fable reviewer; record at `gates/plan_check.yam
 - Spec coverage: R-1→T1, R-2→T2, R-3→T3; the two grep-checkable scenarios are machine-enforced via
   tasks.yaml verify chains; the two "dev understands" scenarios are the merge-gate reviewer's to judge.
 - Ordering: T1 before T2 (T2 links T1's table); T3 last (matches tasks.yaml `depends_on`).
+
+## As-built — Unit 01 (reconciled 2026-07-29, branch `slice/0005-v2-onboarding-docs-quickstart-process-narrative`)
+
+T1–T3 all `done` with evidence in `tasks.yaml` (each verify chain run as written, exit 0); `house validate`
+exit **0**. Commits off `base_sha` `182448e`: `f164cdf` (T1) · `3d32758` (T2) · `30809ba` (T3) · `f467e34`
+(a post-T1 correction, below). Shipped surface: new `docs/quickstart.md` and `docs/process-v2.md`; +4/−0 on
+`docs/process.md`, +6/−0 on `docs/process.html` (banner only, zero deletions as T3 Step 4 required), +4/−0
+on `README.md`. All four folded plan-check items held: **M1** (html banner uses GitHub blob URLs), **M2/M3**
+(the containment and no-enum-chaining greps ran unweakened as the evidence gate), **A2 partial** (README
+sentence added; the `docs/index.html` card stayed declined).
+
+**Two deviations from the plan text, both forced by the spec's own machine-checked scenarios.** Neither
+weakens a check; both are recorded here rather than absorbed:
+
+- **T1 Step 1 §5 — "link the ADR" is honored one hop away, not inline.** The ADR's *filename*
+  (`0004-house2-coexistence-and-advisory-hooks.md`) contains the string `house2`, so a bare prose link in
+  the adoption section would have put a `house2` hit on a non-pipe line and failed R-1's containment check
+  (`! grep 'house2' docs/quickstart.md | grep -v '|' | grep -q .`) — the check the plan itself declared
+  must not be weakened to pass. Resolved by placement: the live ADR link sits in the names-table note row
+  (a pipe-containing line, and semantically its home — ADR-0004 *is* the migration-window decision), while
+  the adoption section names "ADR-0004" in plain text and routes the reader through
+  [`cli/README.md`](../../../cli/README.md)'s adoption paragraph, which links it. Spec R-1(b)'s "linked"
+  and R-1(c)'s "only `house2` mentions" both still hold.
+- **Same root cause in T2 §6.** The doctrine's path also contains `house2`
+  (`skills/house2-orchestrator/references/doctrine.md`), so the Authorities bullet was written as one
+  physical line carrying both the doctrine link and the pointer to the quickstart's names table — which is
+  exactly what T2 Step 2's fourth verify (`! grep -v 'quickstart' docs/process-v2.md | grep -q 'house2'`)
+  asks for.
+
+**One planned mention that did not ship, deliberately.** T2 Step 1 §4 anticipated a literal
+`INCONCLUSIVE` in the gate section, and M2 loosened the grep to tolerate single enum tokens. The shipped
+prose **paraphrases instead** ("A reviewer that could not reach a verdict has not passed the work") and
+names no verdict token at all — strictly more compliant with scope guard #4 (no restating schema-owned
+enumerations) and with spec R-2's "the doc defers to the schema" scenario. The doc still points at
+[`cli/schema/enums.yaml`](../../../cli/schema/enums.yaml) as the authority, so nothing is lost.
+
+**One factual correction after T1's tick** (`f467e34`, `docs/quickstart.md` only): the first draft claimed
+`house init` "expects a repo to exist" and that every non-`--version` command exits 2 outside a tracked
+repo. Neither matched the implementation — `house init` never checks for `.git`, and `house hook` is the
+deliberate advisory-only exception that stays silent outside a tracked repo ([ADR-0004](../../adr/0004-house2-coexistence-and-advisory-hooks.md)).
+The git-first ordering survives on its real justification (`.gitattributes`/`.gitignore` only do their job
+inside a repo). Source-of-truth correction, not a scope change.
+
+**No `.html` mirrors for the two new docs — by decision, not oversight.** `docs/quickstart.md` and
+`docs/process-v2.md` ship markdown-only: the `docs/index.html` card was declined at plan-check (A2, above)
+because that page is v1 surface owned by the parked cutover slice `[0004]`, and mirroring the new pages
+without an entry point would publish two orphans. Recorded in `docs/dev-state.md`'s Gotchas so the missing
+mirrors are not read as a slip, and in the roadmap row so the cutover picks them up.

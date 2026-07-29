@@ -3,12 +3,12 @@ id: 0005-v2-onboarding-docs-quickstart-process-narrative
 title: v2 onboarding docs — quickstart + process narrative
 kind: docs-only
 rigor: patch
-state: ready
+state: live_check
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0005-v2-onboarding-docs-quickstart-process-narrative
-base_sha: null
+base_sha: 182448e068f10b225cce79e60d33571b9982d3e1
 pr: null
 adrs: []
 artifacts:
@@ -18,7 +18,13 @@ artifacts:
   plan:
     state: approved
     updated: '2026-07-29'
-units: []
+units:
+  - id: '01'
+    title: onboarding docs (T1-T3)
+    state: finalized
+    result: DONE
+    dispatched: '2026-07-29T14:26:32.204Z'
+    finalized: '2026-07-29T14:41:23.060Z'
 kickoff:
   version: 1
   unit: '01'
