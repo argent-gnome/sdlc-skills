@@ -1,0 +1,15 @@
+tasks:
+  - id: T1
+    title: "retire v1 pages (md+html x3) to archive/docs-v1 + signpost README + link retargeting (R-1)"
+    state: todo
+    verify: house validate && test -f archive/docs-v1/process.html && test -f archive/docs-v1/README.md && ! test -f docs/best-practices.html
+  - id: T2
+    title: "quickstart.html + process.html mirrors — faithful, self-contained, blob-linked (R-3)"
+    state: todo
+    verify: house validate && grep -q 'generated from' docs/quickstart.html && grep -q 'generated from' docs/process.html && ! grep -nE 'src="https?://|href="https?://' docs/quickstart.html docs/process.html | grep -v 'github.com/argent-gnome/sdlc-skills' | grep -q .
+    depends_on: [T1]
+  - id: T3
+    title: "index.html rewritten for the current ecosystem + whole-site link check (R-2)"
+    state: todo
+    verify: house validate && ! grep -in 'two skills\|dev-command-center' docs/index.html | grep -q . && grep -q 'quickstart.html' docs/index.html && grep -q 'process.html' docs/index.html
+    depends_on: [T2]

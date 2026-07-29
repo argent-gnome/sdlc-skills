@@ -3,8 +3,8 @@ id: "0006-public-pages-refresh-retire-v1-pages-publish-cur"
 kind: spec
 slice: "0006-public-pages-refresh-retire-v1-pages-publish-cur"
 title: "public pages refresh — retire v1 pages, publish current docs"
-status: "shaping 2026-07-29"
-state: draft
+status: "shaped 2026-07-29; user-approved (manual mirrors accepted)"
+state: approved
 ---
 # Spec — public pages refresh: retire v1 pages, publish current docs
 
