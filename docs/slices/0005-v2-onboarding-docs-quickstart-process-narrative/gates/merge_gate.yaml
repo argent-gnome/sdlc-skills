@@ -1,0 +1,29 @@
+gate: merge_gate
+verdict: GO
+by: reviewer
+recorded_at: '2026-07-29T14:46:59.160Z'
+notes:
+  - >-
+    dev-state manual block says Remaining: unit finalize — written pre-finalize, mild staleness, not
+    an onboarding-doc claim; self-corrects at ship reconcile
+  - >-
+    work.discovered/deviation.raised events not narrated in process-v2 — no spec section promises
+    them; preference, not a finding
+lenses:
+  - seams
+  - accuracy
+  - regression
+  - gate-compliance
+findings: []
+reruns:
+  tests: cd cli && npm test — 72 pass 0 fail
+  validate: house validate exit 0; house validate --strict --slice 0005 exit 0
+  greps: >-
+    T1/T2/T3 verify chains re-run exactly as written in tasks.yaml — all exit 0; house2 hits
+    confirmed pipe-line-only in quickstart, quickstart-line-only in process-v2
+  quickstart_walkthrough: >-
+    scratch dir: git init + house init + gates.yml seed + commit — kernel-tracked (house status exit
+    0), .house/{events.jsonl,gates.yml} present, .gitattributes union-merge, index.json gitignored;
+    also verified: house --version exit 0 anywhere, untracked commands exit 2, hook silent+exit 0
+    untracked, init idempotent, user hooks preserved on re-init, init works without .git (f467e34
+    corrections both true)
