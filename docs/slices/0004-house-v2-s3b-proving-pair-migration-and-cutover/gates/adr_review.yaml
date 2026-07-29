@@ -1,0 +1,7 @@
+gate: adr_review
+verdict: approved
+by: jake
+recorded_at: '2026-07-29T14:04:11.184Z'
+notes: >-
+  ADR-0004 amendment: proving pair corrected to sdlc-skills + athlete-data (edge-scanner dead);
+  adoption-counts condition

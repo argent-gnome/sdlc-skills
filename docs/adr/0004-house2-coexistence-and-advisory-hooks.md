@@ -54,6 +54,21 @@ chosen by which skill it invokes.
 edge-scanner) has been migrated and the v2 loop has driven real work end-to-end. S3 owns the rename, the
 archive, and the `install.sh` consequences of both.
 
+> **Amendment (2026-07-29, recorded at S3b shaping, adr_review under slice
+> `0004-house-v2-s3b-proving-pair-migration-and-cutover`):** the proving pair named above is corrected —
+> **edge-scanner is dead** (its own dev-state records "PROJECT STOPPED — Phase 0 go/no-go = NO-GO,
+> 2026-07-22"; it entered the pair by accident) and can never drive work through v2. The second proving
+> repo is **athlete-data**. The cutover condition becomes: *sdlc-skills has driven real work through v2
+> end-to-end* (satisfied — slices `0002` and `0003` shipped 2026-07-28/29 through the full v2 loop)
+> *AND athlete-data ships its first slice through the v2 kernel end-to-end* (all hard gates, user
+> live-check). **Adoption of already-shaped work counts** toward that condition, provided the spec and
+> plan enter the kernel's records with their gates recorded — spec_review re-affirmed by the user, and a
+> fresh v2 plan_check run before `ready`. The cutover slice (`0004`) is **parked** on that second
+> condition, holding the rename inventory and archive mechanics in its research digest. No migration
+> work is owed to edge-scanner; its only loose end (an unmerged worktree holding its NO-GO ADR) belongs
+> to that repo, not to this program. The roadmap's stricter per-repo phrasing is reconciled to this
+> amendment — this ADR is the authority.
+
 **2. Hooks ship advisory-only in S2.** One `house hook <event>` subcommand (stdin JSON → stdout JSON),
 wired by `house init` as a *merged* block into `.claude/settings.json`:
 

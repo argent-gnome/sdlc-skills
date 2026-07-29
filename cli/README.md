@@ -104,6 +104,22 @@ declared as an agent type), per ADR-0004.
 
 ## Not in this slice
 
-`house archive`, `house adopt`, blocking hooks / `PreToolUse` deny, atomic (tmp+rename) writes, and the
-desktop IDE all land in later slices. The v2 skills that drive this CLI (`house2-*`) and doctrine v2 ship in
-the same slice as these commands but in a later unit.
+`house archive`, blocking hooks / `PreToolUse` deny, atomic (tmp+rename) writes, and the desktop IDE all land
+in later slices. The v2 skills that drive this CLI (`house2-*`) and doctrine v2 ship in the same slice as
+these commands but in a later unit.
+
+**`house adopt` is not coming — it was cancelled, not deferred.** Earlier drafts of this section promised it
+in a later slice; the **2026-07-29 amendment** to
+[ADR-0004](../docs/adr/0004-house2-coexistence-and-advisory-hooks.md) settled the onboarding story without a
+new command:
+
+- **Greenfield repos** — repos with no work already shaped — onboard with **`house init`**, which is
+  shipped.
+- **Already-shaped work** — an existing spec/plan that predates the kernel — is adopted by a
+  **`house2-shaper` session**, not by a command: the shaper imports the artifacts into the slice's records
+  (`house new` + `house artifact`) and **records their gates** — `spec_review` re-affirmed by the user, and
+  a **fresh** v2 `plan_check` run before the slice goes `ready`. Adoption done that way counts as a real v2
+  slice for the cutover condition in that amendment.
+
+Adoption is a judgment pass over artifacts that a command could only fake, so it stays where the judgment
+is. Nothing in the CLI is owed here.
