@@ -63,7 +63,7 @@ reports the problem instead of throwing.
 | `house new "<title>" [--kind <kind>] [--rigor <tier>] [--appetite <s>]` | Mint identity: `docs/slices/NNNN-slug/` + `slice.yaml` + `spec.md`; `mkdir` is the allocator lock. |
 | `house new "<title>" --adr` | Mint an ADR in `docs/adr/` on its own series, MADR-lite frontmatter (`status:` + `state:`). |
 | `house event <type> --slice <id> --payload '<json>'` | Append a free-form event to the OBSERVED log. |
-| `house gate <name> --slice <id> --verdict <v> [--by <who>] [--notes <s>] [--payload '<json>']` | Write `gates/<name>.yaml` + a `gate.recorded` event. Unknown gate or verdict is refused. On a **passing** verdict it auto-clears a `blocked_on` naming that gate (and emits `slice.unblocked`). |
+| `house gate <name> --slice <id> --verdict <v> [--actor <who>] [--notes <s>] [--payload '<json>']` (`--by` is a legacy alias for `--actor`) | Write `gates/<name>.yaml` + a `gate.recorded` event referencing that record. Unknown gate or verdict is refused. On a **passing** verdict it auto-clears a `blocked_on` naming that gate (and emits `slice.unblocked`). |
 | `house task done <task> --slice <id> [--evidence-cmd "<cmd>"]` | Run the proof, record exit/summary, flip to `done` — or refuse. |
 | `house task block <task> --slice <id> --note "<why>"` | Mark blocked; the note is required. |
 | `house state <id> <to>` | Guarded transition: legal edge + required gate records + passing verdicts. Terminal transitions also emit `slice.shipped` / `slice.abandoned`. |
@@ -78,7 +78,7 @@ reports the problem instead of throwing.
 | `house next [--slice <id>] [--json]` | The ready set: `todo` tasks whose `depends_on` are all `done`. Only workable states offer work — `idea`/`parked`/`abandoned` never do. |
 | `house log [--slice <id>] [--n <N>] [--json]` | Recent OBSERVED events, newest last, with the unparseable-line skip count. |
 | `house index` | Rebuild `.house/index.json` from DECLARED state. |
-| `house validate [--strict] [--json]` | Lint the repo: enum drift, orphan files, skips without reasons, done-without-evidence, external mockup refs (incl. style-attr `url()`), ADR states, `blocked_on` shape, `tasks.yaml` structure, kickoff-brief structure, roadmap `[NNNN]` refs pointing at slices that exist. `--strict` also blocks on `[NEEDS CLARIFICATION]`. |
+| `house validate [--strict] [--json] [--slice <id>]` | Lint the repo: enum drift, orphan files, skips without reasons, done-without-evidence, external mockup refs (incl. style-attr `url()`), ADR states, `blocked_on` shape, `tasks.yaml` structure, kickoff-brief structure, approval-boundary drift between `slice.yaml` and doc frontmatter, roadmap `[NNNN]` refs pointing at slices that exist. `--strict` also blocks on a well-formed `[NEEDS CLARIFICATION …]` marker in the handoff artifacts (`spec.md`/`plan.md`) — code spans, fences and HTML comments do not count. `--slice <id>` narrows every per-slice check to that one slice (unknown id exits 1, never green) and skips the repo-level ADR/roadmap lints. |
 | `house render dev-state` | Regenerate the Active/In-flight/Slated/Parked/Done half of `docs/dev-state.md`. |
 | `house hook <event>` | Hook entry point (stdin JSON → stdout JSON) — see below. |
 | `house --version` | Print `cli/package.json`'s `version` to stdout, exit 0. Pre-dispatch: works from any cwd, house repo or not (slice `0002`). |
