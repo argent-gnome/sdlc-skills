@@ -1,0 +1,8 @@
+gate: live_check
+verdict: approved
+by: jake
+recorded_at: '2026-07-29T01:21:15.922Z'
+notes: null
+evidence: >-
+  user exercised all checks in-session: --slice typo refused, --sliec flag refused, gate event with
+  record/detail/notes/actor, strict residual exactly one recorded error
