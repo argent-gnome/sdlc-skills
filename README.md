@@ -46,18 +46,20 @@ but no longer resolves is removed before linking, so a rename or an archive neve
 The docs are also published as web pages: **<https://argent-gnome.github.io/sdlc-skills/>**.
 
 New to **house v2**? Start with **[docs/quickstart.md](docs/quickstart.md)** (stand up a project on the
-kernel) and **[docs/process-v2.md](docs/process-v2.md)** (how the v2 loop works). The three pages below
-describe the **v1** process, retired at the 2026-07-29 cutover — they are kept as background on the
-lifecycle and the token economics, not as instructions for a live loop.
+kernel) and **[docs/process-v2.md](docs/process-v2.md)** (how the v2 loop works). The three documents
+below describe the **v1** process, retired at the 2026-07-29 cutover; they were pulled off the published
+site on 2026-07-29 and archived to [`archive/docs-v1/`](archive/docs-v1/README.md) — kept as background
+on the lifecycle and the token economics, not as instructions for a live loop.
 
-- **[docs/process.md](docs/process.md)** (or `docs/process.html`) — the full loop, the gates, and the
-  three reviews, written so you can understand the system without reading the skills.
-- **[docs/best-practices.md](docs/best-practices.md)** (or `docs/best-practices.html`) — the general
-  theory: how context is paid for per message, the three cost tiers, the plugin trap, subagents vs.
-  registered agents, and the rules that fall out of it.
-- **[docs/case-study.md](docs/case-study.md)** (or `docs/case-study.html`) — those rules applied here:
-  the move-by-move refactor of the old `dev-command-center` plugin into these three skills, with the
-  before/after token numbers.
+- **[archive/docs-v1/process.md](archive/docs-v1/process.md)** (with its rendered `process.html`
+  alongside) — the full loop, the gates, and the three reviews, written so you can understand the system
+  without reading the skills.
+- **[archive/docs-v1/best-practices.md](archive/docs-v1/best-practices.md)** (with its rendered
+  `best-practices.html` alongside) — the general theory: how context is paid for per message, the three
+  cost tiers, the plugin trap, subagents vs. registered agents, and the rules that fall out of it.
+- **[archive/docs-v1/case-study.md](archive/docs-v1/case-study.md)** (with its rendered
+  `case-study.html` alongside) — those rules applied here: the move-by-move refactor of the old
+  `dev-command-center` plugin into these three skills, with the before/after token numbers.
 
 ## Versioning
 

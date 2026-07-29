@@ -1,158 +1,192 @@
 <!doctype html>
+<!-- generated from process-v2.md — edit the markdown, then re-render this mirror -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>House SDLC — how it works</title>
+<title>How the v2 process works</title>
 <style>
-  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --stop:#d23f3f; --ok:#2e9e5b; --code:#f3f5f9; }
+  :root { --ink:#1a1d24; --mut:#5b6472; --line:#e3e7ee; --bg:#fbfcfe; --accent:#3a6df0; --code:#f3f5f9; }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
   .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
   h1 { font-size: 2rem; margin: 0 0 .25em; letter-spacing:-.02em; }
   h2 { font-size: 1.25rem; margin: 2.4em 0 .6em; padding-top:.6em; border-top:1px solid var(--line); }
+  a { color:var(--accent); }
   .lede { color:var(--mut); font-size:1.05rem; margin-top:0; }
+  .nav { font-size:.9rem; margin-bottom:1.5em; }
+  .muted { color:var(--mut); }
   table { border-collapse: collapse; width:100%; margin:1em 0; font-size:.94rem; }
   th,td { text-align:left; padding:.5em .7em; border-bottom:1px solid var(--line); vertical-align:top; }
   th { color:var(--mut); font-weight:600; font-size:.82rem; text-transform:uppercase; letter-spacing:.04em; }
   code { background:var(--code); padding:.12em .4em; border-radius:5px; font-size:.88em; }
   pre { background:var(--code); padding:16px 18px; border-radius:10px; overflow:auto; font-size:.84rem; line-height:1.5; border:1px solid var(--line); }
-  .stop { color:var(--stop); font-weight:600; }
-  .ok { color:var(--ok); font-weight:600; }
-  .pill { display:inline-block; background:#eef2fb; color:var(--accent); border-radius:999px; padding:.1em .7em; font-size:.8rem; font-weight:600; }
-  .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:1em 0; }
-  .card { border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff; }
-  .card h3 { margin:.1em 0 .3em; font-size:1rem; }
-  .card p { margin:.2em 0; color:var(--mut); font-size:.9rem; }
-  .muted { color:var(--mut); }
-  .nav { font-size:.9rem; margin-bottom:1.5em; }
+  pre code { background:none; padding:0; font-size:1em; }
+  li { margin:.35em 0; }
   footer { margin-top:3em; color:var(--mut); font-size:.85rem; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="nav muted"><b>the house SDLC</b> · <a href="best-practices.html">best practices</a> · <a href="case-study.html">case study</a></p>
-  <h1>The house SDLC</h1>
-  <div style="border:1px solid var(--line); border-left:4px solid var(--accent); background:#fff; border-radius:10px; padding:14px 18px; margin:1.1em 0 1.6em; font-size:.94rem;">
-    <b>This page describes the v1 process</b> — retired at the 2026-07-29 cutover; the v1 skills are
-    archived at <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/archive/skills-v1/README.md">archive/skills-v1/</a> and no longer install. The v2
-    kernel-based process is the live one: start with <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/docs/quickstart.md">quickstart</a>,
-    understand it via <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/docs/process-v2.md">process-v2</a>.
-    Read this page as background on the lifecycle, not as instructions.
-  </div>
-  <p class="lede">One build process, run the same way every time, by three cooperating Claude Code skills —
-  a plugin-free, token-lean successor to the old <code>dev-command-center</code> plugin.</p>
+  <p class="nav muted"><a href="index.html">home</a> ·
+  <a href="quickstart.html">quickstart</a> ·
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/archive/docs-v1/process.md">the v1 process</a> ·
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md">CLI reference</a></p>
 
-  <h2>Why three skills</h2>
-  <p>Every message re-sends the whole session context, so a loaded skill body is a tax paid <em>per
-  message</em>. A single monolithic SDLC skill makes every session pay for the whole lifecycle. Splitting
-  along the seam you already work on means each session loads only its half.</p>
-  <div class="two" style="grid-template-columns:1fr 1fr 1fr">
-    <div class="card">
-      <span class="pill">shaper</span>
-      <h3>house-shaper</h3>
-      <p>A user-run shaping session for the fuzzy front end — research, brainstorm, spec, plan, plan-check,
-      doc reconcile. Turns an idea into ready-to-build work (or a recorded decision), then hands off. Torn
-      down after.</p>
-    </div>
-    <div class="card">
-      <span class="pill">conductor</span>
-      <h3>house-orchestrator</h3>
-      <p>One long-lived, resumable session. Sequences the slice, holds the gates, writes kickoff prompts,
-      dispatches reviews to subagents, reconciles.</p>
-    </div>
-    <div class="card">
-      <span class="pill">executor</span>
-      <h3>house-builder</h3>
-      <p>Ephemeral. Implements ONE plan unit — TDD, stack gates, self-review, doc reconcile — reports back,
-      then is torn down (its heavy log dies with it).</p>
-    </div>
-  </div>
-  <p class="muted">The orchestrator stays light because it never reads diffs itself: reviews run in subagents,
-  and only the verdict (a few hundred tokens) returns.</p>
+  <h1 id="how-the-v2-process-works">How the v2 process works</h1>
 
-  <h2>The loop</h2>
-<pre>
-        ┌──────────────── house-shaper (per idea, its own session) ───────────────┐
- idea → │ intake → research (subagents) → brainstorm ⛔spec → plan → plan-check     │
-        │ (subagent) → reconcile (subagent) → hand off ready-to-build work (or ADR) │
-        └────────────────────────────────────┬─────────────────────────────────────┘
-                                              ▼  (a new orchestrator session picks it up)
-       ┌──────────────────────── house-orchestrator ────────────────────────┐
-resume → ready repo → confirm shaper artifacts ⛔ → 5 dispatch a builder
-                       hand off a unit   ┌──────── house-builder (per unit) ───────┐
-                                ────────▶│ 5 build (TDD) · 6 self-review · stack │
-                                         │ gates · doc-reconcile (subagent) · 8 CI │
-                       report back   ◀────│ → DONE / CONCERNS / BLOCKED           │
-                                │        └────────────────────────────────────────┘
-   7 merge-gate (subagent; PANEL if high-stakes) ⛔ → 7½ health-sweep (advisory)
-   → 9 live/device ⛔ → 9½ docs audit → 10 PR+merge → 11 reconcile + dev-state
-       └────────────────────────────────────────────────────────────────────┘
-</pre>
-  <p><span class="stop">⛔ hard gate</span> — never auto-clears, even unattended. The shaper stops for spec
-  review + mockup sign-off; the orchestrator stops to confirm shaper artifacts, for live validation, CI red,
-  any plan deviation, and any irreversible/outward-facing action.</p>
+  <p class="lede">The records on disk <strong>are</strong> the process. Three roles act over those records
+  — one turns fuzzy work into a reviewed spec and plan, one sequences the build and holds the gates, one
+  implements a single unit — and none of them is allowed to trust its own memory instead of the files.
+  Every gate between the stages fails closed, and the two judgments that cannot honestly be handed to a
+  machine reviewer stay with you.</p>
 
-  <h2>The three reviews</h2>
-  <table>
-    <tr><th>review</th><th>when</th><th>what</th></tr>
-    <tr><td><b>plan-check</b> (4¼)</td><td>before code</td><td>one subagent critiques the plan vs app+spec through 5 lenses → must-fix + advisory. Cheapest place to catch a design flaw.</td></tr>
-    <tr><td><b>merge-gate</b> (7)</td><td>before merge</td><td>independent refute-biased subagent on the diff → <span class="ok">GO</span>/<span class="stop">NO-GO</span>. The rigor dial escalates to the multi-lens <b>panel</b> for high-stakes slices.</td></tr>
-    <tr><td><b>health-sweep</b> (7½)</td><td>after GO</td><td>advisory whole-app workflow → ranked debt backlog. Never blocks; need not run every slice.</td></tr>
-  </table>
-  <p class="muted">Reviews are subagents/workflows, never inline — the heavy reading happens in throwaway
-  context, and independence (eyes that never saw the build) is the whole point of the merge-gate.</p>
+  <p>That is the whole design. The rest of this page is why each piece is shaped the way it is.</p>
 
-  <h2>Model routing — the fable-profile</h2>
-  <p>Judgment and throughput run on different models, on purpose. <b>Fable 5</b> (the Mythos-class tier above
-  Opus) takes the roles where a wrong-but-plausible judgment is expensive: the shaper session, plan-check, the
-  merge-gate reviewer, the panel's refuters, and the escalation re-dispatch for a twice-BLOCKED unit.
-  <b>Opus 4.8</b> takes the throughput roles: the orchestrator session (conversational sequencing), the
-  builders, panel + health-sweep lenses, research digests, and doc-reconcile. Opus builds / Fable reviews is
-  deliberate — the merge-gate gets independence of <em>architecture</em> (a different model's blind spots) on
-  top of independence of fresh eyes. Fable unavailable → the <b>opus-profile</b> stands in (single-Opus
-  reviewer; Opus refuters), noted in the retro. (Decision record:
-  <code>docs/adr/0001-fable-profile-model-routing.md</code>.)</p>
+  <h2 id="the-three-roles">The three roles</h2>
 
-  <h2>Resume</h2>
-  <p>The orchestrator is closeable and reopenable. It rebuilds its picture from a per-project
-  <code>docs/dev-state.md</code> — a short plaintext tracker (active slice, stage, next action, blocked-on,
-  slated, done) updated at transitions and session end. You resume by starting a <em>fresh</em> session that
-  reads this file, not by reloading a heavy transcript.</p>
+  <p>Three separate sessions, named in the
+  <a href="quickstart.html#current-skill-names">quickstart's skill-names table</a>. They are separate
+  because context is paid for per message: a session that loads only its half of the lifecycle is a
+  session that stays cheap and stays focused.</p>
 
-  <h2>Stack gates (enforced by the builder)</h2>
-  <table>
-    <tr><th>stack</th><th>gates</th></tr>
-    <tr><td>iOS</td><td><code>swift test</code> · SwiftLint · <code>xcodebuild</code> · XCUITest (virtualization-robust, serialized, real destination sim, CI executes the bundle); <b>no destructive SwiftData</b> — <code>@Model</code> migrations exercised against a previous-schema store.</td></tr>
-    <tr><td>web</td><td>tests · typecheck · lint · build; <b>no silently-destructive migrations</b> (a fresh CI DB passing is not proof against a populated one).</td></tr>
-  </table>
+  <p><strong>The shaper</strong> takes something fuzzy — an idea, a backlog line, an audible mid-build —
+  and turns it into work that can be built: a spec you approved, a plan, an independent plan-check
+  verdict, and a versioned kickoff brief. Or, when the thing is really a decision rather than a piece of
+  work, into an ADR. It is a session you run, and it converges by dialogue: one question at a time, before
+  it writes.</p>
 
-  <h2>Docs &amp; hygiene doctrine</h2>
-  <p>The skills share one runtime reference — <code>references/doctrine.md</code> in the orchestrator — read
-  on-demand (never preloaded) at resume, finish, reconcile, and any doc write. It defines four things:</p>
+  <p><strong>The conductor</strong> drives one slice from ready to merged. It resumes from the records,
+  dispatches a build session per plan unit, holds every gate, runs the merge review, and reconciles the
+  docs. Its binding constraint: <strong>the conductor never edits product code.</strong> The moment it
+  does, the review it is about to hold stops being independent — it would be reviewing itself. Sequencing
+  and judging are its job; building is not.</p>
+
+  <p><strong>The builder</strong> implements exactly one unit, then is torn down. Its binding constraint is
+  the mirror image: <strong>it sees only its kickoff brief</strong> — the unit's tasks, the scope guards,
+  the stakes, whether the run is attended — never the conductor's transcript or the slice's whole history.
+  That is deliberate. A brief that has to be interpreted is a brief that will be interpreted differently
+  at the merge review, so a brief that is missing something is not guessed at; the builder stops and says
+  what is missing.</p>
+
+  <p>The asymmetry between those two constraints is what keeps the loop honest. The conductor cannot mark
+  its own homework, and the builder cannot quietly widen its own scope.</p>
+
+  <h2 id="records-first">Records first</h2>
+
+  <p>The substrate is three layers of files, with <strong>exactly one writer each</strong>:</p>
+
   <ul>
-    <li><b>Doc model</b> — one job per doc: <code>dev-state.md</code> (operational tracker),
-    <code>roadmap.md</code> (durable spine), <code>docs/adr/</code> (decision records — <em>why</em>),
-    specs/plans (per-slice design authority), retros, <code>docs/health/</code>.</li>
-    <li><b>dev-state allowlist</b> — <code>dev-state.md</code> is operational only; durable strategy and
-    decisions are banned and route to roadmap/ADR. The test: <em>if it's still true three slices from now, it
-    isn't dev-state.</em></li>
-    <li><b>Routing</b> — a decision → an ADR; a scope change → roadmap; progress → dev-state; as-built drift →
-    reconcile the spec/plan in the slice PR.</li>
-    <li><b>Hygiene</b> — per-merge the branch/worktree/stash are torn down; resume runs a git-reality check
-    (squash-merge caveat: <code>git branch --merged</code> misses squash-merged branches — confirm via PR
-    state).</li>
+    <li><strong>Declared</strong> — the slice directory (<code>docs/slices/&lt;id&gt;/</code>): its
+    manifest, spec, plan, task list, gate records, and per-unit reports. Written by whichever role owns the
+    current step.</li>
+    <li><strong>Observed</strong> — the append-only event log at <code>.house/events.jsonl</code>. Written
+    only by the <code>house</code> CLI and its hooks. Nothing else appends, ever, which is what makes it
+    evidence rather than commentary.</li>
+    <li><strong>Derived</strong> — a rebuildable cache. Delete it, rebuild it, get the same bytes. It is
+    gitignored, because anything derivable is derived and never hand-written.</li>
   </ul>
-  <p>All of these are wired into the loop — the <b>resume git-reality check</b> and <b>repo-setup readiness</b> at stage 2, <b>per-merge teardown</b> at finish, and the <b>dev-state lint</b> + <b>broad hygiene sweep</b> at reconcile — under a conservative <b>auto-fix boundary</b>: only provably-safe cleanups happen automatically; anything destructive is surfaced for the user, never silent.</p>
 
-  <h2>Dropped vs the old plugin</h2>
-  <p class="muted">The board + GitHub-Pages tracker, public-board privacy rules, onboarding scanner,
-  self-improvement auditor loop, autonomous-mode setup, and the plugin/marketplace machinery — all removed or
-  replaced by the lightweight <code>dev-state.md</code>. The lifecycle discipline stayed; the token weight
-  didn't.</p>
+  <p>Two consequences follow, and they are the point of the whole arrangement.</p>
 
-  <footer>House SDLC skills · see <code>skills/house-shaper</code>, <code>skills/house-orchestrator</code> and <code>skills/house-builder</code> ·
-  generated from <code>docs/process.md</code>.</footer>
+  <p><strong>A session that dies loses nothing.</strong> Any role can resume cold from the files alone —
+  <code>house status</code> for where things stand, <code>house next</code> for what is workable right now.
+  This is not a theory here: during the v2 skills build, a <code>/clear</code> killed the conductor
+  mid-slice; the in-flight subagent finished and wrote its records anyway, and a fresh conductor picked the
+  slice up from those records with nothing lost
+  (<a href="https://github.com/argent-gnome/sdlc-skills/blob/main/docs/slices/0001-house-v2-s2-skills-rewrite/retro.md">retro</a>).
+  It was an accident, not a drill.</p>
+
+  <p><strong>What you remember outside a record is already lost.</strong> Transcripts are never parsed as
+  state. A verdict that exists only in a conversation is not a verdict; a halt that was only announced is a
+  halt nobody can resume from. If it matters, some command wrote it down.</p>
+
+  <p>The anti-lock-in clause holds throughout: <code>git clone</code> plus a text editor stays sufficient.
+  The CLI makes the contract cheap to honor and hard to fake, but a rule you can only obey by running a
+  tool would be a bug in the rule.</p>
+
+  <h2 id="gates">Gates</h2>
+
+  <p>A gate is a rung the work cannot climb past without a <strong>record</strong> saying it passed.
+  <code>house state</code> refuses to advance a slice when the required record is absent, and refuses again
+  when the record exists but its verdict is not a passing one. Four rules govern them:</p>
+
+  <ul>
+    <li><strong>An unrecorded gate did not run.</strong> Not "the conductor remembers it passed" — the
+    record, or nothing.</li>
+    <li><strong>Unsure whether a gate is hard? Treat it as hard.</strong></li>
+    <li><strong>A reviewer that could not reach a verdict has not passed the work.</strong> Too few lenses
+    ran, the tests never finished, the diff was unreadable — every one of those means run it again.</li>
+    <li><strong>A false stop is cheap; a false pass is not.</strong> That asymmetry is the entire design
+    rationale.</li>
+  </ul>
+
+  <p>Two rungs are irreducibly yours and are never self-approved by any session: <strong>spec review</strong>
+  — you agreeing the thing being built is the right thing — and the <strong>live check</strong>, where you
+  exercise the behavior in the real environment before the work is called done.</p>
+
+  <p><strong>Running unattended never downgrades a gate.</strong> When a brief says the run is unattended, a
+  hard gate does not quietly reduce a review panel to one reviewer, or one reviewer to the builder's own
+  word. It halts and waits for a human, recording the request so the wait is visible. The same holds when
+  the reviewer model is simply unavailable: halt, don't downgrade.</p>
+
+  <p>Which gates exist, what verdicts each one accepts, and which of those verdicts actually count as
+  passing are <strong>not listed here on purpose</strong>. They live in
+  <a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/schema/enums.yaml"><code>cli/schema/enums.yaml</code></a>,
+  which is the sole normative source for them along with the legal state transitions. A second copy of a
+  list is a second source of truth, and a second source of truth always drifts — so this page points, and
+  never restates.</p>
+
+  <h2 id="where-the-heavy-work-runs">Where the heavy work runs</h2>
+
+  <p>Reading a diff is expensive; holding a verdict is cheap. So every heavy reading job runs in a
+  <strong>subagent</strong> that reads in its own context and returns only its conclusion:</p>
+
+  <table>
+    <thead>
+      <tr><th>dispatched job</th><th>what it reads</th><th>what comes back</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>research</td><td>the problem space, prior art, the codebase</td><td>a digest the shaper can act on</td></tr>
+      <tr><td>plan-check</td><td>the spec and the plan, before any code exists</td><td>a verdict plus findings to fold in</td></tr>
+      <tr><td>merge review</td><td>the slice diff against the spec</td><td>a verdict plus findings, each citing a rule</td></tr>
+      <tr><td>reconcile</td><td>the affected specs, plans, ADRs, roadmap, dev-state</td><td>a list of exactly what it changed</td></tr>
+    </tbody>
+  </table>
+
+  <p>The conductor therefore stays light across a long slice — it never loads a diff into its own context —
+  and the expensive reading dies with the subagent that did it.</p>
+
+  <p>The merge review is also where <strong>reviewer independence</strong> is bought, along three axes:
+  <em>perspective</em> — a fresh context that did not write the code; <em>architecture</em> — a different
+  model family than the one that built it, so the reviewer's blind spots are not the builder's; and
+  <em>context</em> — it reads the diff and the spec, never the build transcript. It re-runs the build and
+  the tests itself, because a builder's report is a claim and the reviewer's own green run is the
+  evidence.</p>
+
+  <p>The review is per slice, not per unit — the diff reviewed is the whole branch against the base commit
+  recorded when the branch was cut. The builder's own self-review still happens per unit, but it answers a
+  different question ("does this unit do what the plan said") and never substitutes for the slice-level
+  one.</p>
+
+  <h2 id="authorities">Authorities</h2>
+
+  <p>When this page and one of these disagree, this page is wrong.</p>
+
+  <ul>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/skills/house-orchestrator/references/doctrine.md">The doctrine</a></strong>
+    — the process law: the kernel contract, the stage table, the rigor dial, the gate rules, the doc
+    routing table. Read on demand by the sessions themselves, never preloaded.</li>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/schema/enums.yaml"><code>cli/schema/enums.yaml</code></a></strong>
+    — the sole normative source for states, gate names, verdicts, transitions, and event types.</li>
+    <li><strong><a href="https://github.com/argent-gnome/sdlc-skills/blob/main/cli/README.md"><code>cli/README.md</code></a></strong>
+    — every <code>house</code> command and the rules the code enforces rather than merely documents.</li>
+    <li><strong><a href="quickstart.html"><code>quickstart.md</code></a></strong> — starting a project,
+    seeding your gates file, adopting work that was shaped before the kernel existed.</li>
+  </ul>
+
+  <footer>House SDLC · <a href="index.html">home</a> · generated from <code>docs/process-v2.md</code> —
+  edit the markdown, then re-render this mirror.</footer>
 </div>
 </body>
 </html>

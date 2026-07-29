@@ -124,3 +124,65 @@ Verdict **GO_WITH_FIXES** (fresh Fable reviewer; record at `gates/plan_check.yam
 - Ordering: T1 first (the URL for `process.html` must be vacant before T2 recreates it), T2 before T3
   (the index links files that must exist for the link check).
 - The mirrors' fidelity is the merge-gate reviewer's to judge against the markdown side-by-side.
+
+## As-built — Unit 01 (reconciled 2026-07-29, branch `slice/0006-public-pages-refresh-retire-v1-pages-publish-cur`)
+
+T1–T3 all `done` with evidence in `tasks.yaml` (each verify chain run as written, `cmd_exit: 0`);
+`house validate` exit **0**. Commits off `base_sha` `9b413c5`: `9149e9d` (T1) · `313f921` (T2) · `fedef01`
+(T3). Shipped surface: the six v1 page files moved to `archive/docs-v1/` as **pure renames** (git records
+0 changed lines for all six, so the archived content is byte-identical — no content loss), a new
+`archive/docs-v1/README.md` signpost, `README.md`'s three v1 bullets retargeted at `archive/docs-v1/…`,
+one nav line each in `docs/quickstart.md` and `docs/process-v2.md`, new `docs/quickstart.html` and
+`docs/process.html` mirrors, and `docs/index.html` rewritten (records-first lede · three one-sentence
+skill cards · one kernel paragraph · two cards to the mirrors · the already-correct three-skill footer
+kept). All plan-check folds held as written: **M1** (T1's grep tested markdown *link syntax* only — the
+roadmap's and dev-state's historical prose about `docs/process.md`/`.html` inside the `[0004]`/`[0005]`
+write-ups was left exactly as written, never reworded to satisfy a check), **M2** (no raw `.md` href
+survives in either mirror or the index), **A2** (the broadened negatives and positive canonical-name
+greps ran on `index.html`), **A3** (table/`pre` styles taken from the archived pages), **A4**
+(`id="current-skill-names"` is live in the quickstart mirror and `process.html` links it), **A6**
+(the delete-then-recreate of `docs/process.html` behaved exactly as predicted — `9149e9d` records the
+move as a rename with zero content change, `313f921` creates the new file, and no commit has two
+claimants to the path).
+
+**Three deliberate additions the mirrors make beyond their markdown.** Recorded because "faithful render"
+is the merge-gate reviewer's bar, and these are the only three places the HTML says something its `.md`
+source does not:
+
+- **A `home ·` link prepended to each mirror's nav line.** The markdown nav lines carry only sibling-doc
+  links; the mirrors add `<a href="index.html">home</a> ·` in front, because on the published site the
+  rewritten index is the entry point these pages are reached through and there was no way back to it.
+- **A `<footer>` in each mirror carrying the "generated from `<file>.md` — edit the markdown, then
+  re-render this mirror" note.** This restates, where a human reader can see it, the same drift direction
+  the required top-of-file HTML comment states for whoever opens the source. The comment (the
+  spec-mandated form) is present in both files as well; the footer is additive, not a substitution.
+- **`id=` attributes on every heading**, kebab-cased from the heading text so existing and future
+  `#fragment` links resolve. T2 Step 1 required this only for `id="current-skill-names"` (fold A4); it was
+  applied uniformly to all 14 headings across the two mirrors rather than to that one heading, so the
+  mirrors' anchors match the markdown's GitHub-rendered anchors throughout.
+
+Nothing else in either page is new prose. **One rendering choice, not an addition:** `docs/process-v2.md`'s
+five `---` rules are absorbed by the shared stylesheet's `h2 { border-top: … }` rather than emitted as
+`<hr>` — each of the five immediately precedes an `## ` heading, so the visual break lands in exactly the
+same place. No `<hr>` element appears in either mirror.
+
+**Directory link targets were resolved to files.** T2 Step 2's blob-URL policy and T3 Step 2's fold **A1**
+both anticipated a link to a *directory* (`archive/skills-v1/`), with A1 adding a prefix-match branch to
+the link check for that case. As built, the quickstart mirror points that link at
+`archive/skills-v1/README.md` — the directory's own signpost — with the visible link text still reading
+`archive/skills-v1/`. Net effect: every one of the **28** hrefs across the three pages targets a real file
+or an in-page anchor (15 GitHub blob URLs, all paths present in `git ls-files`; 12 relative
+`.html`/`#fragment` links, all resolving inside `docs/`; 1 repo-root URL). No *shipped* link therefore
+needed A1's prefix-match branch — so rather than leave a folded commitment merely asserted, the branch was
+exercised against a throwaway fixture: a real directory target resolved with and without a trailing slash
+(`archive/skills-v1/`, `cli/schema`), and a bogus one (`does/not/exist/`) failed. The fold is built and
+demonstrated, not decorative; the fixture was removed and never committed.
+
+**The link-check script was deliberately not committed.** T3 Step 2 says "script it"; the plan's own No-Go
+says "NOT adding a build step or generator dependency". Both hold only if the script lives outside the
+tree, so it was written and run from the session scratchpad and its result (28/28 hrefs resolve) reported
+through the build session's records — the repo gains no script, no dev dependency, and no file a future
+reader could mistake for part of the site build. The check is re-runnable from its greps at any time; the
+standing invariant it enforces is prose, in `dev-state.md`'s Gotchas ("`docs/*.html` are hand-authored —
+mirror any `docs/*.md` prose change into the matching `.html` by hand"), which is where it belongs given
+[ADR-0003](../../adr/0003-no-hosted-ci-local-verification.md)'s no-hosted-CI stance.
