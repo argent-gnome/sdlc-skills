@@ -3,12 +3,12 @@ id: 0004-house-v2-s3b-proving-pair-migration-and-cutover
 title: house v2 S3b — v2 cutover (rename + v1 archive)
 kind: slice
 rigor: slice
-state: shaping
+state: building
 blocked_on: null
 appetite: 2 sessions
 created: '2026-07-29'
 branch: slice/0004-house-v2-s3b-proving-pair-migration-and-cutover
-base_sha: null
+base_sha: 9a39d7651cf789088ff785eadfd5dd6689418f20
 pr: null
 adrs: []
 artifacts:
@@ -16,15 +16,50 @@ artifacts:
     state: approved
     updated: '2026-07-29'
   plan:
-    state: awaiting_review
+    state: approved
     updated: '2026-07-29'
 units:
   - id: '01'
-    title: >-
-      v2 cutover — archive v1, rename to canonical, sweep live surfaces, install.sh prune, close
-      records
+    title: v2 cutover (T1-T4)
     state: finalized
     result: DEVIATION
-    dispatched: '2026-07-29T18:39:12.777Z'
+    dispatched: '2026-07-29T18:35:51.967Z'
     finalized: '2026-07-29T19:07:41.734Z'
-kickoff: null
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+    - T2
+    - T3
+    - T4
+  scope_guards:
+    - >-
+      NOT renaming `docs/adr/0004-house2-coexistence-and-advisory-hooks.md` (the record OF the
+      decision).
+    - >-
+      NOT touching historical records — docs/slices/* specs/plans/research, .house/events.jsonl,
+      retros, ADR bodies (beyond ADR-0004's short cutover-done note, R-4).
+    - NOT any change under `cli/` (the CLI has no house2 references).
+    - NOT deleting v1 content — archive, never erase.
+    - >-
+      NOT running install.sh against the real global skills dir — live_check owns that, with the
+      user.
+  stakes: >-
+    High-leverage, low-code. The global skill namespace for every repo on this machine changes at
+    merge; a wrong prune deletes another tool's links; a missed sweep leaves a defect-by-definition
+    house2 name live. Build runs in a git worktree so nothing global changes before merge.
+  attended: true
+  plan_check_commitments:
+    - 'M1: prune only dangling symlinks whose readlink target is under this repo''s $SKILLS_SRC.'
+    - >-
+      M2: banner reword covers BOTH false claims (still-live AND '0004, parked'); verify checks
+      both.
+    - >-
+      M3: README's tokenless still-live/unarchived lines swept by name; T4 verify includes
+      README.md.
+    - >-
+      A3: the seeded four-case CLAUDE_SKILLS_DIR scratch test is T3's behavioral verify — paste
+      output.
+    - 'A4: build in a worktree; never check the slice branch out in the main working tree.'
+  stack: node

@@ -1,0 +1,51 @@
+gate: plan_check
+verdict: GO_WITH_FIXES
+by: reviewer
+recorded_at: '2026-07-29T18:32:15.337Z'
+notes: null
+must_fix:
+  - >-
+    T3 prune scope broader than spec R-3: plan.md:78-79 removes ANY dangling symlink in $SKILLS_DST;
+    spec.md:70-71 scopes it to links pointing into THIS repo skills/ — constrain with a
+    readlink-under-$SKILLS_SRC check or the installer deletes other tools dangling links
+    (user-global state)
+  - >-
+    T4 banner reword incomplete: process.md:5 / process.html:40 also say the v2 rewrite lands at the
+    cutover (slice 0004, parked) — false after ship (unparked; rewrite is its own slice per spec
+    Rabbit Holes); plan.md:94-97 only targets the still-live phrase and tasks.yaml:19 verify cannot
+    catch it — reword the whole banner and add a parked/lands-at-the-cutover check
+  - >-
+    R-4 scenario gap: README.md:52 (still live for repos that have not migrated) and README.md:22-23
+    (v1 is untouched, unarchived, and still the default) carry no house2 token, so T2 verify
+    (tasks.yaml:9) cannot force them and T4 still-live check (tasks.yaml:19) omits README.md — name
+    these lines in T2 step 1 and extend the still-live verify to README.md
+advisory:
+  - >-
+    T3 step 2 names the wrong override variable: install.sh:8 is
+    SKILLS_DST=${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills} — export CLAUDE_SKILLS_DIR, not
+    SKILLS_DST; also a scratch run still executes the CLI npm-install block (install.sh:31-46) under
+    set -e
+  - >-
+    research §2 inventory is stale as the digest itself warns: live surface is now 40 lines/10 files
+    (quickstart.md 4, process-v2.md 1 — landed by 0005; roadmap now 6 incl. new lines 36/52/147).
+    Plan T2 file list happens to be complete, but soften plan.md:11-13 authoritative-list wording to
+    re-grep-at-build-start
+  - >-
+    T3 tasks.yaml verify (grep -q prune install.sh) is satisfied by a comment — encode the
+    scratch-dir behavioral test (dangling pruned, valid link and real dir untouched, idempotent) as
+    the scripted verify
+  - >-
+    consider building in a git worktree: with in-tree branch work the machine-global symlink
+    namespace breaks from T1 commit until merge+install (plan.md:18-23 accepts a short window); a
+    worktree defers the change to merge, shrinking the window to zero
+  - >-
+    docs/index.html:51 footer still says two skills: house-orchestrator + house-builder — stale live
+    published surface flagged by research §2a, covered by neither spec nor plan; one-line fix or
+    record work.discovered
+  - >-
+    T4 verify passes if a target file is missing (grep exit 2 also inverts to success) — harmless
+    now, noted
+  - >-
+    dev-state.md:53-54 and roadmap parked narratives (cutover is now parked / coexistence window
+    stays open) become false at ship — they carry house2 tokens so T2 eyeballing will surface them,
+    but T4 step 3 should name them explicitly

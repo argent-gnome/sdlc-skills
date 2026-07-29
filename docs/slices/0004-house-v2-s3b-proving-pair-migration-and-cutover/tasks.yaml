@@ -35,7 +35,7 @@ tasks:
       summary: 'install.sh prune: all 4 cases correct, idempotent on re-run — PASS'
       at: '2026-07-29T18:52:27.050Z'
   - id: T4
-    title: banners reworded, ADR-0004 closure note, roadmap/dev-state truth (R-4, R-5)
+    title: "banners fully reworded (incl. parked claim), index.html footer, ADR-0004 closure note, board truth (R-4, R-5)"
     state: done
     verify: >-
       ! grep -in 'still live\|unarchived\|parked\|not done yet' README.md docs/process.md
