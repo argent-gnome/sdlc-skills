@@ -3,12 +3,12 @@ id: 0006-public-pages-refresh-retire-v1-pages-publish-cur
 title: public pages refresh — retire v1 pages, publish current docs
 kind: docs-only
 rigor: patch
-state: ready
+state: building
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0006-public-pages-refresh-retire-v1-pages-publish-cur
-base_sha: null
+base_sha: 9b413c58659289f0ef06f6322bf5452cb9aa92c0
 pr: null
 adrs: []
 artifacts:
@@ -18,7 +18,12 @@ artifacts:
   plan:
     state: approved
     updated: '2026-07-29'
-units: []
+units:
+  - id: '01'
+    title: pages refresh (T1-T3)
+    state: building
+    result: null
+    dispatched: '2026-07-29T22:55:47.683Z'
 kickoff:
   version: 1
   unit: '01'
