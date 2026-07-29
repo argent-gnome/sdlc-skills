@@ -3,8 +3,8 @@ id: "0003-house-v2-s3-smoke-findings-kernel-fixes"
 kind: spec
 slice: "0003-house-v2-s3-smoke-findings-kernel-fixes"
 title: "house v2 S3 — smoke findings kernel fixes"
-status: "shaping 2026-07-29"
-state: draft
+status: "shaped 2026-07-29; user-approved"
+state: approved
 ---
 # Spec — house v2 S3: smoke findings kernel fixes
 

@@ -3,8 +3,8 @@ id: "0003-house-v2-s3-smoke-findings-kernel-fixes"
 kind: plan
 slice: "0003-house-v2-s3-smoke-findings-kernel-fixes"
 title: "S3 smoke-findings kernel fixes — implementation plan"
-status: "planned 2026-07-29"
-state: draft
+status: "planned 2026-07-29; plan-check GO_WITH_FIXES folded"
+state: approved
 ---
 # S3 Smoke-Findings Kernel Fixes Implementation Plan
 
@@ -26,7 +26,13 @@ dependencies.
 
 **Test conventions:** `cli/test/validate.test.js` tests `validate(repo, args)` in-process against
 `mkTmpRepo()` fixtures; `cli/test/slices.test.js` tests lib functions in-process; `cli/test/cli.test.js`
-spawns the real bin via its local `run()` helper. Match those seams.
+spawns the real bin via its local `run(cwd, ...args)` helper, which returns `{out, code}` (out merges
+stdout+stderr on failure). Match those seams.
+
+**Dispatch precondition (plan-check M1):** slice 0003's own records must not trip the very check T2
+adds — its `spec.md`/`plan.md` frontmatter `state:` was reconciled to `approved` at shaping handoff,
+matching the manifest. The builder verifies `house validate` exits 0 **before starting T1**; if it is
+red on 0003 frontmatter, the records drifted — reconcile them, never weaken the check.
 
 ---
 
@@ -64,6 +70,9 @@ test('validate --strict R-1: well-formed markers only, handoff artifacts only, -
   const scoped = validate(repo, { strict: true, slice: b }).filter(e => e.level === 'error');
   assert.equal(scoped.length, 1);
   assert.match(scoped[0].path, new RegExp(b));
+  // plan.md is a handoff artifact too (A3)
+  writeFileSync(join(aDir, 'plan.md'), '# Plan\n\n[NEEDS CLARIFICATION: sequencing?]\n');
+  assert.match(validate(repo, { strict: true, slice: a }).map(e => e.msg).join(' '), /NEEDS CLARIFICATION/);
 });
 
 test('validate --slice: unknown id fails closed, never green', () => {
@@ -80,18 +89,21 @@ Run: `cd cli && node --test test/validate.test.js`
 Expected: FAIL — first test errors on the backtick line (`NEEDS CLARIFICATION marker present`), second
 test fails because `validate` does not throw.
 
-- [ ] **Step 3: Implement.** In `cli/lib/validate.js`:
+- [ ] **Step 3: Implement.** In `cli/lib/validate.js` (A1: two surgical inserts — do NOT delete the
+`const dir` / `statSync` lines below the loop head):
 
-Replace the loop head (lines 17–21):
+Directly after `const slicesDir = join(root, 'docs/slices');` (line 17), insert:
 
 ```js
-  const slicesDir = join(root, 'docs/slices');
   if (args.slice != null) {                              // fail closed: a typo'd --slice must never look green
     if (typeof args.slice !== 'string') throw new Error('--slice needs a slice id');
     if (!existsSync(join(slicesDir, args.slice))) throw new Error(`unknown slice: ${args.slice}`);
   }
-  if (!existsSync(slicesDir)) return errs;
-  for (const d of readdirSync(slicesDir).sort()) {
+```
+
+As the first statement inside the `for (const d of readdirSync(slicesDir).sort())` loop (line 19), insert:
+
+```js
     if (args.slice && d !== args.slice) continue;
 ```
 
@@ -158,6 +170,9 @@ test('validate R-2: manifest-approved artifact must have agreeing frontmatter; m
   const spec = readFileSync(join(dir, 'spec.md'), 'utf8');
   writeFileSync(join(dir, 'spec.md'), spec.replace('state: draft', 'state: approved'));
   assert.deepEqual(validate(repo, {}).filter(e => e.level === 'error'), []);
+  // manifest approved + frontmatter done (past the boundary) also clean — boundary check, not equality (A2)
+  writeFileSync(join(dir, 'spec.md'), spec.replace('state: draft', 'state: done'));
+  assert.deepEqual(validate(repo, {}).filter(e => e.level === 'error'), []);
   // deleting the frontmatter does not evade the check — it degrades to a warning finding
   writeFileSync(join(dir, 'spec.md'), '# Spec — no frontmatter at all\n');
   const evaded = validate(repo, {});
@@ -204,12 +219,12 @@ git commit -m "feat(validate): approval-boundary cross-check between slice.yaml 
 ### Task 3: R-3 + R-4 — gate events reference their record; one actor spelling
 
 **Files:**
-- Modify: `cli/lib/slices.js#recordGate` (lines 90–113)
+- Modify: `cli/lib/slices.js#recordGate` (lines 90–112)
 - Test: `cli/test/slices.test.js`
 
-- [ ] **Step 1: Write the failing test** — append to `cli/test/slices.test.js` (it already imports
-`mkTmpRepo`, `mint`, `readYaml`, and reads `.house/events.jsonl` in existing tests; reuse those
-patterns):
+- [ ] **Step 1: Write the failing test** — append to `cli/test/slices.test.js` (`recordGate`,
+`mkTmpRepo`, `mint`, and `readYaml` are already imported there — no import changes needed; reuse the
+existing events.jsonl-reading pattern):
 
 ```js
 test('recordGate R-3/R-4: event carries record ref + detail keys + notes; --actor wins, --by aliases', () => {
@@ -236,8 +251,6 @@ test('recordGate R-3/R-4: event carries record ref + detail keys + notes; --acto
 });
 ```
 
-(Add `recordGate` to the existing `../lib/slices.js` import line.)
-
 - [ ] **Step 2: Run to verify it fails**
 
 Run: `cd cli && node --test test/slices.test.js`
@@ -257,7 +270,7 @@ Expected: FAIL — `rec.by` is `'agent'` (actor ignored) and `ev.payload.record`
   appendEvent(root, 'gate.recorded', { slice: args.slice, actor: rec.by, payload });
 ```
 
-(The two later `appendEvent` calls for `slice.unblocked` already use `rec.by` — unchanged.)
+(The later `appendEvent` for `slice.unblocked` at `slices.js:108` already uses `rec.by` — unchanged.)
 
 - [ ] **Step 4: Run the full suite**
 
@@ -283,19 +296,21 @@ spawn helper and `mkTmpRepo`):
 ```js
 test('unknown flags fail closed (R-5)', () => {
   const repo = mkTmpRepo();
-  const bad = run(['gate', 'merge_gate', '--slice', 'x', '--verdict', 'GO', '--actro', 'reviewer'], repo);
-  assert.equal(bad.status, 1);
-  assert.match(bad.stderr, /unknown flag --actro/);
-  const good = run(['validate', '--strict'], repo);                 // known flags still parse
-  assert.equal(good.status, 0);
+  const bad = run(repo, 'gate', 'merge_gate', '--slice', 'x', '--verdict', 'GO', '--actro', 'reviewer');
+  assert.equal(bad.code, 1);
+  assert.match(bad.out, /unknown flag --actro/);
+  assert.equal(run(repo, 'validate', '--strict').code, 0);          // known flags still parse
 });
 ```
+
+(M2: this uses the file's real seam — `run(cwd, ...args)` returning `{out, code}`, where `out` merges
+stdout+stderr on failure. There is no `.status`/`.stderr`.)
 
 - [ ] **Step 2: Run to verify it fails**
 
 Run: `cd cli && node --test test/cli.test.js`
-Expected: FAIL — the typo'd flag is swallowed and the command proceeds to its own error path (or
-succeeds), so status/stderr don't match.
+Expected: FAIL — the typo'd flag is swallowed today, so the command proceeds to its own error path and
+`bad.out` never mentions the flag.
 
 - [ ] **Step 3: Implement.** In `cli/bin/house.js`, insert between the parser loop and `const need`:
 
@@ -311,7 +326,9 @@ const FLAGS = {
   artifact: ['reason', 'note', 'actor'], unit: ['title', 'note', 'result', 'actor'],
   pr: ['set', 'base-sha', 'actor'], log: ['slice', 'n', 'json'], status: ['json', 'slice'],
   list: ['json'], next: ['slice', 'n', 'json'], index: [],
-  validate: ['strict', 'json', 'slice'], render: [], hook: [],
+  validate: ['strict', 'json', 'slice'], render: [],
+  // NO `hook` key (A4): hooks are advisory-only and never exit non-zero (ADR-0004, bin/house.js:51-53) —
+  // an absent key skips the guard entirely, which is the exemption, on purpose.
 };
 if (FLAGS[cmd]) for (const k of Object.keys(args)) if (!FLAGS[cmd].includes(k)) {
   console.error(`house ${cmd}: unknown flag --${k}`);
@@ -366,6 +383,19 @@ git commit -m "docs(cli): --actor canonical, handoff bar scoped to --slice"
 - NOT scoping changes to non-strict `house validate` coverage.
 - NOT new subcommands or renamed flags beyond documenting `--actor` as canonical.
 - NOT a general argument-parsing layer — the guard is a plain per-command table.
+
+## Plan-check (2026-07-29)
+
+Verdict **GO_WITH_FIXES** (fresh Fable reviewer, five lenses; record at `gates/plan_check.yaml`). Folded:
+- **M1** → dispatch precondition block in the header (0003's own frontmatter reconciled at handoff;
+  builder verifies `house validate` exit 0 before T1). Also in the kickoff `plan_check_commitments`.
+- **M2** → T4's test rewritten to the real `run(cwd, ...args)` → `{out, code}` seam.
+- **A1** → T1's edit instructions are now two surgical inserts, preserving lines 20–21.
+- **A2** → T2 asserts manifest-`approved` + frontmatter-`done` stays clean (boundary, not equality).
+- **A3** → T1 asserts a `plan.md` marker trips.
+- **A4** → `hook` deliberately absent from `FLAGS` (advisory-only, ADR-0004), with an in-code comment.
+- **A5** → line refs corrected (recordGate 90–112; single later `appendEvent` at 108; imports already
+  present in `slices.test.js`).
 
 ## Self-review (run before handoff)
 

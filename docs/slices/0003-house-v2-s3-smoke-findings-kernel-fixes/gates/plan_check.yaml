@@ -1,0 +1,33 @@
+gate: plan_check
+verdict: GO_WITH_FIXES
+by: reviewer
+recorded_at: '2026-07-29T00:46:46.309Z'
+notes: null
+must_fix:
+  - >-
+    M1: T2 Step 4 / T5 verify will fail deterministically — plan claims 0003 spec frontmatter was
+    reconciled to approved at handoff, but spec.md:7 says state: draft while slice.yaml:16 says
+    approved; make the reconcile an explicit step/dispatch precondition (also plan.md frontmatter
+    when plan is approved), not a mid-build STOP
+  - >-
+    M2: T4 test snippet does not match the cli.test.js seam — local helper is run(cwd, ...args)
+    returning {out, code}, but the snippet calls run([args...], repo) and asserts .status/.stderr;
+    as written the test can never pass; rewrite as run(repo, "gate", ...) asserting .code and .out
+advisory:
+  - >-
+    A1: T1 says replace loop head lines 17-21 but the snippet only covers 17-19 plus an inserted
+    continue; a literal 17-21 replace deletes const dir/statSync (validate.js:20-21) causing a
+    ReferenceError — state the range as 17-19
+  - >-
+    A2: T2 test has no approved/done-skew assertion — an exact-equality implementation passes all
+    planned tests yet violates R-2; add one check (manifest approved + frontmatter done stays clean)
+  - >-
+    A3: T1 never puts a marker in plan.md — an implementation scanning only spec.md passes; add one
+    plan.md assertion
+  - >-
+    A4: FLAGS.hook=[] makes house hook exit 1 on any flag, conflicting with advisory-only hook
+    doctrine (bin/house.js:52-53, ADR-0004: a hook never exits non-zero); latent today since no hook
+    invocation passes flags — drop the hook key or record the decision
+  - >-
+    A5: cosmetic slips: recordGate is lines 90-112 not 90-113; there is one later appendEvent
+    (slices.js:108) not two; recordGate is already imported in slices.test.js:6

@@ -16,7 +16,36 @@ artifacts:
     state: approved
     updated: '2026-07-29'
   plan:
-    state: awaiting_review
+    state: approved
     updated: '2026-07-29'
 units: []
-kickoff: null
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+    - T2
+    - T3
+    - T4
+    - T5
+  scope_guards:
+    - NOT any change to v1 `house-*` skills or `merge-gate-panel.js`/`code-health-sweep.js`.
+    - NOT a migration of already-recorded events — history stays as written.
+    - NOT scoping changes to non-strict `house validate` coverage.
+    - NOT new subcommands or renamed flags beyond documenting `--actor` as canonical.
+    - NOT a general argument-parsing layer — the guard is a plain per-command table.
+  stakes: >-
+    Moderate. The validator is the kernel's fail-closed backbone: an over-eager --slice filter could
+    produce a false green at handoff, and an under-permitting FLAGS table breaks every scripted caller.
+    Both failure modes are netted by the existing 67-test suite plus the plan's discriminating tests.
+  attended: false
+  plan_check_commitments:
+    - >-
+      M1: 0003's own spec/plan frontmatter was reconciled to approved at handoff — builder verifies
+      `house validate` exit 0 BEFORE starting T1; if red, reconcile records, never weaken the check.
+    - >-
+      M2: T4's test uses the real run(cwd, ...args) -> {out, code} seam of cli.test.js — no
+      .status/.stderr fields exist.
+    - >-
+      A4: `hook` is deliberately absent from the FLAGS table (advisory-only, ADR-0004) — do not add it.
+  stack: node
