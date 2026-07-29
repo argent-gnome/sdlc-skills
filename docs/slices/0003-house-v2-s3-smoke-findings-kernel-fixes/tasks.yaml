@@ -1,0 +1,24 @@
+tasks:
+  - id: T1
+    title: "R-1 strict marker matcher (well-formed, handoff artifacts only) + --slice scoping fails closed"
+    state: todo
+    verify: cd cli && npm test
+  - id: T2
+    title: "R-2 approval-boundary cross-check between slice.yaml artifacts and doc frontmatter"
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [T1]
+  - id: T3
+    title: "R-3/R-4 gate events reference their record (record/detail/notes); --actor canonical, --by alias"
+    state: todo
+    verify: cd cli && npm test
+  - id: T4
+    title: "R-5 unknown-flag guard — per-command FLAGS table in the dispatcher"
+    state: todo
+    verify: cd cli && npm test
+    depends_on: [T3]
+  - id: T5
+    title: "docs — cli/README.md + house2-shaper SKILL.md canonicalize --actor and scope the handoff bar"
+    state: todo
+    verify: house validate
+    depends_on: [T2, T4]
