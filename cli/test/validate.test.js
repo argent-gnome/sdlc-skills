@@ -169,3 +169,39 @@ test('validate: kickoff brief — required fields, version int, tasks must exist
   assert.match(msgs, /kickoff.*version.*integer/);
   assert.match(msgs, /kickoff.*T9/);
 });
+
+test('validate --strict R-1: well-formed markers only, handoff artifacts only, --slice scoping', () => {
+  const repo = mkTmpRepo();
+  const a = mint(repo, 'slice a', {});
+  const b = mint(repo, 'slice b', {});
+  const aDir = join(repo, 'docs/slices', a);
+  const bDir = join(repo, 'docs/slices', b);
+  // prose/backtick mentions must NOT trip: quoted marker in backticks, fenced block, bracketless prose
+  writeFileSync(join(aDir, 'spec.md'), readFileSync(join(aDir, 'spec.md'), 'utf8') +
+    '\nthe `[NEEDS CLARIFICATION` literal in a code span\n' +
+    '```\n[NEEDS CLARIFICATION: inside a fence]\n```\n' +
+    'prose about NEEDS CLARIFICATION without brackets\n');
+  // retro.md discussing a real marker must NOT trip (not a handoff artifact)
+  writeFileSync(join(aDir, 'retro.md'), '# Retro\n\n[NEEDS CLARIFICATION: retros may discuss markers]\n');
+  assert.deepEqual(validate(repo, { strict: true }).filter(e => e.level === 'error'), []);
+  // a real well-formed marker in slice b's spec trips repo-wide strict…
+  writeFileSync(join(bDir, 'spec.md'),
+    readFileSync(join(bDir, 'spec.md'), 'utf8') + '\n[NEEDS CLARIFICATION: which auth?]\n');
+  assert.match(validate(repo, { strict: true }).map(e => e.msg).join(' '), /NEEDS CLARIFICATION/);
+  // …but NOT a strict run scoped to slice a
+  assert.deepEqual(validate(repo, { strict: true, slice: a }).filter(e => e.level === 'error'), []);
+  // and scoped to slice b it still trips, naming b's spec
+  const scoped = validate(repo, { strict: true, slice: b }).filter(e => e.level === 'error');
+  assert.equal(scoped.length, 1);
+  assert.match(scoped[0].path, new RegExp(b));
+  // plan.md is a handoff artifact too (A3)
+  writeFileSync(join(aDir, 'plan.md'), '# Plan\n\n[NEEDS CLARIFICATION: sequencing?]\n');
+  assert.match(validate(repo, { strict: true, slice: a }).map(e => e.msg).join(' '), /NEEDS CLARIFICATION/);
+});
+
+test('validate --slice: unknown id fails closed, never green', () => {
+  const repo = mkTmpRepo();
+  mint(repo, 'real', {});
+  assert.throws(() => validate(repo, { slice: '0099-typo' }), /unknown slice: 0099-typo/);
+  assert.throws(() => validate(repo, { slice: true }), /--slice needs a slice id/);
+});

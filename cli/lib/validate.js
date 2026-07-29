@@ -16,7 +16,12 @@ export function validate(root, args) {
   const enums = loadEnums();
   const slicesDir = join(root, 'docs/slices');
   if (!existsSync(slicesDir)) return errs;
+  if (args.slice != null) {                              // fail closed: a typo'd --slice must never look green
+    if (typeof args.slice !== 'string') throw new Error('--slice needs a slice id');
+    if (!existsSync(join(slicesDir, args.slice))) throw new Error(`unknown slice: ${args.slice}`);
+  }
   for (const d of readdirSync(slicesDir).sort()) {
+    if (args.slice && d !== args.slice) continue;
     const dir = join(slicesDir, d);
     if (!statSync(dir).isDirectory()) continue;
     const manFile = join(dir, 'slice.yaml');
@@ -28,9 +33,15 @@ export function validate(root, args) {
       if (a.state && !enums.artifact_states.includes(a.state)) err(manFile, `artifact '${name}': unknown state ${a.state}`);
       if (a.state === 'skipped' && !a.skip_reason && !a.reason) err(manFile, `artifact '${name}' skip without reason`);
     }
-    if (args.strict) for (const f of readdirSync(dir).filter(f => extname(f) === '.md')) {
-      const text = readFileSync(join(dir, f), 'utf8').replace(/<!--[\s\S]*?-->/g, '');   // template's marker lives in a comment
-      if (text.includes('[NEEDS CLARIFICATION')) err(join(dir, f), 'NEEDS CLARIFICATION marker present — handoff blocked (--strict)');
+    if (args.strict) for (const f of ['spec.md', 'plan.md']) {   // handoff artifacts ONLY — a retro's job includes discussing markers
+      const p = join(dir, f);
+      if (!existsSync(p)) continue;
+      const text = readFileSync(p, 'utf8')
+        .replace(/<!--[\s\S]*?-->/g, '')                         // template's marker lives in a comment
+        .replace(/```[\s\S]*?```/g, '')                          // fenced code blocks quote, not declare
+        .replace(/`[^`\n]*`/g, '');                              // inline code spans likewise
+      if (/\[NEEDS CLARIFICATION\b[^\]]*\]/.test(text))
+        err(p, 'NEEDS CLARIFICATION marker present — handoff blocked (--strict)');
     }
     for (const f of readdirSync(dir)) {
       const p = join(dir, f);
@@ -85,21 +96,23 @@ export function validate(root, args) {
       if (man.rigor !== 'patch' && !existsSync(join(dir, 'retro.md'))) err(dir, 'shipped slice-tier without retro.md');
     }
   }
-  const adrDir = join(root, 'docs/adr');
-  if (existsSync(adrDir)) for (const f of readdirSync(adrDir).filter(f => f.endsWith('.md'))) {
-    let data;
-    try { ({ data } = parseFrontmatter(readFileSync(join(adrDir, f), 'utf8'))); }      // a bad doc is a finding,
-    catch (e) { err(join(adrDir, f), `unparseable frontmatter: ${e.message.split('\n')[0]}`); continue; }  // not a crash
-    if (data?.state && !enums.adr_states.includes(data.state)) err(join(adrDir, f), `unknown ADR state: ${data.state}`);
-  }
-  // roadmap reference lint (spec R-5): validate checks only that referenced ids EXIST — nothing about
-  // what the line says about them
-  const roadmap = join(root, 'docs/roadmap.md');
-  if (existsSync(roadmap)) {
-    const text = readFileSync(roadmap, 'utf8');
-    for (const m of text.matchAll(/\[(\d{4})\]/g)) {
-      const hit = existsSync(slicesDir) && readdirSync(slicesDir).some(d => d.startsWith(`${m[1]}-`));
-      if (!hit) err(roadmap, `roadmap references [${m[1]}] but no such slice exists`);
+  if (!args.slice) {                        // repo-level sections belong to whole-repo runs, not scoped ones
+    const adrDir = join(root, 'docs/adr');
+    if (existsSync(adrDir)) for (const f of readdirSync(adrDir).filter(f => f.endsWith('.md'))) {
+      let data;
+      try { ({ data } = parseFrontmatter(readFileSync(join(adrDir, f), 'utf8'))); }      // a bad doc is a finding,
+      catch (e) { err(join(adrDir, f), `unparseable frontmatter: ${e.message.split('\n')[0]}`); continue; }  // not a crash
+      if (data?.state && !enums.adr_states.includes(data.state)) err(join(adrDir, f), `unknown ADR state: ${data.state}`);
+    }
+    // roadmap reference lint (spec R-5): validate checks only that referenced ids EXIST — nothing about
+    // what the line says about them
+    const roadmap = join(root, 'docs/roadmap.md');
+    if (existsSync(roadmap)) {
+      const text = readFileSync(roadmap, 'utf8');
+      for (const m of text.matchAll(/\[(\d{4})\]/g)) {
+        const hit = existsSync(slicesDir) && readdirSync(slicesDir).some(d => d.startsWith(`${m[1]}-`));
+        if (!hit) err(roadmap, `roadmap references [${m[1]}] but no such slice exists`);
+      }
     }
   }
   return errs;
