@@ -3,8 +3,8 @@ id: "0001-house-v2-s2-skills-rewrite"
 kind: plan
 slice: "0001-house-v2-s2-skills-rewrite"
 title: "house v2 S2 — skills rewrite — implementation plan"
-status: "planned 2026-07-28"
-state: draft
+status: "planned 2026-07-28; plan-check GO_WITH_FIXES folded"
+state: approved
 ---
 # house v2 S2 — Implementation Plan
 
@@ -1568,7 +1568,7 @@ One ledger row resolves to a slightly different place than the ledger's wording:
 (read-doctrine-on-demand) lives in each skill's doctrine pointer block, immediately above §1 Preflight**,
 rather than inside §1 itself — present in all three files, as required.
 
-## As-built — Unit 3, T17 (partial — reconciled 2026-07-28; T18 still open)
+## As-built — Unit 3 (T17 reconciled 2026-07-28; closed at ship — see the last bullet)
 
 T17 is **done** (evidence: `house validate --strict` exit 0, recorded by `house task done`; suite at
 67/67). The smoke slice minted as `0002-house-version-flag` ran the whole arc through the three v2 skills:
@@ -1591,6 +1591,13 @@ absorbed:
   with the planned payload (`{"kind":"smoke-evidence","slice":"0002-house-version-flag"}`).
 - Three `work.discovered` findings from the smoke were recorded on 0002 at gating and routed to the
   roadmap backlog (see `docs/roadmap.md`).
+- **Shipped closure (2026-07-28):** T18 done — 17/17 — and the slice **SHIPPED**: PR #8 merged to `main`
+  at `5791e71` (23:59:15Z), `slice.shipped` recorded. Merge gate ran **NO_GO→GO** (the NO_GO: the retro
+  draft tripped `validate --strict`'s NEEDS-CLARIFICATION substring check; fix `38c128a` was records-only);
+  the re-gate surfaced a fourth `work.discovered` on this slice — `house gate` dropped/overrode
+  `--actor reviewer` on the GO record (`by: agent`) while the prior NO_GO read `by: reviewer` — routed to
+  the roadmap backlog. `live_check` user-approved. Spec R-6's `house --version` install-check line was
+  satisfied by 0002 unit 01 (`35c32d1`) riding this diff, not by a change in this slice's units.
 
 ## Plan-check (2026-07-28): GO_WITH_FIXES — all folded
 

@@ -47,8 +47,12 @@ under a real crash, not a drill.
 
 ## Follow-ups (owned, not vague)
 
-- Three `work.discovered` items sit in the roadmap backlog section for S3 triage.
+- Three `work.discovered` items sit in the roadmap backlog section for S3 triage. (A fourth was
+  recorded on `0001` after this retro was written: the merge-gate re-gate GO showed `house gate`
+  dropping/overriding `--actor reviewer` — `by: agent` on the GO vs `by: reviewer` on the prior
+  NO_GO. Also in the roadmap backlog.)
 - ADR-0001 erratum (doctrine §3 narrows the Fable-outage fallback for hard gates) remains an open
   **shaper** call — still not folded into the ADR's own text.
 - Per-merge teardown of the local `slice/0002-house-version-flag` branch awaits explicit user OK
-  (auto-fix boundary).
+  (auto-fix boundary). (Done post-merge 2026-07-28: both local slice branches and the remote `0001`
+  branch deleted.)
