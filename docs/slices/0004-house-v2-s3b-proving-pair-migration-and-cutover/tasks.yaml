@@ -25,10 +25,15 @@ tasks:
       at: '2026-07-29T18:47:26.463Z'
   - id: T3
     title: install.sh prune step for dangling skill symlinks, scratch-tested, idempotent (R-3)
-    state: todo
-    verify: bash -n install.sh && grep -q 'prune' install.sh && house validate
+    state: done
+    verify: bash -n install.sh && bash test/install-prune.sh && house validate
     depends_on:
       - T1
+    evidence:
+      cmd: bash -n install.sh && bash test/install-prune.sh && house validate
+      cmd_exit: 0
+      summary: 'install.sh prune: all 4 cases correct, idempotent on re-run — PASS'
+      at: '2026-07-29T18:52:27.050Z'
   - id: T4
     title: banners reworded, ADR-0004 closure note, roadmap/dev-state truth (R-4, R-5)
     state: todo
