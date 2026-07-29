@@ -3,8 +3,8 @@ id: "0005-v2-onboarding-docs-quickstart-process-narrative"
 kind: plan
 slice: "0005-v2-onboarding-docs-quickstart-process-narrative"
 title: "v2 onboarding docs — implementation plan"
-status: "planned 2026-07-29"
-state: draft
+status: "planned 2026-07-29; plan-check GO_WITH_FIXES folded"
+state: approved
 ---
 # v2 Onboarding Docs Implementation Plan
 
@@ -43,12 +43,14 @@ links to authorities. No marketing.
      mints the slice, imports spec/plan into `docs/slices/<id>/`, records provenance, the user
      re-affirms `spec_review`, a fresh `plan_check` runs before `ready`.
   6. **Current skill names** — a 3-row table (`house2-shaper`, `house2-orchestrator`, `house2-builder`
-     → shaper / conductor / builder roles) with the caption: *these are migration-window names; they
-     become `house-*` at the parked cutover (slice 0004).* This table is the file's ONLY `house2` text.
-- [ ] **Step 2: Verify** — run and require all three:
+     → shaper / conductor / builder roles). The caption sentence — *these are migration-window names;
+     they become `house-*` at the parked cutover (slice 0004)* — must sit INSIDE the table (a final
+     row or a cell), because the machine check below requires every `house2` hit to be on a
+     pipe-containing line. This table is the file's ONLY `house2` text.
+- [ ] **Step 2: Verify** (these run again as the task's evidence gate — see tasks.yaml):
   - `house validate` → exit 0
-  - `grep -n 'house2' docs/quickstart.md` → every hit within the names-table block (±2 lines of it)
-  - `grep -c '^## ' docs/quickstart.md` → 6 sections
+  - `! grep 'house2' docs/quickstart.md | grep -v '|' | grep -q .` → true (every `house2` hit is on a
+    table line; M-fold: containment is machine-checked, not eyeballed)
 - [ ] **Step 3: Commit** — `docs(quickstart): new-project startup + adoption path + names table`
 
 ### Task 2: `docs/process-v2.md`
@@ -72,11 +74,16 @@ links to authorities. No marketing.
      model family, reads the diff not the transcript).
   6. **Authorities** — bullet links: doctrine (process law), `cli/schema/enums.yaml` (states/verdicts),
      `cli/README.md` (commands), `docs/quickstart.md` (starting out).
-- [ ] **Step 2: Verify** — all three:
+- [ ] **Step 2: Verify** (M2 fold — the no-enum check is now discriminating: it flags any line
+  chaining ≥2 enum tokens, while tolerating the planned single mentions like INCONCLUSIVE in §4):
   - `house validate` → exit 0
-  - `grep -nE 'idea.*shaping.*ready|GO_WITH_FIXES.*NO_GO' docs/process-v2.md` → no hits (no enum
-    restating)
-  - `grep -c 'house2' docs/process-v2.md` → 0 or every hit a link to the quickstart table
+  - `! grep -qE '(idea|shaping|gating|live_check|shipped|parked|abandoned)[^a-z_].*(idea|shaping|gating|live_check|shipped|parked|abandoned)' docs/process-v2.md`
+    → true (no line chains two slice-state tokens; `ready`/`building` are excluded from the token set
+    as ordinary English words — the doctrine link, not this doc, owns the full list)
+  - `! grep -qE '(GO_WITH_FIXES|NO_GO|INCONCLUSIVE|changes_requested).*(GO_WITH_FIXES|NO_GO|INCONCLUSIVE|approved|changes_requested)' docs/process-v2.md`
+    → true (no line chains two verdict tokens)
+  - `! grep -v 'quickstart' docs/process-v2.md | grep -q 'house2'` → true (any `house2` mention is on
+    a line linking the quickstart table)
 - [ ] **Step 3: Commit** — `docs(process-v2): how the v2 system works, for humans`
 
 ### Task 3: v1 banner on `docs/process.md` + `docs/process.html`
@@ -93,12 +100,20 @@ self-contained).
 > [process-v2](process-v2.md). The v2 rewrite of this page lands at the cutover (slice 0004, parked).
 ```
 
-- [ ] **Step 2: Add the equivalent block to `process.html`** right after its `<h1>` — a single `<div>`
-  or `<blockquote>` with inline styling consistent with the page, linking `quickstart.md` and
-  `process-v2.md`. Change nothing else in either file (`git diff --stat` must show only additions).
-- [ ] **Step 3: Verify** — `house validate` exit 0; `git diff --stat docs/process.md docs/process.html`
-  shows only insertions (0 deletions).
-- [ ] **Step 4: Commit** — `docs(process): v1 banner pointing at the v2 quickstart + narrative`
+- [ ] **Step 2: Add the equivalent block to `process.html`** right after its `<h1>` (line ~35) — a
+  single `<div>` or `<blockquote>` with inline styling consistent with the page. **M1 fold: the html
+  banner must NOT link bare `.md` paths** — `docs/.nojekyll` means the Pages mirror serves raw files,
+  so a `.md` link renders as plain text. Use GitHub blob URLs
+  (`https://github.com/argent-gnome/sdlc-skills/blob/main/docs/quickstart.md` and
+  `.../docs/process-v2.md`). The markdown file's banner keeps relative links. Change nothing else in
+  either file.
+- [ ] **Step 3: Add one inbound link** (folded advisory A2, partial): in root `README.md`'s "How it
+  works" section, one sentence linking `docs/quickstart.md` and `docs/process-v2.md`. (The
+  `docs/index.html` card is declined — that page is v1 surface; the cutover sweep owns it.)
+- [ ] **Step 4: Verify** — `house validate` exit 0; before committing,
+  `git diff --numstat docs/process.md docs/process.html` shows 0 deletions on both; banner-present
+  checks: `grep -q 'process-v2.md' docs/process.md && grep -q 'blob/main/docs/process-v2' docs/process.html && grep -q 'quickstart' README.md`.
+- [ ] **Step 5: Commit** — `docs(process): v1 banner + README inbound links to the v2 docs`
 
 ---
 
@@ -108,8 +123,21 @@ self-contained).
 - NOT best-practices/case-study updates — v1 records, left as written.
 - NOT restating schema-owned enumerations in prose.
 
+## Plan-check (2026-07-29)
+
+Verdict **GO_WITH_FIXES** (fresh Fable reviewer; record at `gates/plan_check.yaml`). Folded:
+- **M1** → html banner uses GitHub blob URLs, never bare `.md` paths (`.nojekyll` = raw serving).
+- **M2** → the no-enum grep now flags lines chaining ≥2 enum tokens (single mentions tolerated;
+  `ready`/`building` excluded as ordinary English).
+- **M3** → the discriminating greps are chained into `tasks.yaml` `verify:`, so the evidence-gated
+  task tick enforces them mechanically.
+- **A1** → this section now states T3 runs last (matching `depends_on`), not "independent".
+- **A2** → partially folded: root README gains one inbound sentence; the `docs/index.html` card is
+  **declined** (v1 surface — the cutover sweep owns it), recorded here rather than dropped.
+- **A3/A4** → all verifies use `! grep -q` forms (no `grep -c` exit-code trap); token single-mentions
+  tolerated by construction.
+
 ## Self-review
-- Spec coverage: R-1→T1, R-2→T2, R-3→T3; every scenario has a matching verify grep. No gaps.
-- The names-containment and no-enum greps are the discriminating checks — they encode the spec's two
-  grep-checkable scenarios verbatim.
-- Ordering: T1 before T2 (T2 links T1's table); T3 independent, last for a single-diff banner check.
+- Spec coverage: R-1→T1, R-2→T2, R-3→T3; the two grep-checkable scenarios are machine-enforced via
+  tasks.yaml verify chains; the two "dev understands" scenarios are the merge-gate reviewer's to judge.
+- Ordering: T1 before T2 (T2 links T1's table); T3 last (matches tasks.yaml `depends_on`).

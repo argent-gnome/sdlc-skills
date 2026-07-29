@@ -3,7 +3,7 @@ id: 0005-v2-onboarding-docs-quickstart-process-narrative
 title: v2 onboarding docs — quickstart + process narrative
 kind: docs-only
 rigor: patch
-state: shaping
+state: ready
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
@@ -16,7 +16,34 @@ artifacts:
     state: approved
     updated: '2026-07-29'
   plan:
-    state: awaiting_review
+    state: approved
     updated: '2026-07-29'
 units: []
-kickoff: null
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+    - T2
+    - T3
+  scope_guards:
+    - NOT the rename (parked in 0004), NOT any change to skills/ or cli/.
+    - NOT edits to v1 docs beyond the single banner block (`process.md` + `process.html`).
+    - NOT best-practices/case-study updates — v1 records, left as written.
+    - NOT restating schema-owned enumerations in prose.
+  stakes: >-
+    Low. Docs-only; worst plausible wrong turn is a misleading onboarding doc or a banner that
+    breaks the published Pages mirror's look. All content claims must trace to the named source
+    material.
+  attended: false
+  plan_check_commitments:
+    - >-
+      M1: the process.html banner links GitHub blob URLs, never bare .md paths (.nojekyll raw
+      serving).
+    - >-
+      M2/M3: the names-containment and no-enum-chaining greps are in tasks.yaml verify — the
+      evidence gate runs them; do not weaken them to pass.
+    - >-
+      A2 (partial): one inbound sentence in root README; docs/index.html card DECLINED — cutover
+      owns that v1 surface.
+  stack: node

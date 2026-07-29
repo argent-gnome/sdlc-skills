@@ -1,0 +1,33 @@
+gate: plan_check
+verdict: GO_WITH_FIXES
+by: reviewer
+recorded_at: '2026-07-29T14:23:04.081Z'
+notes: null
+must_fix:
+  - >-
+    T3: process.html banner links quickstart.md/process-v2.md, but docs/.nojekyll means the Pages
+    mirror serves .md files as raw text (site convention: html pages link only .html, cf.
+    process.html:34 nav). Link the GitHub blob URLs from the html banner (md file keeps relative .md
+    links).
+  - >-
+    T2 verify grep is non-discriminating: pattern (idea.*shaping.*ready|GO_WITH_FIXES.*NO_GO) passes
+    on bullet-list state restatements, partial chains like shaping->ready->building, and merge_gate
+    verdict lists (GO/NO_GO/INCONCLUSIVE). Strengthen to fail any line with >=2 distinct enum tokens
+    drawn from enums.yaml (states and verdicts), tolerating single-token mentions.
+  - >-
+    tasks.yaml verify is house-validate-only for all three tasks, so the evidence-gated tick never
+    enforces the greps the plan self-review calls the discriminating checks; chain the greps into
+    each task verify (use ! grep -q forms so exit codes compose).
+advisory:
+  - >-
+    Plan self-review says T3 independent but tasks.yaml has T3 depends_on T2 — records disagree with
+    plan prose (harmless).
+  - >-
+    Nothing links the new docs inbound except the v1 banner: docs/index.html cards and root README
+    omit quickstart/process-v2 — spec-level gap, flag to shaper.
+  - >-
+    grep -c returning 0 exits 1 — as written the T2 house2-count check fails the shell; account for
+    exit codes when moving greps into verify.
+  - >-
+    Planned single-token mentions (NEEDS_CONTEXT in T1 sec 3, INCONCLUSIVE in T2 sec 4) are
+    consistent with point-never-restate; the strengthened grep must only flag multi-token lines.

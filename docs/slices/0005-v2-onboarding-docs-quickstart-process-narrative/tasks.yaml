@@ -2,14 +2,14 @@ tasks:
   - id: T1
     title: "docs/quickstart.md — startup, gates seed, adoption path, names table (R-1)"
     state: todo
-    verify: house validate
+    verify: house validate && ! grep 'house2' docs/quickstart.md | grep -v '|' | grep -q .
   - id: T2
     title: "docs/process-v2.md — roles, records-first, gates, subagent economics (R-2)"
     state: todo
-    verify: house validate
+    verify: house validate && ! grep -qE '(idea|shaping|gating|live_check|shipped|parked|abandoned)[^a-z_].*(idea|shaping|gating|live_check|shipped|parked|abandoned)' docs/process-v2.md && ! grep -qE '(GO_WITH_FIXES|NO_GO|INCONCLUSIVE|changes_requested).*(GO_WITH_FIXES|NO_GO|INCONCLUSIVE|approved|changes_requested)' docs/process-v2.md
     depends_on: [T1]
   - id: T3
-    title: "v1 banner on docs/process.md + docs/process.html, additions only (R-3)"
+    title: "v1 banner (process.md + process.html, blob links) + README inbound links (R-3)"
     state: todo
-    verify: house validate
+    verify: house validate && grep -q 'process-v2.md' docs/process.md && grep -q 'blob/main/docs/process-v2' docs/process.html && grep -q 'quickstart' README.md
     depends_on: [T2]
