@@ -33,6 +33,17 @@ export function validate(root, args) {
       if (a.state && !enums.artifact_states.includes(a.state)) err(manFile, `artifact '${name}': unknown state ${a.state}`);
       if (a.state === 'skipped' && !a.skip_reason && !a.reason) err(manFile, `artifact '${name}' skip without reason`);
     }
+    for (const name of ['spec', 'plan']) {               // R-2: the approval boundary may not drift
+      const recState = man.artifacts?.[name]?.state;
+      if (!['approved', 'done'].includes(recState)) continue;
+      const file = join(dir, `${name}.md`);
+      if (!existsSync(file)) { err(file, `artifact '${name}' is ${recState} in slice.yaml but ${name}.md is missing`, 'warning'); continue; }
+      let data = null;
+      try { ({ data } = parseFrontmatter(readFileSync(file, 'utf8'))); } catch { /* unparseable → warning below */ }
+      if (!data?.state) err(file, `artifact '${name}' is ${recState} in slice.yaml but ${name}.md has no frontmatter state`, 'warning');
+      else if (!['approved', 'done'].includes(data.state))
+        err(file, `artifact '${name}' is ${recState} in slice.yaml but frontmatter says ${data.state} — records drifted`);
+    }
     if (args.strict) for (const f of ['spec.md', 'plan.md']) {   // handoff artifacts ONLY — a retro's job includes discussing markers
       const p = join(dir, f);
       if (!existsSync(p)) continue;

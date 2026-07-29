@@ -205,3 +205,28 @@ test('validate --slice: unknown id fails closed, never green', () => {
   assert.throws(() => validate(repo, { slice: '0099-typo' }), /unknown slice: 0099-typo/);
   assert.throws(() => validate(repo, { slice: true }), /--slice needs a slice id/);
 });
+
+test('validate R-2: manifest-approved artifact must have agreeing frontmatter; missing state is a warning', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'drift', {});
+  const dir = join(repo, 'docs/slices', id);
+  const man = readYaml(join(dir, 'slice.yaml'));
+  man.artifacts = { spec: { state: 'approved', updated: '2026-07-29' } };
+  writeYaml(join(dir, 'slice.yaml'), man);
+  // minted spec.md frontmatter says state: draft → the 0002 drift, now an error naming both records
+  const drifted = validate(repo, {}).filter(e => e.level === 'error');
+  assert.equal(drifted.length, 1);
+  assert.match(drifted[0].msg, /approved in slice\.yaml.*frontmatter says draft/);
+  // frontmatter agreeing → clean
+  const spec = readFileSync(join(dir, 'spec.md'), 'utf8');
+  writeFileSync(join(dir, 'spec.md'), spec.replace('state: draft', 'state: approved'));
+  assert.deepEqual(validate(repo, {}).filter(e => e.level === 'error'), []);
+  // manifest approved + frontmatter done (past the boundary) also clean — boundary check, not equality (A2)
+  writeFileSync(join(dir, 'spec.md'), spec.replace('state: draft', 'state: done'));
+  assert.deepEqual(validate(repo, {}).filter(e => e.level === 'error'), []);
+  // deleting the frontmatter does not evade the check — it degrades to a warning finding
+  writeFileSync(join(dir, 'spec.md'), '# Spec — no frontmatter at all\n');
+  const evaded = validate(repo, {});
+  assert.deepEqual(evaded.filter(e => e.level === 'error'), []);
+  assert.match(evaded.filter(e => e.level === 'warning').map(e => e.msg).join(' '), /no frontmatter state/);
+});
