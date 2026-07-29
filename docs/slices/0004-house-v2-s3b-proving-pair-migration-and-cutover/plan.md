@@ -258,3 +258,14 @@ moved). That evidence is on the T1 commit message. The verify that *did* run and
   **not** supported by the records — the plan at base `9a39d76` contains no Step 1b and no A5, and
   this slice has no `plan_check.yaml` gate record at all. The claim was removed rather than
   inherited. The finding itself is real and independently verifiable by reading the file.)*
+
+  *[Reconcile annotation, added post-ship 2026-07-29 — an annotation, not a rewrite; nothing above is
+  altered. The clause "this slice has no `plan_check.yaml` gate record at all" is **superseded**: it was
+  true only of the branch this section was written on. The record exists — `gates/plan_check.yaml`,
+  verdict **GO_WITH_FIXES**, recorded 2026-07-29T18:32:15Z — it lived on `main` from the start and was
+  restored onto the branch by the post-merge reconciliation; the merge gate's `records` lens verified it
+  present and logged this very sentence as its note (1). The rest of the note stands as written about
+  base `9a39d76`, but read it alongside the **folded** plan above — which this section's own preamble
+  names as the authority — where **Step 1b (A5 fold)** (line 113) and **A5** (line 156) are both
+  present. Either way the finding itself is real and is now tracked in the roadmap's
+  "Backlog — discovered in the `[0004]` build".]*
