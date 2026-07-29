@@ -3,16 +3,13 @@ id: 0004-house-v2-s3b-proving-pair-migration-and-cutover
 title: house v2 S3b — v2 cutover (rename + v1 archive)
 kind: slice
 rigor: slice
-state: live_check
-blocked_on:
-  gate: live_check
-  note: 'cutover-day coordination with user: merge PR, ./install.sh, namespace verify, /reload-skills'
-  since: '2026-07-29'
+state: shipped
+blocked_on: null
 appetite: 2 sessions
 created: '2026-07-29'
 branch: slice/0004-house-v2-s3b-proving-pair-migration-and-cutover
 base_sha: 9a39d7651cf789088ff785eadfd5dd6689418f20
-pr: null
+pr: https://github.com/argent-gnome/sdlc-skills/pull/11
 adrs: []
 artifacts:
   spec:

@@ -1,0 +1,8 @@
+gate: live_check
+verdict: approved
+by: jake
+recorded_at: '2026-07-29T19:28:52.549Z'
+notes: >-
+  coordinated cutover executed with user: PR #11 merged, install.sh pruned 3 dangling house2 links +
+  linked canonical trio, namespace verified (3 canonical resolving, 0 house2, 0 dangling),
+  /reload-skills run, user confirmed
