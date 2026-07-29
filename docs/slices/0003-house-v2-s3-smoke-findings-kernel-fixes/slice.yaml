@@ -9,7 +9,7 @@ appetite: 1 session
 created: '2026-07-29'
 branch: slice/0003-house-v2-s3-smoke-findings-kernel-fixes
 base_sha: 474ba422953218e98c9d5d6dd0cb94789b5433cd
-pr: null
+pr: https://github.com/argent-gnome/sdlc-skills/pull/9
 adrs: []
 artifacts:
   spec:
