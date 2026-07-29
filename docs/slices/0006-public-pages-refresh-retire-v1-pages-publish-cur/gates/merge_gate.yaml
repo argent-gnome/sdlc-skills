@@ -1,0 +1,49 @@
+gate: merge_gate
+verdict: GO
+by: reviewer
+recorded_at: '2026-07-29T23:25:30.525Z'
+notes: null
+lenses:
+  - mirror-fidelity
+  - link-policy
+  - regression-archive
+  - public-accuracy
+findings:
+  - severity: note
+    text: >-
+      base_sha discrepancy: slice.yaml records 9b413c5 but the build diff base is 5978fad (the
+      dispatch-record commit, a records-only direct child of 9b413c5, current main tip). Diff
+      between the two is 4 record files; no product content. Not a defect of the built work.
+  - severity: note
+    text: >-
+      one non-blob external href: the repo-root URL github.com/argent-gnome/sdlc-skills in
+      index.html. Navigational, resolves, disclosed in the As-built (the 1 repo-root URL of 28),
+      whitelisted by the plan T2/T3 verifies. Not a violation of the self-contained rule, which
+      governs resource loads.
+  - severity: note
+    text: >-
+      404 question ruled on: R-1 no-dead-links scenario reads When I check every link ON live
+      surfaces — it constrains outbound links from the listed surfaces, not inbound URLs.
+      /best-practices.html and /case-study.html returning 404 is the direct consequence of the spec
+      Solution (remove the three outdated pages) with no stub/signpost authorized by the plan. Not a
+      spec violation; remains a live product decision with the user.
+  - severity: verified
+    text: >-
+      three on-record disclosures match the diff exactly: quickstart.md nav label+href only change
+      to that file; README parentheticals rewritten alongside archive retargets; home nav link
+      present in both mirrors and absent from both markdown navs. None breaks a spec rule;
+      orchestrator acceptance stands.
+reruns:
+  npm_test: 72/72 pass, 0 fail
+  house_validate: exit 0
+  house_validate_strict_slice: exit 0
+  T1_verify: exit 0
+  T2_verify: exit 0
+  T3_verify: exit 0
+  archive_byte_identity: 6/6 IDENTICAL vs 5978fad:docs/*
+  events_jsonl_deletions: 0
+  href_census: >-
+    28 hrefs: 12 relative .html/#frag all resolve in docs/, 15 blob URLs all in git ls-files, 1
+    repo-root URL; zero external resource refs; zero raw .md hrefs outside blob URLs
+  anchor_check: 14/14 md heading anchors present as ids, 0 extra ids
+  exit2_untracked: house status in /private/tmp exits 2 as quickstart claims
