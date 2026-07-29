@@ -3,7 +3,7 @@ id: 0003-house-v2-s3-smoke-findings-kernel-fixes
 title: house v2 S3 — smoke findings kernel fixes
 kind: slice
 rigor: slice
-state: shaping
+state: ready
 blocked_on: null
 appetite: 1 session
 created: '2026-07-29'
@@ -36,8 +36,9 @@ kickoff:
     - NOT a general argument-parsing layer — the guard is a plain per-command table.
   stakes: >-
     Moderate. The validator is the kernel's fail-closed backbone: an over-eager --slice filter could
-    produce a false green at handoff, and an under-permitting FLAGS table breaks every scripted caller.
-    Both failure modes are netted by the existing 67-test suite plus the plan's discriminating tests.
+    produce a false green at handoff, and an under-permitting FLAGS table breaks every scripted
+    caller. Both failure modes are netted by the existing 67-test suite plus the plan's
+    discriminating tests.
   attended: false
   plan_check_commitments:
     - >-
@@ -47,5 +48,6 @@ kickoff:
       M2: T4's test uses the real run(cwd, ...args) -> {out, code} seam of cli.test.js — no
       .status/.stderr fields exist.
     - >-
-      A4: `hook` is deliberately absent from the FLAGS table (advisory-only, ADR-0004) — do not add it.
+      A4: `hook` is deliberately absent from the FLAGS table (advisory-only, ADR-0004) — do not add
+      it.
   stack: node
