@@ -4,7 +4,10 @@ title: house v2 S3 — smoke findings kernel fixes
 kind: slice
 rigor: slice
 state: shaping
-blocked_on: null
+blocked_on:
+  gate: spec_review
+  note: awaiting user verdict on S3 spec
+  since: '2026-07-29'
 appetite: 1 session
 created: '2026-07-29'
 branch: slice/0003-house-v2-s3-smoke-findings-kernel-fixes
