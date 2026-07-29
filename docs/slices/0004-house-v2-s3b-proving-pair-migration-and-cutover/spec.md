@@ -62,9 +62,17 @@ block), `docs/quickstart.md` (the names table drops its migration caption and li
 its table-only containment rule dissolves with it), `docs/process-v2.md`.
 
 #### Scenario: live surfaces are clean, history is untouched
-- When I grep `house2` over the live surfaces named above plus `skills/` and `install.sh`
+- Given the ADR-0004 **filename** (`0004-house2-coexistence-and-advisory-hooks`) is a protected
+  token — it contains `house2`, the live docs legitimately link it, and renaming it is a No-Go
+- When I grep `house2` over `skills/` and `install.sh` directly, and over the live doc surfaces
+  named above with that one protected token stripped first
 - Then there are zero hits — while `docs/slices/`, `.house/events.jsonl`, and the ADR-0004 file
   still contain their historical mentions unchanged
+
+  *Reconciled as-built 2026-07-29:* this scenario originally said a bare grep of the live surfaces
+  yields "zero hits". That bar is unsatisfiable for any doc that links the decision record, so the
+  shipped check strips the protected filename token and then greps — proven discriminating (it still
+  fails when a real `house2-*` skill name is reintroduced). See the plan's As-built §(a).
 
 ### R-3: `install.sh` prunes dangling skill links
 `install.sh` gains a prune step: any symlink in `~/.claude/skills/` that points into this repo's
@@ -75,7 +83,8 @@ copies-mode installs are out of scope (symlink mode is the default and the insta
 - Given `~/.claude/skills/house2-shaper` pointing at the now-moved directory
 - When I run `./install.sh`
 - Then the dangling `house2-*` links are gone, the three canonical names point at the v2 skills, and
-  every remaining link resolves
+  every remaining link **into this repo's `skills/`** resolves — a dangling link owned by some other
+  tool is reported and **kept**, because the prune is scoped to links this repo created
 
 ### R-4: the record and the banner close the loop
 The 0005 banner on `docs/process.md`/`.html` rewords from "still live for repos that have not

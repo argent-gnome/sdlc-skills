@@ -1,76 +1,90 @@
 ---
 name: house-shaper
-description: The house SDLC shaping session — turn a fuzzy idea, backlog item, audible, or decision into ready-to-build planned work (spec + plan + plan-check + reconciled docs) OR a recorded decision (ADR + roadmap). Use when starting a NEW idea/slice/decision that has no plan yet, or that needs research or brainstorming. Do NOT use to drive a build (house-orchestrator) or implement a unit (house-builder).
+description: The house v2 shaper session — turn a fuzzy idea, backlog item, audible, or decision into planned buildable work (spec + plan + plan-check + a versioned kickoff brief) or into a recorded decision (an ADR). Use at the START of anything that has no plan yet, or that needs research or brainstorming, in a repo the house kernel tracks (it has a `.house/` dir). Do NOT use to drive a build (that is house-orchestrator) or to implement a unit (house-builder).
 ---
 
-# house-shaper — the fuzzy front end
+# house-shaper — the fuzzy front end, over shared state
 
-You are a **shaping session**: you turn a fuzzy idea (a new slice, a backlog/health item, an audible, or a
-decision to make) into one of two outputs, then hand off. You **compose existing skills — you do not
-reimplement them.** Your only original logic is front-end sequencing, research/reconcile dispatch, mode
-selection, and the hand-off.
+You turn something fuzzy into **records**: a slice the kernel tracks, a spec the user signed off, a plan a
+builder can execute, a kickoff brief that cannot diverge from what the builder reads. **Compose existing
+skills — do not reimplement them.** Yours: sequencing, research/reconcile dispatch, mode fork, hand-off.
 
-**Why a separate session.** Shaping is research-heavy and conversational — exactly the weight that would bloat a
-long-lived orchestrator. Run it here: the heavy *reading* goes to subagents (their context dies), the
-brainstorm *dialogue* stays with you, and the shaping transcript dies when this session closes — only the
-artifacts (spec/plan/ADR/roadmap) persist. The orchestrator then conducts the build of what you shaped.
+**Doctrine** — `$HOME/.claude/skills/house-orchestrator/references/doctrine.md` (resolve `$HOME`), read
+**on-demand, never preloaded**: the rigor dial (§3), gates (§4), suppressions (§7), reconcile (§6, §9).
 
-**Model routing (fable-profile).** Run this session on **Fable 5** (`claude-fable-5`) — shaping is where
-design intelligence pays most (a spec flaw is the most expensive thing to catch later). Dispatch research +
-reconcile subagents on **Opus 4.8** (`model: opus` — throughput roles, heavy read / light conclude); the
-plan-check reviewer (step 7) stays on Fable.
+**Model routing (ADR-0001):** this session and the plan-check reviewer run on **Fable** — a design flaw is
+the most expensive thing to catch late. Research and reconcile subagents run on **Opus**.
 
-**Two output modes** (pick at step 4; if unsure, ask the user):
-- **Buildable** → spec (user-reviewed) + plan + plan-check + reconciled ADR/roadmap/dev-state → handed to a
-  `house-orchestrator` session.
-- **Decision-only** → an ADR + roadmap/dev-state reconcile, no build (a positioning call, a priority change, a
-  "which approach" decision with nothing to build yet).
+## 1. Preflight — mutual refusal
 
-## The doctrine
-The doc-model, routing rules, and the **reconcile-subagent** pattern live in
-**`$HOME/.claude/skills/house-orchestrator/references/doctrine.md`** (resolve `$HOME`). Read it on-demand when
-you reconcile docs or decide where an output belongs. It is the single source of truth for *what goes where*.
+`house status`. **Exit 2 means the kernel does not track this repo** — STOP: use the v1 `house-shaper`
+skill, or run `house init` first. Never continue v1-style where the kernel exists, never run this skill
+where it doesn't. Half-migrated is the one condition the process cannot reason about.
 
-## The shaper loop
-1. **Intake.** Read `docs/dev-state.md` + the durable-strategy doc (`docs/roadmap.md` or equivalent) + the docs
-   the idea touches (the doctrine doc-model says where they live). State what you're shaping and your read on
-   the mode (buildable vs decision-only).
-2. **Research (subagents, when needed).** If the idea needs investigation — a codebase survey, prior art,
-   options with trade-offs — **dispatch research subagents**, one per question, in the background:
-   *"Investigate <question> against <paths/docs>; read a lot, conclude a little; return a digest — findings ·
-   options · a recommendation; change nothing."* Only the digest returns; the heavy reading dies in the
-   subagent. NEVER do the deep reading in your own context.
-3. **Brainstorm (interactive — inline).** Compose `superpowers:brainstorming` + `intent-first-spec-anchored`
-   with the user: intent, constraints, approaches, converge on a design. This is the dialogue — it cannot be a
-   subagent.
-4. **Mode fork.**
-   - **Decision-only** → write the ADR (`docs/adr/NNNN-<slug>.md`: context · decision · consequences); dispatch
-     the reconcile-subagent to update the roadmap (+ dev-state if priorities shift). Skip to step 9.
-   - **Buildable** → continue.
-5. **Spec.** Produce the validated design → `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` (via
-   brainstorming's spec step). ⛔ **User review gate** — the user reviews the written spec before planning.
-6. **Plan.** Invoke `superpowers:writing-plans` → `docs/superpowers/plans/YYYY-MM-DD-<topic>.md`. Carry a
-   model-routing note + "NOT this slice" scope guards; order tasks so the build/test target compiles at every
-   boundary; merge compile-coupled tasks into one unit.
-7. **Plan-check (4¼).** Dispatch **one fresh reviewer subagent** to critique the plan against the existing app
-   + spec through five lenses — arch-fit · spec-coverage · risk/sequencing · testability · simpler-path —
-   returning must-fix + advisory. Fold must-fix into the plan (re-run `writing-plans` on the deltas). A
-   folded-in advisory is a commitment.
-8. **Reconcile (subagent).** Dispatch the doctrine's **reconcile-subagent** to apply what you shaped across the
-   doc-model per the routing rules: new ADR(s) for decisions made, roadmap (slot the new slice / record the
-   scope change), dev-state (add it to **Slated**). It changes only docs and reports what it changed.
-9. **Hand-off.** Return a short summary to the user:
-   - Buildable: *"Shaped <X>: spec @<path>, plan @<path>, ADR(s) @<paths>, roadmap + dev-state updated.
-     Plan-check: <verdict>. Ready for a `house-orchestrator` session to build."*
-   - Decision-only: *"Decided <X>: ADR @<path>, roadmap (+ dev-state) updated. Nothing to build."*
+## 2. Intake — mint FIRST
+
+`house new "<title>" --kind <kind> --rigor <tier> --appetite <appetite>` — before any research, dialogue,
+or writing. A session that dies must leave a **resumable slice**, not an orphan spec in a dead transcript.
+The mode fork happens here too: *buildable* (spec, plan, hand-off) or *decision-only* (an ADR, nothing to
+build). The rigor tier is a judgment about the cost of being wrong (doctrine §3), written to the manifest
+now, not discovered at the merge gate; appetite only constrains anything if it predates the work.
+
+## 3. Research — dispatch it
+
+**Heavy reading dies in a subagent; the dialogue stays with you.** A digest costs a paragraph where the
+reading costs a hundred files. One background subagent per question: *"Investigate `<question>` against
+`<paths>`. **Read a lot, conclude a little; change nothing.** Return findings · options · a
+recommendation."* Persist every digest to `docs/slices/<id>/research/`: one living only in this transcript
+is one the next session re-earns.
+
+## 4. Brainstorm — inline, with the user
+
+**The brainstorm cannot be a subagent** — it is a dialogue, and a subagent has nobody to talk to. Compose
+`superpowers:brainstorming` + `intent-first-spec-anchored`, suppressing two things (doctrine §7): its spec
+path loses to `docs/slices/<id>/spec.md`, its forced transition into planning loses to the loop below.
+
+## 5. Spec — the design authority
+
+Write `docs/slices/<id>/spec.md`; `house artifact <id> spec draft`, then
+`house artifact <id> spec awaiting_review`. ⛔ **The user reviews the written spec.** Then
+`house gate spec_review --slice <id> --verdict approved --actor <user>` and
+`house artifact <id> spec approved`. **Decision-only:** `house new "<title>" --adr`, write context ·
+decision · consequences, ⛔ `house gate adr_review …`, reconcile (§9), STOP — nothing to build.
+
+## 6. Mockups and spikes — when the dial calls for them
+
+`docs/slices/<id>/mockups/`, **self-contained** — no external stylesheet, script, font, or image
+reference, including inside a `style="… url(…)"` attribute; `house validate` enforces it, so a mockup that
+only renders on your machine fails the check, not the reviewer's eye. ⛔ `house gate mockup_signoff …`. A
+spike is a throwaway branch answering exactly one question, then deleted; its *answer* lands in the spec.
+
+## 7. Plan
+
+`superpowers:writing-plans` → `docs/slices/<id>/plan.md`, suppressing its execution menu and its worktree
+assumption (doctrine §7). Order tasks so the build target compiles at every boundary; merge
+compile-coupled tasks into one unit. Author `docs/slices/<id>/tasks.yaml` from the schema `house validate`
+checks — `id`, `title`, `state`, `verify`, `depends_on`, nothing else. **No meaning in YAML comments:** the
+first `house task` tick rewrites the file and the comment is gone.
+
+## 8. Plan-check
+
+**One fresh reviewer subagent** that has not seen the dialogue, through five lenses:
+**arch-fit · spec-coverage · risk/sequencing · testability · simpler-path.** An unrecorded gate did not run:
+`house gate plan_check --slice <id> --verdict <verdict> --payload '{"must_fix":[…],"advisory_folded":[…]}'`.
+Fold every must-fix in. **A folded-in advisory is a commitment, not a suggestion** — it goes into the plan
+text *and* the brief's `plan_check_commitments`; one you decline is recorded as declined, never dropped.
+
+## 9. Hand-off
+
+Write the `kickoff` block into `slice.yaml` per `cli/schema/kickoff.yaml`. **That schema is the entire
+contract** — nothing rides alongside it in prose, which is why sender and receiver can no longer diverge.
+Bump `version` on every reissue. **Scope guards are first-class negative space:** the plan's "NOT this
+slice" lines go into `scope_guards` verbatim — what is *out* of scope is the one thing a builder cannot
+infer from the code. Dispatch the doctrine §9 reconcile-subagent, then `house validate --strict --slice <id>`
+(green, no surviving `[NEEDS CLARIFICATION` marker) and `house state <id> ready`. Hand to a `house-orchestrator`.
 
 ## Gates — never cross silently
-STOP and get the user at: **spec review · any plan deviation or genuine ambiguity · any irreversible /
-outward-facing action (publish, deploy, anything destructive).** A change that alters spec rules or scope is a
-plan deviation — surface it. Fail closed: unsure whether a gate is hard → treat it as hard.
 
-## Compose, don't reinvent
-`superpowers:brainstorming`, `intent-first-spec-anchored`, `superpowers:writing-plans`, and the plan-check
-reviewer pattern all exist — invoke them. Yours is only: front-end sequencing, research/reconcile dispatch,
-mode selection, and the hand-off. You do NOT build (that's house-orchestrator + house-builder) and you do NOT
-drive a build loop.
+STOP for the user at: **spec review · ADR approval · mockup sign-off · any plan deviation or genuine
+ambiguity · anything irreversible or outward-facing.** The fail-closed philosophy is doctrine §4 — unsure
+whether a gate is hard, treat it as hard. You do not build, and you do not drive a build loop.

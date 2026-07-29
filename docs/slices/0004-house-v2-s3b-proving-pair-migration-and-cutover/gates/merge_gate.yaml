@@ -1,0 +1,56 @@
+gate: merge_gate
+verdict: GO
+by: reviewer
+recorded_at: '2026-07-29T19:24:44.594Z'
+notes: null
+lenses:
+  - rename-integrity
+  - sweep-history
+  - prune
+  - records
+findings:
+  - lens: rename-integrity
+    result: clean
+    note: >-
+      all 7 v1 files byte-identical at archive/skills-v1/ vs base 9a39d76 (== origin/main for
+      skills/); v2 trio identical modulo house2- to house- substitution incl. doctrine; skills/ is
+      exactly the canonical trio; archive outside the skills/*/ install glob; nothing deleted;
+      archive+rename in one commit ff623c4 (no two-claimants)
+  - lens: sweep-history
+    result: clean
+    note: >-
+      repo-wide house2 grep: every live-surface hit is the protected ADR-0004 filename link,
+      past-tense narration (roadmap 21/22/27/29, dev-state 54), or R-5-mandated cutover coordination
+      text (dev-state 30-31); ADR-0004 NOT renamed, its diff is only the 3-line Cutover-executed
+      note; docs/slices diff touches only this slice dir; events.jsonl append-only (+15/-0);
+      tampered-copy check confirms T2 verify is discriminating (exit 1 on reintroduced
+      house2-shaper)
+  - lens: prune
+    result: clean
+    note: >-
+      prune scoped per M1: symlink AND dangling AND readlink under this repo $SKILLS_SRC;
+      other-owner dangling links reported and kept; test/install-prune.sh hermetic
+      (CLAUDE_SKILLS_DIR=mktemp, ~/.claude/skills never touched) and PASSED twice; bash -n clean
+  - lens: records
+    result: clean-with-notes
+    note: >-
+      gates present on branch: spec_review approved, plan_check GO_WITH_FIXES (restored by merge,
+      exists now), adr_review approved; unit 01 finalized DEVIATION; all 4 disclosures (T2 verify
+      unsatisfiable-corrected, cli/README swept per R-2 over literal guard, test/install-prune.sh
+      per A3, builder-minted unit record) match the diff and are ruled in the 19:17:45Z orchestrator
+      event; banners reworded, ADR note present, index.html footer says three canonical skills,
+      README matches reality. NOTES: (1) plan.md as-built provenance note still says this slice has
+      no plan_check.yaml record — true pre-merge, superseded by the restoration the same file
+      preamble and the rulings event disclose; (2) index.html lede pair / line-44 two-skills claims
+      remain stale — on record as work.discovered 19:05:49Z + roadmap 0004 backlog; only the footer
+      was A5
+reruns:
+  npm_test: 72/72 pass
+  house_validate: exit 0
+  house_validate_strict_slice: exit 0
+  T1_verify: exit 0
+  T2_verify: exit 0
+  T4_verify: exit 0
+  T2_discriminating_tamper_check: fails as expected (exit 1)
+  install_prune_test: PASS x2
+  bash_n_install_sh: OK

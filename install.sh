@@ -10,6 +10,27 @@ MODE="${1:-symlink}"   # symlink (default) | copy
 
 mkdir -p "$SKILLS_DST"
 
+# ---- prune stale links left by a previous layout (a rename, an archive) -----------------------
+# Scope is deliberately narrow: a symlink is removed ONLY if it both (a) no longer resolves and
+# (b) points into THIS repo's skills/ dir. A dangling link belonging to some other tool is another
+# owner's business and is reported, not deleted; a working link and a real directory are untouched.
+# Without this, renaming or archiving a skill dir leaves its old link dangling in the install dir on
+# every repo on the machine, because the link loop below only ever creates, never removes.
+for p in "$SKILLS_DST"/*; do
+  if [ ! -L "$p" ]; then continue; fi          # real dir/file, or the unexpanded glob: leave alone
+  if [ -e "$p" ]; then continue; fi            # target still resolves: still a live skill
+  link_target="$(readlink "$p")"
+  case "$link_target" in
+    "$SKILLS_SRC"/*)
+      rm -f "$p"
+      echo "pruned  $(basename "$p") (dangling -> $link_target)"
+      ;;
+    *)
+      echo "kept    $(basename "$p") (dangling, but not from this repo -> $link_target)"
+      ;;
+  esac
+done
+
 for dir in "$SKILLS_SRC"/*/; do
   name="$(basename "$dir")"
   target="$SKILLS_DST/$name"
@@ -47,7 +68,4 @@ fi
 
 echo
 echo "Installed: $(ls -1 "$SKILLS_SRC" | tr '\n' ' ')"
-echo "The workflow scriptPaths in house-orchestrator/SKILL.md assume the install dir is"
-echo "  $SKILLS_DST/house-orchestrator/workflows/"
-echo "If you installed elsewhere, update those two scriptPath lines (or symlink-install, which keeps them valid)."
 echo "Run /reload-skills (or restart Claude Code) to pick up the changes."

@@ -3,8 +3,11 @@ id: 0004-house-v2-s3b-proving-pair-migration-and-cutover
 title: house v2 S3b — v2 cutover (rename + v1 archive)
 kind: slice
 rigor: slice
-state: building
-blocked_on: null
+state: live_check
+blocked_on:
+  gate: live_check
+  note: 'cutover-day coordination with user: merge PR, ./install.sh, namespace verify, /reload-skills'
+  since: '2026-07-29'
 appetite: 2 sessions
 created: '2026-07-29'
 branch: slice/0004-house-v2-s3b-proving-pair-migration-and-cutover
@@ -21,9 +24,10 @@ artifacts:
 units:
   - id: '01'
     title: v2 cutover (T1-T4)
-    state: building
-    result: null
+    state: finalized
+    result: DEVIATION
     dispatched: '2026-07-29T18:35:51.967Z'
+    finalized: '2026-07-29T19:07:41.734Z'
 kickoff:
   version: 1
   unit: '01'

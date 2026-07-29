@@ -130,7 +130,7 @@ one.
 
 When this page and one of these disagree, this page is wrong.
 
-- **[The doctrine](../skills/house2-orchestrator/references/doctrine.md)** — the process law: the kernel contract, the stage table, the rigor dial, the gate rules, the doc routing table. Read on demand by the sessions themselves, never preloaded. Its path carries a migration-window skill name, so it moves at the cutover — see the [quickstart's names table](quickstart.md#current-skill-names).
+- **[The doctrine](../skills/house-orchestrator/references/doctrine.md)** — the process law: the kernel contract, the stage table, the rigor dial, the gate rules, the doc routing table. Read on demand by the sessions themselves, never preloaded.
 - **[`cli/schema/enums.yaml`](../cli/schema/enums.yaml)** — the sole normative source for states,
   gate names, verdicts, transitions, and event types.
 - **[`cli/README.md`](../cli/README.md)** — every `house` command and the rules the code enforces

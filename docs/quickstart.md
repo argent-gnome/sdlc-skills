@@ -111,10 +111,14 @@ that ever counted.
 
 | skill | role | what the session does |
 |---|---|---|
-| `house2-shaper` | shaper | fuzzy idea → spec, plan, plan-check, kickoff brief (or a recorded decision) |
-| `house2-orchestrator` | conductor | sequences one slice end to end: dispatches builders, holds the gates, reconciles |
-| `house2-builder` | builder | implements ONE unit from ONE kickoff brief, self-reviews, reports back |
-| *note* | migration-window names | The `house2-` prefix is temporary — a staging affordance, not a taxonomy ([ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md), incl. its 2026-07-29 amendment on adoption). These become `house-*` at the cutover (slice `0004`, parked); a v1 trio under those names is still installed and still live for repos that have not migrated. |
+| `house-shaper` | shaper | fuzzy idea → spec, plan, plan-check, kickoff brief (or a recorded decision) |
+| `house-orchestrator` | conductor | sequences one slice end to end: dispatches builders, holds the gates, reconciles |
+| `house-builder` | builder | implements ONE unit from ONE kickoff brief, self-reviews, reports back |
+
+These are the canonical names, taken at the **2026-07-29 cutover**. The v1 trio that held them before is
+retired and archived at [`archive/skills-v1/`](../archive/skills-v1/) — see
+[ADR-0004](adr/0004-house2-coexistence-and-advisory-hooks.md) (and its 2026-07-29 amendment on adoption) for
+the staging window that ended there.
 
 ## Where to go next
 
