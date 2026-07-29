@@ -45,6 +45,13 @@ Route by **where a wrong-but-plausible judgment is expensive** (→ Fable 5) vs 
 **Fallback:** Fable unavailable → the opus-profile stands in (single-Opus reviewer; `model: 'opus'` refuters),
 noted in the slice retro. Fail-closed rules (INCONCLUSIVE panel, unverified criticals block) are unchanged.
 
+> **Erratum (2026-07-28, recorded at S3 shaping):** house v2 doctrine §3 narrows this fallback for **hard
+> gates** (every `gate_verdicts` rung): Fable unavailable ⇒ **halt at `gate.requested` and wait for a
+> human** — the reviewer is never downgraded to keep moving. The opus-profile stand-in above remains
+> legitimate only for advisory, non-gate roles (research digests, lenses, sweeps). Settled in the S2 spec's
+> "Settled contradictions" (user-approved 2026-07-28); recorded here so this ADR no longer reads as a
+> blanket fallback.
+
 ## Consequences
 
 - Fable takes the low-volume, high-leverage calls (a handful of agents per slice); the high-volume fan-out
