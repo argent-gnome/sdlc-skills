@@ -3,7 +3,7 @@ id: 0003-house-v2-s3-smoke-findings-kernel-fixes
 title: house v2 S3 — smoke findings kernel fixes
 kind: slice
 rigor: slice
-state: building
+state: gating
 blocked_on: null
 appetite: 1 session
 created: '2026-07-29'
