@@ -1,0 +1,55 @@
+gate: plan_check
+verdict: GO_WITH_FIXES
+by: reviewer
+recorded_at: '2026-07-29T19:45:06.934Z'
+notes: null
+must_fix:
+  - >-
+    T1 Step-4 verify is unsatisfiable as written: the five-file grep also matches non-link
+    historical prose — roadmap.md:30 and dev-state.md:35 (the 0005 shipped-record narrative
+    mentioning a v1 banner on docs/process.md/.html) and roadmap.md:225 (research corpus: 4
+    best-practices passes — unrelated to the page). These hits are neither retargetable links nor
+    archive/process-v2 hits, so the check as stated (returns only archive-path or process-v2 hits)
+    forces the builder to either rewrite historical record prose (violating the spec) or silently
+    skip the verify. Scope the verify grep to link syntax (e.g. ](docs/process.md / ](process.md) /
+    href=) or explicitly exempt historical shipped-record prose in roadmap/dev-state.
+  - >-
+    No machine check rejects relative .md hrefs in the mirrors — the exact .nojekyll trap 0005
+    plan-check M1 caught. Both source docs are dense with relative .md links a faithful hand-render
+    would copy (quickstart.md:3,7,125 -> process-v2.md; process-v2.md:3,17,138 -> quickstart.md;
+    plus adr/, slices/, ../cli/ paths). T2 verify only bans external hrefs; T3 Step-2 checks that
+    every relative href resolves to an existing file in docs/ — href=process-v2.md PASSES that check
+    (the file exists) while violating R-3 (repo-only targets must be blob URLs) and serving raw
+    markdown to the visitor. Add to T2 verify (or the T3 script): fail on any href whose target ends
+    in .md or is a relative non-.html/non-fragment path.
+advisory:
+  - >-
+    T3 Step-2 link-check script must handle directory targets: quickstart.md:119 links
+    ../archive/skills-v1/ (a directory) — an exact git ls-files match fails on directories (blob/
+    URLs to dirs redirect to tree/ on GitHub); use a prefix match or tree/ URL for dirs.
+  - >-
+    tasks.yaml T3 verify drops the pair from the plan grep, and neither pattern catches the actual
+    stale wording — the current lede (index.html:28) says plugin-free pair of Claude Code skills,
+    which matches neither two skills nor the pair. Broaden the negative grep and add positive greps
+    for the three canonical skill names (R-2 scenario: skill count is three).
+  - >-
+    T2 style source: index.html has :root vars and card classes (confirmed, lines 8,16-19) but NO
+    table or pre/code-block CSS; the mirrors need both (quickstart names table :112-116, process-v2
+    table :106-111, 4 bash + 1 yaml fences). The retiring pages themselves (post-T1:
+    archive/docs-v1/process.html etc.) carry the site table/nav idiom — name them as the table-style
+    precedent alongside index.html.
+  - >-
+    Cross-mirror anchor to test explicitly: process-v2.md:17 links quickstart.md#current-skill-names
+    — the process mirror must emit quickstart.html#current-skill-names and the quickstart mirror
+    must carry id=current-skill-names.
+  - >-
+    Historical docs outside the sweep reference the retiring pages (docs/retros/2026-06-30-*.md,
+    docs/superpowers/plans+specs/2026-06-30-*.md, e.g.
+    superpowers/specs/2026-06-30-docs-hygiene-doctrine-design.md:109 -> docs/best-practices.md).
+    Correctly untouched per spec (historical stays as written), but the unit report should note them
+    so the merge-gate reviewer does not flag the (expected) dead relative paths.
+  - >-
+    Delete-then-recreate of docs/process.html verified harmless: house validate exits 0 and inspects
+    records not docs/ files; 0005 recorded evidence in .house/events.jsonl is append-only history,
+    never re-run; git handles mv-then-create across two commits on the slice branch. No action
+    needed — recorded so nobody re-litigates it.

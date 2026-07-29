@@ -3,7 +3,7 @@ id: 0006-public-pages-refresh-retire-v1-pages-publish-cur
 title: public pages refresh — retire v1 pages, publish current docs
 kind: docs-only
 rigor: patch
-state: shaping
+state: ready
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
@@ -16,7 +16,31 @@ artifacts:
     state: approved
     updated: '2026-07-29'
   plan:
-    state: awaiting_review
+    state: approved
     updated: '2026-07-29'
 units: []
-kickoff: null
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+    - T2
+    - T3
+  scope_guards:
+    - NOT deleting the v1 pages' content from the repo — archive/docs-v1/ keeps md + html.
+    - NOT touching docs/slices/, ADRs, roadmap/dev-state beyond the reconcile of this slice itself.
+    - >-
+      NOT changing quickstart.md/process-v2.md content (mirror-only fidelity, plus retargeting links
+      that pointed at the retired pages).
+    - NOT adding a build step or generator dependency — mirrors are hand-rendered HTML.
+  stakes: >-
+    Low-moderate. This is the public face: a broken link or unfaithful mirror is visible to anyone,
+    but nothing here touches code, records, or the global skill namespace. Worst wrong turn is
+    mirror drift, bounded by the generated-from comments and the machine-checked link policy.
+  attended: false
+  plan_check_commitments:
+    - 'M1: T1 verify greps markdown LINK syntax only — historical prose is never reworded to pass.'
+    - 'M2: no raw .md hrefs in any site page (blob URLs exempt) — machine-checked in T2 and T3.'
+    - 'A4: quickstart mirror carries id=current-skill-names (process-v2 links that anchor).'
+    - 'A5: unit report pre-empts the reviewer on historical docs that reference retired pages.'
+  stack: node
