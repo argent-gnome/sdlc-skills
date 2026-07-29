@@ -102,6 +102,11 @@ spelling everywhere.
 Every `house` command rejects a flag it does not consume: exit 1, naming the unknown flag. Positional
 arguments are unaffected.
 
+**One exemption, deliberate (plan-check A4, reconciled into the spec as-built 2026-07-29):** `house hook`
+is absent from the known-flags table, because advisory-only hooks never exit non-zero
+([ADR-0004](../../adr/0004-house2-coexistence-and-advisory-hooks.md)). A command with no table entry
+skips the guard entirely — that absence *is* the exemption mechanism.
+
 #### Scenario: a misspelled flag is refused, not swallowed
 - When I run `house gate merge_gate --slice X --verdict GO --actro reviewer`
 - Then the exit code is 1 and stderr names `--actro`
