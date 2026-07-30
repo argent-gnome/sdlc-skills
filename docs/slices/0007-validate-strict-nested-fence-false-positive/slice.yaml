@@ -9,7 +9,7 @@ appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0007-validate-strict-nested-fence-false-positive
 base_sha: c2f88db5ce38f632a6d0ebfb0cc58f58c25c0597
-pr: null
+pr: https://github.com/argent-gnome/sdlc-skills/pull/13
 adrs: []
 artifacts:
   spec:
