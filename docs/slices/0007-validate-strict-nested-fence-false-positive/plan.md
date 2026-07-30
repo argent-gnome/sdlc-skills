@@ -334,9 +334,17 @@ A file newly reporting a marker means the old stripper was hiding a genuine open
 **not** this slice's to resolve — resolving it may need a decision this slice's author has no standing to
 make. Record it and hand it on:
 
+> **⚠ As-built correction (2026-07-30) — the command below is not what this plan was approved with.**
+> As approved it read `--note "…"`, and `house event` has no `--note` flag (`FLAGS.event` is
+> `['slice','payload','actor']`), so it exits 1 on the per-command unknown-flag guard `[0003]` R-5 added.
+> `--payload` is also `JSON.parse`d (`cli/lib/slices.js:166`), so the value must be a JSON object, not a
+> bare sentence — a plain string swap would still fail. Corrected in place rather than left to exit 1;
+> see **As-built** at the foot of this plan.
+
 ```bash
 house event work.discovered --slice 0007-validate-strict-nested-fence-false-positive \
-  --note "corrected stripper exposes a genuine marker in <path> — needs its own triage" --actor <you>
+  --payload '{"finding":"corrected stripper exposes a genuine marker in <path> — needs its own triage"}' \
+  --actor <you>
 ```
 
 Then finalize the unit as `DEVIATION` and say so in the report. Per spec R-3, `--strict` is permitted to
@@ -400,3 +408,33 @@ These are the scope guards. They go into the kickoff brief verbatim.
 
 <!-- The builder annotates ON DIVERGENCE ONLY. Narration of what was done belongs in the unit report,
      not here — see the roadmap's "as-built narration belongs in the unit report only" hygiene item. -->
+
+**Code divergence: none.** Unit 01 built T1–T3 verbatim to this plan — the helper, the pipeline reorder,
+the five tests, and the No-Gos all as written. What shipped, with its evidence, is in
+[`units/01-report.md`](units/01-report.md); it is deliberately not restated here.
+
+**Two post-approval edits to this plan's own body, disclosed (2026-07-30).** Both were made after
+`state: approved`, so they are recorded here rather than left to be discovered by diff. The rule applied,
+consistently in both cases: *an approved plan's body is corrected only where leaving it as written would
+mislead the next author, and every such correction is disclosed in this section.*
+
+1. **File Structure table, `cli/test/validate.test.js` row** — "append four tests" → "append five tests
+   (four in Task 1, one in Task 2)". Made at the unit-01 reconcile. The table under-counted because Task 2
+   appends a fifth test the table's row never accounted for; the task bodies were always correct, and the
+   test counts in Task 1 Step 5 (76) and Task 3 Step 4 (77) were already right and are unchanged.
+2. **Task 3 Step 3's `house event` invocation** — `--note "<sentence>"` → `--payload '<json>'`. The
+   unit-01 reconcile declined this edit on approved-plan hygiene grounds while making edit (1), and the
+   `[0007]` merge gate (GO, `fable-reviewer`) surfaced the inconsistency: the same hygiene bar cannot admit
+   a clarifying edit and refuse a correcting one, and this section exists precisely so neither has to be
+   silent. Corrected here because the command as approved **exits 1** — `house event` accepts only
+   `--slice`, `--payload`, `--actor` (`cli/bin/house.js:28`), and the unknown-flag guard `[0003]` R-5 added
+   makes an unrecognized spelling fail closed rather than be swallowed. `--payload` is additionally
+   `JSON.parse`d (`cli/lib/slices.js:166`), so the corrected form passes a JSON object. **Latent, never
+   live:** this route is spec R-3's deviation path for a genuine marker newly exposed by the corrected
+   stripper, and it never fired — the blast-radius measurement found zero files going green → red, in both
+   the builder's count and the reviewer's independent re-measurement. The generalized finding (the wrong
+   flag is copied wherever the command is documented) stays routed to the roadmap backlog; this edit fixes
+   only this plan.
+
+**Not a defect, so not changed:** Task 3 Step 3's closing paragraph quotes `house task … --note`, and
+`--note` **is** a valid `task` flag (`FLAGS.task` includes it). Only the `event` invocation was wrong.
