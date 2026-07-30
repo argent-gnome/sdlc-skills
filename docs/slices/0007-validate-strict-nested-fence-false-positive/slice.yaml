@@ -1,0 +1,96 @@
+schema_version: 1
+id: 0007-validate-strict-nested-fence-false-positive
+title: validate --strict nested-fence false positive
+kind: slice
+rigor: patch
+state: ready
+blocked_on: null
+appetite: 0.5 session
+created: '2026-07-29'
+branch: slice/0007-validate-strict-nested-fence-false-positive
+base_sha: null
+pr: null
+adrs: []
+artifacts:
+  spec:
+    state: approved
+    updated: '2026-07-30'
+  plan:
+    state: approved
+    updated: '2026-07-30'
+units: []
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+    - T2
+    - T3
+  scope_guards:
+    - >-
+      Do not edit docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md. It must pass
+      unmodified; that is the acceptance evidence, and editing it destroys the evidence rather than
+      producing it.
+    - >-
+      Do not add an npm dependency, and do not introduce a markdown parser. One runtime dependency
+      (js-yaml) is the whole tree, and ADR-0003's bar is a check runnable from a bare terminal in
+      under a second.
+    - >-
+      Do not change the marker regex, the set of scanned artifacts (spec.md and plan.md only),
+      --slice semantics, exit codes, or the finding's message text.
+    - >-
+      Do not add line or column numbers to the finding. Useful, tempting while in this code, and a
+      separate backlog item.
+    - >-
+      Do not extract stripFences() into a shared module and do not add a second caller. Extract when
+      a second caller actually exists. (Exporting the symbol from validate.js is required by R-5 and
+      is explicitly NOT this extraction.)
+    - >-
+      Do not model any markdown construct beyond fenced blocks and the existing inline code spans.
+      Four-space indented code blocks, link reference definitions, setext headings and nested-list
+      indentation stay unmodeled.
+    - >-
+      Do not touch any skills/*/SKILL.md. The hand-off bar wording at
+      skills/house-shaper/SKILL.md:83 is already correct and unaffected.
+    - >-
+      Do not chase repo-wide --strict exit 0 as the goal. The bar is the test suite. Green is an
+      expected consequence, not the definition of done.
+    - >-
+      Do not resolve markers newly exposed elsewhere. Route them per Task 3 Step 3 (work.discovered
+      → roadmap backlog), finalize DEVIATION, and leave the marker unresolved.
+  stakes: >-
+    Moderate for a fifteen-line change. This check IS the shaper's hand-off gate (house validate
+    --strict --slice <id>), so an error here contaminates every slice downstream. The expensive
+    wrong turn is not a false positive — those are loud — but a stripper that hides too much: a
+    genuine open question then sails into a build with no signal. That is why R-4 exists and why
+    Task 2 Step 3 tampers with the implementation to prove the guards bite. The second expensive
+    wrong turn is treating "make --strict exit 0" as the goal and editing the 0003 plan to get
+    there.
+  attended: false
+  plan_check_commitments:
+    - >-
+      M1: stripFences() is EXPORTED from cli/lib/validate.js. Task 3 Step 2 and the merge-gate
+      reviewer's independent R-5 re-measurement both import it; an unexported symbol blocks both.
+    - >-
+      M2: Task 3 Step 4 expects 77 passing tests (72 baseline + 4 from T1 + 1 from T2). Task 1 Step
+      5's 76 is correct at that earlier point.
+    - >-
+      A1: Task 2 Step 3's tamper block runs from the repo root with subshelled cd, so git checkout
+      -- cli/lib/validate.js resolves correctly.
+    - >-
+      A2: the 0003-plan-unmodified check uses git diff main...HEAD (merge-base) PLUS a working-tree
+      diff — not git diff main, which false-fails if main advances and false-passes on an
+      uncommitted edit.
+    - >-
+      A3: a T3 verify failure caused ONLY by a newly exposed genuine marker is spec R-3's sanctioned
+      deviation route, not a build failure. Tick with --note; do not expand scope; do not silence
+      the file.
+    - >-
+      A4: strip-pipeline comment wording corrected, and the Step 4 replacement is described as four
+      lines (it quotes four).
+  stack: node
+  notes: >-
+    Research digest at research/fence-stripper.md — evidence, not authority. Its zero-blast-radius
+    measurement came from a prototype, so spec R-5 makes re-measuring a merge-gate obligation. Read
+    the plan's "«M:…»" preamble before the test code: the plan cannot write literal clarification
+    markers without blocking its own hand-off under the very bug being fixed.

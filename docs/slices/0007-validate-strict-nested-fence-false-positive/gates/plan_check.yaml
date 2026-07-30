@@ -1,0 +1,41 @@
+gate: plan_check
+verdict: GO_WITH_FIXES
+by: fable-reviewer
+recorded_at: '2026-07-30T00:42:23.564Z'
+notes: >-
+  Reviewer hand-traced all four Task 1 fixtures against the current regex (all genuinely red, for
+  the stated reasons and in the stated directions) and all seven fixtures against the proposed
+  stripFences (all pass). Confirmed the 72-test baseline by running the suite, verified the
+  comment-ordering mechanism is real and that the trailing complete comment in the R-2 fixture is
+  load-bearing, and confirmed the existing R-1 test at validate.test.js:173-200 stays green under
+  the new pipeline.
+must_fix:
+  - >-
+    stripFences() was module-private but Task 3 Step 2 and the R-5 merge-gate re-measurement both
+    require importing it — now exported, with the narrow rationale recorded in code and in the
+    No-Gos so it is not mistaken for the forbidden shared-module extraction
+  - >-
+    Task 3 Step 4 expected 76 passing tests; correct count is 77 (72 baseline + 4 from T1 + 1 from
+    T2). Task 1 Step 5 s 76 was correct at that point and is unchanged
+advisory_folded:
+  - >-
+    Task 2 Step 3 tamper block ran git checkout with a repo-relative path after cd cli, resolving to
+    cli/cli/lib/validate.js — steps now subshelled and run from repo root
+  - >-
+    T3 verify used git diff --quiet main, which false-fails if main advances mid-slice and
+    false-passes on an uncommitted working-tree edit — replaced with main...HEAD merge-base diff
+    plus a working-tree diff
+  - >-
+    T3 verify begins house validate --strict && … so it cannot pass on spec R-3 s own sanctioned
+    deviation path — that case is now called out in both plan.md Task 3 Step 3 and the T3 task title
+    as a deviation route, not a build failure
+  - >-
+    Cosmetic: strip-pipeline comment likewise referred to a deleted line; plan said replace these
+    three lines while quoting four
+advisory_declined: []
+lenses:
+  arch-fit: GO
+  spec-coverage: GO
+  risk-sequencing: GO
+  testability: GO
+  simpler-path: GO

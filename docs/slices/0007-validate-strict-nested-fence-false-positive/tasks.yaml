@@ -1,0 +1,23 @@
+tasks:
+  - id: T1
+    title: line-oriented stripFences() (exported for R-5) + strip order fences/comments/code-spans (R-1, R-2)
+    state: todo
+    verify: cd cli && npm test
+  - id: T2
+    title: pin that the corrected stripper still catches genuine markers, incl. unclosed fence (R-4)
+    state: todo
+    verify: cd cli && npm test
+    depends_on:
+      - T1
+  - id: T3
+    title: >-
+      repo-level acceptance — 0003 plan passes unmodified + own blast-radius measurement (R-3, R-5);
+      a --strict red caused ONLY by a newly exposed genuine marker is the plan's Step 3 deviation
+      route, not a build failure
+    state: todo
+    verify: >-
+      house validate --strict && git diff --quiet main...HEAD --
+      docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md && git diff --quiet --
+      docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md && cd cli && npm test
+    depends_on:
+      - T2
