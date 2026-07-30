@@ -290,3 +290,26 @@ test('validate --strict [0007] R-2: a comment opener quoted in a fence does not 
   assert.equal(errs.length, 1);
   assert.match(errs[0].path, /plan\.md$/);
 });
+
+test('validate --strict [0007] R-4: genuine markers still trip the check', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'still caught', {});
+  const dir = join(repo, 'docs/slices', id);
+  const errs = () => validate(repo, { strict: true, slice: id }).filter(e => e.level === 'error');
+
+  // (a) a genuine marker AFTER a closed fence that quotes one
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n```\n[NEEDS CLARIFICATION: quoted, must not trip]\n```\n\n[NEEDS CLARIFICATION: genuine, must trip]\n');
+  assert.equal(errs().length, 1, 'marker after a closed fence');
+
+  // (b) a genuine marker BETWEEN two closed fences — proves fences close at the right line
+  //     rather than the first swallowing forward into the second
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n```\nquoted\n```\n\n[NEEDS CLARIFICATION: between the blocks]\n\n```\nalso quoted\n```\n');
+  assert.equal(errs().length, 1, 'marker between two closed fences');
+
+  // (c) a genuine marker after an UNCLOSED fence. CommonMark would hide it; spec R-4 says never hide.
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n```\nthis fence is never closed\n\n[NEEDS CLARIFICATION: after an unclosed fence]\n');
+  assert.equal(errs().length, 1, 'marker after an unclosed fence — never hide');
+});
