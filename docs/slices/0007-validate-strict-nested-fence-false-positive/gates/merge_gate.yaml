@@ -1,0 +1,21 @@
+gate: merge_gate
+verdict: GO
+by: fable-reviewer
+recorded_at: '2026-07-30T01:31:35.142Z'
+notes: >-
+  Independent reviewer re-ran everything personally: 77 pass/0 fail, house validate and --strict
+  both exit 0. R-3 verified by blob hash — 0003/plan.md is 178a1e97dc4e561689996f71a82ee2ecc376cd69
+  at base c2f88db, at HEAD, and in the working tree. R-5 re-measured independently by importing the
+  shipped stripFences() with the old pipeline inlined: 14-artifact scan set = exactly 1 verdict
+  change (0003/plan.md RED->GREEN), zero GREEN->RED; supplementary sweep of all 79 tracked md files
+  = same single change, zero GREEN->RED. Tamper check (stripFences forced to '') = 4 failures, so
+  the R-4 pins bite; reverted clean to 77/0. 10 adversarial marker-hiding probes (tilde/backtick
+  mismatch, short close, close-with-info-string, indented and tab-indented runs, unclosed-fence
+  restore, long close) = 0 failures. All four lenses ran; no R-1..R-5 violation found. Two
+  preference-level notes only: the reconcile retro-edited the approved plan's test-count table while
+  declining to fix the plan's wrong --note flag (inconsistent; the As-built section existed for it),
+  and the 01:17Z event payload misattributed the phantom verb to the brief/builder-skill when it
+  came from the orchestrator's dispatch prompt (the refined roadmap entry corrects it). All three
+  backlog routings verified correct and none should have blocked. Addendum for backlog item (c): the
+  heartbeat branch one line above slices.js:244 uses a first-occurrence cur.replace with the same
+  hazard shape — the fix should cover both.

@@ -230,3 +230,86 @@ test('validate R-2: manifest-approved artifact must have agreeing frontmatter; m
   assert.deepEqual(evaded.filter(e => e.level === 'error'), []);
   assert.match(evaded.filter(e => e.level === 'warning').map(e => e.msg).join(' '), /no frontmatter state/);
 });
+
+test('validate --strict [0007] R-1: a fence run mid-line is not a fence', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'nested fence', {});
+  const dir = join(repo, 'docs/slices', id);
+  // Reproduces docs/slices/0003-…/plan.md lines 48 / 58 / 84: a real ```js fence whose body holds
+  // two three-backtick runs mid-line inside a JS string literal, with marker text between them.
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n' +
+    '```js\n' +
+    "    '```\\n[NEEDS CLARIFICATION: inside a string literal]\\n```\\n' +\n" +
+    '    const x = 1;\n' +
+    '```\n\n' +
+    'ordinary prose after the fence\n');
+  assert.deepEqual(validate(repo, { strict: true, slice: id }).filter(e => e.level === 'error'), []);
+});
+
+test('validate --strict [0007] R-1: an odd mid-line run count does not invert later fences', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'parity', {});
+  const dir = join(repo, 'docs/slices', id);
+  // ONE mid-line run — the odd count that flips parity for the rest of the file under the old regex.
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n' +
+    '```js\n' +
+    "    const fence = '```';\n" +
+    '```\n\n' +
+    'prose between the two blocks\n\n' +
+    '```\n' +
+    '[NEEDS CLARIFICATION: quoted in a second block]\n' +
+    '```\n');
+  assert.deepEqual(validate(repo, { strict: true, slice: id }).filter(e => e.level === 'error'), []);
+});
+
+test('validate --strict [0007] R-1: tilde fences are stripped', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'tilde', {});
+  const dir = join(repo, 'docs/slices', id);
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n~~~\n[NEEDS CLARIFICATION: inside a tilde fence]\n~~~\n');
+  assert.deepEqual(validate(repo, { strict: true, slice: id }).filter(e => e.level === 'error'), []);
+});
+
+test('validate --strict [0007] R-2: a comment opener quoted in a fence does not pair forward', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'comment order', {});
+  const dir = join(repo, 'docs/slices', id);
+  // The trailing complete comment is load-bearing: the comment regex is non-greedy and needs a
+  // closing --> to pair with. Without one, the quoted opener strips nothing and the bug cannot fire.
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n' +
+    '```html\n' +
+    '<!-- an opener with no close inside this fence\n' +
+    '```\n\n' +
+    '[NEEDS CLARIFICATION: must still be seen]\n\n' +
+    '<!-- an ordinary complete comment -->\n');
+  const errs = validate(repo, { strict: true, slice: id }).filter(e => e.level === 'error');
+  assert.equal(errs.length, 1);
+  assert.match(errs[0].path, /plan\.md$/);
+});
+
+test('validate --strict [0007] R-4: genuine markers still trip the check', () => {
+  const repo = mkTmpRepo();
+  const id = mint(repo, 'still caught', {});
+  const dir = join(repo, 'docs/slices', id);
+  const errs = () => validate(repo, { strict: true, slice: id }).filter(e => e.level === 'error');
+
+  // (a) a genuine marker AFTER a closed fence that quotes one
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n```\n[NEEDS CLARIFICATION: quoted, must not trip]\n```\n\n[NEEDS CLARIFICATION: genuine, must trip]\n');
+  assert.equal(errs().length, 1, 'marker after a closed fence');
+
+  // (b) a genuine marker BETWEEN two closed fences — proves fences close at the right line
+  //     rather than the first swallowing forward into the second
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n```\nquoted\n```\n\n[NEEDS CLARIFICATION: between the blocks]\n\n```\nalso quoted\n```\n');
+  assert.equal(errs().length, 1, 'marker between two closed fences');
+
+  // (c) a genuine marker after an UNCLOSED fence. CommonMark would hide it; spec R-4 says never hide.
+  writeFileSync(join(dir, 'plan.md'),
+    '# Plan\n\n```\nthis fence is never closed\n\n[NEEDS CLARIFICATION: after an unclosed fence]\n');
+  assert.equal(errs().length, 1, 'marker after an unclosed fence — never hide');
+});
