@@ -3,7 +3,7 @@ id: 0008-kernel-record-integrity-writers-that-misrepresen
 title: kernel record integrity — writers that misrepresent their records
 kind: slice
 rigor: slice
-state: shaping
+state: ready
 blocked_on: null
 appetite: 1 session
 created: '2026-07-30'
@@ -16,7 +16,106 @@ artifacts:
     state: approved
     updated: '2026-07-30'
   plan:
-    state: draft
+    state: approved
     updated: '2026-07-30'
 units: []
-kickoff: null
+kickoff:
+  version: 1
+  unit: '01'
+  tasks:
+    - T1
+    - T2
+    - T3
+    - T4
+  scope_guards:
+    - >-
+      base_sha reachability is NOT this slice. It is 0009, with ADR-0005 as its design authority. Do
+      not add a reachability check, do not touch prCmd, and do not modify docs/adr/0005-*.
+    - >-
+      Do not hand-edit any slice.yaml. That is the breach being fixed. 0001's existing adrs value is
+      re-recorded THROUGH the new writer — never edited in place.
+    - >-
+      Do not change the unit-report template's headings (## Heartbeats, ## Result). Nine shipped
+      reports depend on them, and the locator is what adapts to the document, not the reverse.
+    - Do not add a report alias to unitCmd, and do not add any second name for an existing writer.
+    - >-
+      Do not edit .house/events.jsonl. It is append-only; a payload written in error is superseded
+      by a later record, never rewritten. The 01:17:04Z misattribution stays as written.
+    - >-
+      No new npm dependency and no markdown parser. One runtime dependency (js-yaml) is the whole
+      tree.
+    - >-
+      Do not change any accepted flag name, exit code, or event type. Adding slice.adr_attached to
+      event_types is the one sanctioned schema addition; it must NOT go into free_form_events.
+    - >-
+      Do not fix a defect before its failing test exists. A test written after the fix proves the
+      test passes, not that the bug is gone. This slice's whole subject is unevidenced claims.
+    - >-
+      Do not re-anchor heartbeat on its own ## Heartbeats heading. It was tried, simulated, and
+      rejected at plan-check — finding that section's END means scanning for the next '## ' line,
+      which any note body can contain, so the next beat lands inside the previous note. Spec R-2 was
+      revised because of this. Reintroducing it reintroduces the bug.
+    - >-
+      Do not chase the named residual limit (a finalize --note containing an exact '## Result' line
+      confusing a SECOND finalize). Closing it needs a real parser. It is named in the plan on
+      purpose.
+    - >-
+      Do not generalize findSection into a markdown sectioning library, and do not add a manifest
+      key allowlist to house validate. Both are named rabbit holes; the allowlist is a separate
+      defect class and belongs in the backlog.
+  stakes: >-
+    High for the line count. These writers produce the OBSERVED and DECLARED layers every downstream
+    decision reads — a gate verdict, a unit result, a slice-to-ADR edge. When one misrepresents its
+    record nothing downstream can tell, which is the exact class one-writer-per-field exists to
+    prevent. Two of the six defects fired during the 0007 build itself: finalize destroyed part of
+    its own unit report at exit 0 with the manifest still reading DONE. The expensive wrong turn is
+    a fix that looks right and is unevidenced — which is why every task is red-test-first and why
+    the plan states, per test, the exact failure you must see before writing code. A test that
+    passes before the fix evidences nothing, and round 1 of plan-check caught exactly that mistake
+    in an earlier draft of Task 2.
+  attended: false
+  plan_check_commitments:
+    - >-
+      R2-A1: the boundary trim can collapse a prior note's TRAILING newlines when the next beat
+      runs, because by then that note is part of the document prefix. This is intended and cosmetic.
+      Leave it. Do not "fix" it mid-build.
+    - >-
+      R2-A2: findSection takes NO occurrence parameter. Signature is findSection(text, heading),
+      last exact whole-line match, both callers. If you find a third argument anywhere, it is stale.
+    - >-
+      R2-A3: there is no literal command list to edit for the usage line — it is generated from
+      Object.keys(commands) at cli/bin/house.js:79. Adding commands.adr updates it automatically.
+    - >-
+      R2-A4: adrCmd's appendEvent sits OUTSIDE the includes guard on purpose. Step 7's
+      regularization is exactly the case where the event is the point and the manifest does not
+      change. Accepted cost: an accidental double-attach also logs an event with no manifest change.
+    - >-
+      R1-MF1: Task 2's R-2 note must be MULTI-LINE with the heading at line start, and the
+      load-bearing assertion is placement (beat 3 lands after note 2). The obvious single-line
+      version is GREEN before the fix and evidences nothing.
+    - >-
+      R1-MF2: Task 3 Step 2's red is `2 !== 1` — before wiring, house adr hits the unknown-command
+      path which exits 2, and node:test aborts there. You will NOT reach the deepEqual; do not hunt
+      for it.
+    - >-
+      R1-MF3: Task 4 Step 2's red is the missing accepted-actions list, NOT `no such unit`. Unit 01
+      exists by then, so today's lookup succeeds and the trailing else already throws.
+    - >-
+      R1-A3: the findSection red-run is a TypeError (destructuring a missing export yields
+      undefined), not a SyntaxError.
+    - >-
+      R1-A4: Task 1 Step 6's measurement script uses fs.globSync, which needs Node >= 22. It is a
+      throwaway measurement, not shipped code, so it does not change the project's Node floor.
+    - >-
+      Test counts are 77 baseline, then 80 after T1, 83 after T2, 84 after T3, 86 after T4. Both
+      plan-check rounds verified the arithmetic and the 77 baseline by running the suite.
+  stack: node
+  notes: >-
+    Research digest at research/record-writer-anatomy.md — evidence, not authority; it verified all
+    six defects against the code with reproductions. Two things it got wrong that the plan corrects:
+    the roadmap's prescribed /^## Result[\s\S]*$/m anchor is insufficient (it still destroys a
+    line-start quotation and a fenced heading — only last-match is robust), and its (b)
+    recommendation of a separate ## Heartbeats anchor was rejected at plan-check for the reason in
+    the scope guards. Read the plan's "One rule, two callers" preamble before any code: it is the
+    whole design in one page, and it explains why the intuitive approach is the wrong one. Spec R-2
+    carries a revision block — read it, because the first approved wording mandated the bug.

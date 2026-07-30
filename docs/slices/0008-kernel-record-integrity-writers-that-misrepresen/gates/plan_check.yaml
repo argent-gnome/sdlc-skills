@@ -1,56 +1,68 @@
 gate: plan_check
-verdict: GO_WITH_FIXES
+verdict: GO
 by: fable-reviewer
-recorded_at: '2026-07-30T02:33:01.264Z'
+recorded_at: '2026-07-30T02:46:53.973Z'
 notes: >-
-  Reviewer hand-traced every test against the current implementation and empirically simulated old
-  and new writers against the plan exact fixtures on Node v26, baseline confirmed 77/0. All three
-  must-fixes are plan-text and test-fixture level, no design change required in the reviewer view —
-  but the shaper subsequently proved by simulation that MF1 repair as suggested fails under BOTH
-  writers, which escalates A1 into a spec defect. See the deviation recorded immediately after this
-  gate.
-must_fix:
+  Round 2 GO. Reviewer ran the baseline suite (77/0) and machine-simulated the plan verbatim
+  findSection and both writers rather than reading them. Round 1 remaining doubt was whether the
+  spec revision was sound; it is. One theoretical wrinkle noted and dismissed: a heading as the
+  final line with no trailing newline gives bodyStart > end, which slices harmlessly to empty and is
+  unreachable via dispatch-created reports. Reviewer bottom line: nothing here costs a builder a
+  session.
+round: 2
+must_fix: []
+advisory_folded:
   - >-
-    MF1: Task 2 R-2 test is provably GREEN before its fix — the note text places ## Result mid-line
-    so the old first-occurrence replace still finds the real heading. Confirmed by simulation.
-    Violates the spec No-Go against fixing a defect before its failing test exists.
+    A1: boundary trim can collapse a prior note trailing newlines on the NEXT beat, because by then
+    the note is part of the document prefix. Folded as an explicit do-not-fix-this note in Task 2
+    Step 3.
   - >-
-    MF2: Task 3 Step 2 predicts an unreachable failure — before wiring, house adr hits the
-    unknown-command path and exits 2, so the first assertion fails 2!==1 and node:test aborts before
-    the deepEqual the plan calls the meaningful failure.
+    A2: Task 1 Step 6 measurement script passed a stale third argument findSection(t, "## Result",
+    "last"), contradicting the no-occurrence-parameter design. Dropped.
   - >-
-    MF3: Task 4 Step 2 predicts the wrong red reason — unit 01 exists, so the lookup succeeds and
-    the current trailing else throws unknown unit action; no such unit never appears in that run.
-advisory:
+    A3: Task 3 Step 5 instructed adding adr to a usage string that does not exist — the usage line
+    is generated from Object.keys(commands) at bin/house.js:79. Replaced with an explicit
+    do-not-look-for-one note.
   - >-
-    A1: the named limit is presented as the only residual hole and is not — a multi-line note
-    containing any line starting with ## truncates the computed Heartbeats end for subsequent beats,
-    landing the next heartbeat inside the previous note. Same class R-2 exists to fix.
+    A4: adrCmd emits slice.adr_attached even on an idempotent no-op. Folded as a named, justified
+    choice — Step 7 regularization is exactly the case where the event is the point and the manifest
+    does not change.
+advisory_declined: []
+round_1_must_fixes_verified_folded:
   - >-
-    A2: --title flows unescaped into the H1 at slices.js:222, so a title containing a newline plus a
-    heading creates a fake first heading. Not a spec violation; a newline guard closes it.
-  - 'A3: findSection red-run is a TypeError not a SyntaxError.'
-  - 'A4: Step 6 uses fs.globSync (Node >= 22) while the tech-stack line says Node >= 18.'
+    MF1 real fix not reword: note now multi-line with the heading at line start and the assertion is
+    about placement; verified red under old writer and green under new by simulation.
   - >-
-    A5: R-4 missing-heading refusal is tested for finalize only; heartbeat identical path
-    unexercised.
+    MF2: Task 3 Step 2 now predicts 2 !== 1 from the unknown-command path and says the deepEqual is
+    unreached.
+  - 'MF3: Task 4 Step 2 now predicts the missing accepted-actions list, not no such unit.'
+central_claim_attacked: >-
+  Reviewer tried every writer that touches a report (dispatch, heartbeat, finalize are the only
+  ones). --title with an embedded exact heading lands on line 2, ABOVE the structural one —
+  last-match steps past it, plan defused claim verified by simulation. A heartbeat note containing
+  an exact heading line is inserted before the structural heading so it stays above; the next beat
+  still lands after it. The ONLY case that puts an exact match below the structural heading is a
+  finalize --note containing one, which the plan already names including the
+  heartbeat-after-finalize variant, pins single-finalize stability for, and correctly routes to a
+  parser as a No-Go. NO UNNAMED REACHABLE CASE FOUND.
 lenses:
   arch_fit: >-
-    findSection genuinely follows the derive.js:84-112 precedent rather than citing it — positions
-    not replacement, missing heading named and refused. adrCmd mirrors prCmd; owned-event pattern
-    matches slice.pr_set.
+    locator-returns-positions genuinely follows the derive.js name-and-refuse precedent; one shared
+    rule with no occurrence parameter is honest sharing rather than a flag-parameterized
+    pseudo-helper; enum-first sequencing load-bearing because appendEvent validates event_types at
+    core.js:46-48.
   spec_coverage: >-
-    all seven requirements land on a task, none orphaned, no task does unrequested work. Only gap is
-    A5.
+    all seven requirements land on tasks including revised R-2 three scenarios and R-1 ninth-report
+    scenario via the Step 6 measurement. No orphans, no unrequested work.
   risk_sequencing: >-
-    counts 77 to 85 arithmetically right, 77 baseline verified by running the suite; no boundary
-    regresses; the enum step is load-bearing and correctly sequenced before adrCmd because
-    appendEvent validates against event_types.
+    baseline 77/0 confirmed by running the suite; +3/+3/+1/+2 = 80/83/84/86 all correct; suite green
+    at every boundary including cli.test.js:57 unknown-flag pin which survives the new guard
+    message; Task 4 brace deletion valid and the deleted else genuinely unreachable after the hoist.
   testability: >-
-    findSection arithmetic verified against every fixture including the adjacent-heading and
-    last-section edges; no .stderr references remain; every symbol already imported; Task 4 brace
-    deletion structurally valid; Task 3 Step 7 empty-diff prediction is STRONGER than hedged since
-    the includes guard means writeYaml is never called. But MF1/MF2/MF3.
+    every test verified red for its stated reason and green after, by simulation; Task 1 R-1
+    stability verified in BOTH directions across the Task 2 writer swap; findSection arithmetic
+    exact at the adjacent-heading and last-section edges; throws land before
+    writeFileSync/writeYaml/appendEvent so nothing partial is written.
   simpler_path: >-
-    none that satisfies the spec — two anchored regexes leave R-3 live and fail R-4; deleting adrs
-    costs eight hand-edited manifests.
+    none meeting the spec — anchored regexes leave R-3 and R-4 unmet; adrCmd at ~15 lines matches
+    the research floor.

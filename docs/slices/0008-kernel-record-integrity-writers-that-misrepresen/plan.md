@@ -3,8 +3,8 @@ id: "0008-kernel-record-integrity-writers-that-misrepresen"
 kind: plan
 slice: "0008-kernel-record-integrity-writers-that-misrepresen"
 title: "kernel record integrity — writers that misrepresent their records"
-status: "shaping"
-state: draft
+status: "shaped 2026-07-30; plan_check GO_WITH_FIXES then GO after the R-2 spec revision; approved 2026-07-30"
+state: approved
 ---
 # kernel record integrity — writers that misrepresent their records — Implementation Plan
 
@@ -250,7 +250,7 @@ let diff = 0;
 for (const f of files) {
   const t = readFileSync(f, "utf8");
   const old = t.search(/## Result[\s\S]*$/);
-  const neu = findSection(t, "## Result", "last")?.start ?? -1;
+  const neu = findSection(t, "## Result")?.start ?? -1;
   if (old !== neu) { diff++; console.log("DIFFERS", f, old, neu); }
 }
 console.log(files.length + " reports, " + diff + " position changes");
@@ -371,6 +371,12 @@ The note is **concatenated**, never passed as a replacement argument, so `$&` is
 on `head` normalises trailing blank lines so repeated beats do not accumulate them — it operates on the
 document prefix, never on caller text.
 
+> **One boundary behaviour, so you do not "fix" it mid-build.** If a note itself *ends* in newline
+> characters, the **next** beat's `head` trim collapses them, because by then that note is part of the
+> document prefix. The write is verbatim; a later write normalises the boundary. This is cosmetic in
+> markdown and it is intended — leave it. R-3 is about note text never changing *where or what* is written,
+> and that still holds.
+
 - [ ] **Step 4: Run the tests and confirm they pass**
 
 Run: `cd cli && npm test 2>&1 | grep -E "^ℹ (tests|pass|fail)"`
@@ -472,6 +478,11 @@ export function adrCmd(root, id, action, adrId, args) {
 }
 ```
 
+The `appendEvent` sits **outside** the `includes` guard on purpose: Step 7 regularizes `[0001]`'s existing
+value, where the event *is* the entire point and the manifest does not change. The accepted cost is that an
+accidental double-attach also logs an event with no manifest change. That is the right trade for a layer whose
+whole job is provenance — and it is what makes Step 7's empty-diff prediction exact rather than hedged.
+
 - [ ] **Step 5: Wire the command**
 
 In `cli/bin/house.js`, add to `FLAGS` (after the `pr:` entry on `:33`):
@@ -486,7 +497,9 @@ and to `commands` (after the `pr:` entry on `:57`):
   adr:     () => slices.adrCmd(need(root), pos[0], pos[1], pos[2], args),
 ```
 
-Also add `adr` to the usage string in the `usage:` error at the foot of the file, keeping the existing order.
+**Nothing else to edit for the usage line.** It is generated from `Object.keys(commands)` at
+`cli/bin/house.js:79`, so adding the `commands.adr` entry updates it automatically. There is no literal
+command list in the file — do not go looking for one.
 
 - [ ] **Step 6: Run the tests and confirm they pass**
 
