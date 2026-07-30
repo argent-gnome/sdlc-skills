@@ -3,7 +3,7 @@ id: 0007-validate-strict-nested-fence-false-positive
 title: validate --strict nested-fence false positive
 kind: slice
 rigor: patch
-state: building
+state: gating
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
