@@ -4,7 +4,14 @@ title: validate --strict nested-fence false positive
 kind: slice
 rigor: patch
 state: live_check
-blocked_on: null
+blocked_on:
+  gate: live_check
+  note: >-
+    Merged as 85731f3 (PR #13). Orchestrator's own post-merge run on main: 77/77 tests, house
+    validate exit 0, house validate --strict exit 0. Awaiting the user's own bare-terminal
+    confirmation — attended: false, so this hard gate halts for a human rather than accepting the
+    orchestrator's run as the verdict.
+  since: '2026-07-30'
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0007-validate-strict-nested-fence-false-positive
