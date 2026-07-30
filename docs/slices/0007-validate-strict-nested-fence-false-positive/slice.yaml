@@ -3,12 +3,12 @@ id: 0007-validate-strict-nested-fence-false-positive
 title: validate --strict nested-fence false positive
 kind: slice
 rigor: patch
-state: ready
+state: building
 blocked_on: null
 appetite: 0.5 session
 created: '2026-07-29'
 branch: slice/0007-validate-strict-nested-fence-false-positive
-base_sha: null
+base_sha: c2f88db5ce38f632a6d0ebfb0cc58f58c25c0597
 pr: null
 adrs: []
 artifacts:
@@ -18,7 +18,12 @@ artifacts:
   plan:
     state: approved
     updated: '2026-07-30'
-units: []
+units:
+  - id: '01'
+    title: unit 01 — fence-stripper correction (T1–T3)
+    state: building
+    result: null
+    dispatched: '2026-07-30T01:09:28.922Z'
 kickoff:
   version: 1
   unit: '01'
