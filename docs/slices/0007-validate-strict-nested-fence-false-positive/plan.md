@@ -3,7 +3,7 @@ id: "0007-validate-strict-nested-fence-false-positive"
 kind: plan
 slice: "0007-validate-strict-nested-fence-false-positive"
 title: "validate --strict nested-fence false positive"
-status: "shaping"
+status: "shaped 2026-07-29; user-approved 2026-07-30; shipped 2026-07-30"
 state: approved
 ---
 # validate --strict nested-fence false positive — Implementation Plan
@@ -438,3 +438,18 @@ mislead the next author, and every such correction is disclosed in this section.
 
 **Not a defect, so not changed:** Task 3 Step 3's closing paragraph quotes `house task … --note`, and
 `--note` **is** a valid `task` flag (`FLAGS.task` includes it). Only the `event` invocation was wrong.
+
+**One frontmatter reconcile at the ship (2026-07-30), no body change.** This plan's and the spec's
+`status:` field still read `"shaping"` after the user approved both, so they were brought to the convention
+every other shipped slice follows (`"shaped … ; user-approved … ; shipped 2026-07-30"`). Recorded here for
+completeness rather than because it is a plan correction: `status:` is the free-text human field, `state:`
+is what the validator's `[0003]` **R-2** approval-boundary cross-check reads, and `state: approved` was
+correct throughout — which is exactly why the drift survived to the ship. This is the same stale-`status:`
+class first found on `[0002]`; the manifest (`slice.yaml`) was not touched, since that layer has its own
+writer.
+
+**Ship-time facts are not in this section.** The merge produced a finding of its own — `base_sha` pointed at
+a local-only commit, so the merged diff was a strict superset of the reviewed one — but it is an
+*orchestration* divergence, not an as-built divergence in this plan. It lives in
+[`retro.md`](retro.md) ("Ship-time friction"), in
+[ADR-0005](../../adr/0005-reviewed-diff-equals-merged-diff.md), and in the roadmap's `[0007]` ship backlog.

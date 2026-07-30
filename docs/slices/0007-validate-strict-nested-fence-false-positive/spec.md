@@ -3,7 +3,7 @@ id: "0007-validate-strict-nested-fence-false-positive"
 kind: spec
 slice: "0007-validate-strict-nested-fence-false-positive"
 title: "validate --strict nested-fence false positive"
-status: "shaping"
+status: "shaped 2026-07-29; user-approved 2026-07-30; shipped 2026-07-30"
 state: approved
 ---
 # Spec — validate --strict nested-fence false positive

@@ -1,0 +1,9 @@
+gate: live_check
+verdict: approved
+by: jed
+recorded_at: '2026-07-30T01:48:00.386Z'
+notes: >-
+  User ran house validate --strict personally from a bare terminal on merged main (85731f3 lineage,
+  at 2245f09): no output, exit 0. This is the ADR-0003 bar the slice exists to protect — a check
+  runnable from a bare terminal in under a second — confirmed by a human rather than inherited from
+  the orchestrator's or the reviewer's run.
