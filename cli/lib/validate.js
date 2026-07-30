@@ -10,6 +10,34 @@ const kickoffSchema = readYaml(fileURLToPath(new URL('../schema/kickoff.yaml', i
 const KNOWN = new Set(['slice.yaml', 'spec.md', 'plan.md', 'plan-check.md', 'tasks.yaml', 'retro.md', 'merge-gate.md']);
 const KNOWN_DIRS = new Set(['gates', 'units', 'mockups', 'research']);
 
+// [0007] Fenced-code stripping is LINE-oriented, not byte-oriented. A run of backticks or tildes
+// appearing mid-line — inside a string literal, say — is not a fence, and the old `/```[\s\S]*?```/g`
+// pairing against one re-exposed the text between runs. Worse, an ODD number of runs on one line
+// inverted every fence after it, which fails silently in the marker-HIDING direction.
+//
+// Exported ONLY so the blast-radius comparison required by spec R-5 can run — the builder's own
+// measurement and the merge-gate reviewer's independent re-run. There is no second production caller.
+export function stripFences(text) {
+  const src = text.split('\n');
+  const out = src.slice();
+  let open = null;                                     // { char, len, idx } while a fence is open
+  for (let i = 0; i < src.length; i++) {
+    const m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(src[i]);
+    if (open) {
+      out[i] = '';                                     // blank every line inside the fence, incl. its close
+      if (m && m[1][0] === open.char && m[1].length >= open.len && m[2].trim() === '') open = null;
+    } else if (m && !(m[1][0] === '`' && m[2].includes('`'))) {
+      open = { char: m[1][0], len: m[1].length, idx: i };   // CommonMark: no backtick in a ```-fence info string
+      out[i] = '';
+    }
+  }
+  // An unclosed fence must NOT hide the rest of the document. CommonMark says it runs to EOF; this check
+  // deliberately does not, because --strict exists to catch open questions and must lean to a loud false
+  // positive over a silent false negative. Spec R-1 / R-4.
+  if (open) for (let i = open.idx; i < src.length; i++) out[i] = src[i];
+  return out.join('\n');
+}
+
 export function validate(root, args) {
   const errs = [];
   const err = (path, msg, level = 'error') => errs.push({ level, path, msg });
@@ -47,10 +75,9 @@ export function validate(root, args) {
     if (args.strict) for (const f of ['spec.md', 'plan.md']) {   // handoff artifacts ONLY — a retro's job includes discussing markers
       const p = join(dir, f);
       if (!existsSync(p)) continue;
-      const text = readFileSync(p, 'utf8')
+      const text = stripFences(readFileSync(p, 'utf8'))          // fences FIRST — see stripFences()
         .replace(/<!--[\s\S]*?-->/g, '')                         // template's marker lives in a comment
-        .replace(/```[\s\S]*?```/g, '')                          // fenced code blocks quote, not declare
-        .replace(/`[^`\n]*`/g, '');                              // inline code spans likewise
+        .replace(/`[^`\n]*`/g, '');                              // a code span quotes, it does not declare
       if (/\[NEEDS CLARIFICATION\b[^\]]*\]/.test(text))
         err(p, 'NEEDS CLARIFICATION marker present — handoff blocked (--strict)');
     }
