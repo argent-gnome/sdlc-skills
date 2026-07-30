@@ -183,8 +183,10 @@ per the §6 routing table. None blocked S2's merge gate.
 > **R-5** makes the merge-gate reviewer re-measure independently instead of inheriting the digest.
 >
 > The bullet below is left as written. Its closing count — "one of **three** unminted, unblocked backlog
-> items" — was true at the `[0006]` ship; it is now **two**, both in
-> [the `[0006]` build backlog](#backlog--discovered-in-the-0006-build-2026-07-29).
+> items" — was true at the `[0006]` ship; minting `[0007]` took it to **two**, and `[0007]`'s own build
+> then raised one more, so the board now carries **three**: two in
+> [the `[0006]` build backlog](#backlog--discovered-in-the-0006-build-2026-07-29) and one in
+> [the `[0007]` build backlog](#backlog--discovered-in-the-0007-build-2026-07-29).
 
 - **The R-1 fence-stripper is defeated by a fence quoted inside a fence.** `--strict` strips fenced
   blocks with a non-greedy `` ```…``` `` pair, so a plan that quotes a triple-backtick fence *inside* a
@@ -286,6 +288,47 @@ and is available as a rider on whichever slice next opens that page.)
   *annotated on divergence*, not appended to. Unminted; needs a shaper pass to choose generate-vs-delete.
   *(Recording this item necessarily adds prose to the very file it wants shortened — noted, and kept as
   tight as the evidence allows.)*
+
+### Backlog — discovered in the `[0007]` build (2026-07-29)
+
+Two `work.discovered` events on `[0007]`, raised by the builder of unit 01 while writing its report
+(`2026-07-30T01:17:04Z`, refined at `2026-07-30T01:25Z`), routed here per §6. Two of the three are CLI
+wording; the third turned out to be **a real, if small, code bug** — an unanchored regex in
+`house unit … finalize` that destroyed part of unit 01's own report before it was repaired by hand. None
+blocked anything. Note what this is *not*: `[0007]`'s own sanctioned `work.discovered` route — spec **R-3** / plan
+Task 3 Step 3, for a genuine marker newly exposed by the corrected stripper — never fired, because the
+builder's own blast-radius measurement found **zero** files going green → red.
+
+- **The builder-facing report/record surface names a verb and a flag the CLI does not have, and hides one
+  behaviour it does have.** Three nits, all hit or read inside one build session, each one costing a
+  builder a wrong turn. Unminted, unblocked, **patch** tier at most — a rider on whichever slice next opens
+  `cli/bin/house.js` / `cli/lib/slices.js` or a `house-*` skill would close all three.
+  - **`house unit <slice> report <unit>` does not exist.** Unit 01 was told to report with it; `unitCmd`
+    (`cli/lib/slices.js:211`) accepts only `dispatch`, `heartbeat` and `finalize`, and it is **`finalize`**
+    that emits the `unit.report` event. The unit reported with heartbeats plus `finalize` instead, so
+    nothing was lost. **Where the phantom verb lives matters:** neither `skills/house-builder/SKILL.md`
+    (which correctly documents `heartbeat` and `finalize`) nor the on-disk kickoff brief in `slice.yaml`
+    names it — it came from the orchestrator's per-unit dispatch prompt, which is improvised each time.
+    So the durable fix is either a `report` alias for `finalize` in the CLI, or dispatch wording that says
+    heartbeat-then-finalize outright rather than leaving the verb to invention.
+  - **`house event` takes `--payload`, not `--note`** (`cli/bin/house.js`'s `FLAGS` table:
+    `event: ['slice','payload','actor']`). `[0007]`'s own plan quotes
+    `house event work.discovered … --note` at Task 3 Step 3, which exits 1 on the unknown flag — correctly,
+    under the per-command flag guard `[0003]` **R-5** added. **Latent, not live:** that route never ran on
+    this slice. An approved plan is not retro-edited to fix this; the wording belongs wherever the command
+    is documented for the next author to copy.
+  - **`house unit … finalize` truncates the unit report at an UNANCHORED heading match** — a genuine bug,
+    not just undocumented behaviour. `unitCmd` does `cur.replace(/## Result[\s\S]*$/, …)`
+    (`cli/lib/slices.js:244`): the pattern is neither `^`-anchored nor `m`-flagged, so it matches the
+    *first* occurrence of that literal text **anywhere in the body**, including inside a sentence or a code
+    span, and deletes everything after it. **Demonstrated live on unit 01's own report:** the report
+    documented this hazard in prose that spelled the heading out inline, finalize matched that sentence
+    instead of the real heading, and the truncation ate the rest of the section *plus the heading it was
+    meant to fill*. Repaired by hand; nothing was lost, because the write was noticed immediately.
+    Two consequences worth carrying: narrative evidence must sit above the heading, **and** a unit report
+    must not contain that heading's literal text anywhere in its body. The durable fix is a
+    `/^## Result[\s\S]*$/m` anchor, which makes the second rule unnecessary — patch tier, a handful of
+    characters, plus a test that a body mentioning the heading inline survives finalize.
 
 ## Locked conventions
 

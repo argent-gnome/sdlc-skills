@@ -21,9 +21,10 @@ artifacts:
 units:
   - id: '01'
     title: unit 01 — fence-stripper correction (T1–T3)
-    state: building
-    result: null
+    state: finalized
+    result: DONE
     dispatched: '2026-07-30T01:09:28.922Z'
+    finalized: '2026-07-30T01:23:34.743Z'
 kickoff:
   version: 1
   unit: '01'

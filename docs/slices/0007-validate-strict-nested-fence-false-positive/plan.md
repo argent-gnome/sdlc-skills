@@ -51,7 +51,7 @@ document reads correctly in any renderer.
 | File | Change | Responsibility |
 |---|---|---|
 | `cli/lib/validate.js` | Modify — add `stripFences()` above `validate()`; rewrite the strip pipeline at lines 47-56 | The only fence logic in the codebase. Confirmed by the research pass: no other fence stripper exists in `cli/lib/`. |
-| `cli/test/validate.test.js` | Modify — append four tests | All `--strict` marker coverage lives here already. |
+| `cli/test/validate.test.js` | Modify — append five tests (four in Task 1, one in Task 2) | All `--strict` marker coverage lives here already. |
 
 No new files. No extraction into a shared module — `derive.js` and `hooks.js` keep their own unrelated
 `[\s\S]*?` uses, which are frontmatter, unit-report and dev-state-marker concerns, not fences.

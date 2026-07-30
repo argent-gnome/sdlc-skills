@@ -92,13 +92,23 @@ treated as a consequence, not the bar — the bar was the suite.
 
 ### One incidental finding (not acted on)
 
-The kickoff brief asks the builder to report via `house unit <slice> report <unit>`. That verb does not
-exist: `unitCmd` in `cli/lib/slices.js:211` accepts only `dispatch`, `heartbeat` and `finalize` — it is
-`finalize` that emits the `unit.report` event. Reporting was therefore done with heartbeats plus
-finalize. Also note `finalize` rewrites everything from `## Result` onward, which is why this evidence
-section sits above it. Both are brief/CLI wording nits for the orchestrator, not blockers, and fixing
-them is outside this slice.
+Routed to the roadmap backlog as a `work.discovered` event (`2026-07-30T01:17:04Z`), so it is a record and
+not a transcript note. Three builder-facing wording nits, all hit inside this one session:
+
+1. The dispatch prompt asks the builder to report via a `house unit <slice> report <unit>` verb that does
+   not exist. `unitCmd` (`cli/lib/slices.js:211`) accepts only `dispatch`, `heartbeat` and `finalize`, and
+   it is `finalize` that emits the `unit.report` event. Reported with heartbeats plus finalize instead.
+2. `house event` takes `--payload`, not `--note`. This slice's own plan quotes
+   `house event work.discovered … --note` at Task 3 Step 3, which exits 1 on the per-command flag guard.
+   Latent only — that route never ran here, since zero files went green to red.
+3. `house unit … finalize` rewrites everything from the Result heading down, via an **unanchored**
+   `/## Res…[\s\S]*$/` match. **Demonstrated the hard way:** the paragraph you are reading originally
+   spelled that heading out inline, and finalize matched *that* occurrence instead of the real heading —
+   truncating this section and deleting the very heading it was supposed to fill. Repaired by hand and
+   rephrased. So the constraint is sharper than "put evidence above the heading": a unit report must never
+   contain that heading's literal text anywhere in its body.
 
 ## Result
 
-(pending — absence of a finalized result is fail-closed unknown, never DONE)
+**DONE** — T1-T3 all green. Line-oriented exported stripFences() + strip order fences/comments/spans. 72 -> 77 tests, 0 fail. --strict now exit 0 repo-wide with 0003/plan.md byte-identical (blob 178a1e9). Own R-5 measurement: 1 file changed (0003 plan RED->GREEN), ZERO green->red, so R-3's deviation route did not fire. Merge gate still owes its independent R-5 re-measurement.
+- finalized: 2026-07-30T01:23:34.744Z

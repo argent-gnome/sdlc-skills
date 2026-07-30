@@ -26,10 +26,18 @@ tasks:
       repo-level acceptance — 0003 plan passes unmodified + own blast-radius measurement (R-3, R-5);
       a --strict red caused ONLY by a newly exposed genuine marker is the plan's Step 3 deviation
       route, not a build failure
-    state: todo
+    state: done
     verify: >-
       house validate --strict && git diff --quiet main...HEAD --
       docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md && git diff --quiet --
       docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md && cd cli && npm test
     depends_on:
       - T2
+    evidence:
+      cmd: >-
+        house validate --strict && git diff --quiet main...HEAD --
+        docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md && git diff --quiet --
+        docs/slices/0003-house-v2-s3-smoke-findings-kernel-fixes/plan.md && cd cli && npm test
+      cmd_exit: 0
+      summary: ℹ duration_ms 1885.06125
+      at: '2026-07-30T01:15:47.229Z'
