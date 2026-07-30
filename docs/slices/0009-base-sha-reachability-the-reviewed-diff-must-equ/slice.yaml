@@ -1,0 +1,16 @@
+schema_version: 1
+id: 0009-base-sha-reachability-the-reviewed-diff-must-equ
+title: base_sha reachability — the reviewed diff must equal the merged diff
+kind: slice
+rigor: slice
+state: shaping
+blocked_on: null
+appetite: 1 session
+created: '2026-07-30'
+branch: slice/0009-base-sha-reachability-the-reviewed-diff-must-equ
+base_sha: null
+pr: null
+adrs: []
+artifacts: {}
+units: []
+kickoff: null

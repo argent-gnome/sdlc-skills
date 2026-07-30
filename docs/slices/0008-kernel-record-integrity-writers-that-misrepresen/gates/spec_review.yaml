@@ -1,0 +1,21 @@
+gate: spec_review
+verdict: approved
+by: jed
+recorded_at: '2026-07-30T02:37:57.282Z'
+notes: >-
+  RE-APPROVAL after plan-check. Original approval 2026-07-30 covered seven requirements and the
+  locator design. Plan-check advisory A1, escalated by shaper simulation, proved R-2's independence
+  clause (placement does not depend on any other section's heading) forced an end-scanning
+  implementation carrying the very bug R-2 exists to fix: any note body containing a line beginning
+  '## ' truncates the scan and the next heartbeat lands inside the previous note. User was shown the
+  defect, the three options, and the simulation evidence (five hostile notes — mid-sentence mention,
+  line-start quote, an exact ## Result line, a fenced heading, and dollar-patterns — all preserved,
+  chronological order preserved, one finalize block) and chose to relax R-2 to state the outcome
+  rather than the mechanism. R-2 now reads: a heartbeat is appended at the end of the Heartbeats
+  section and its placement is unaffected by anything a previous note contains; two new scenarios
+  pin the heading-shaped-line case and chronological order. Solution override 2 is marked WITHDRAWN
+  with the reason. Net effect is a SIMPLER design than first approved: both writers share one
+  occurrence rule (last exact whole-line match on ## Result), findSection loses its occurrence
+  parameter, the asymmetry concept disappears, R-4 still holds, and the residual limit count stays
+  at one. The research digest's original 'same anchoring discipline' instinct was closer to right
+  than the shaper's override.

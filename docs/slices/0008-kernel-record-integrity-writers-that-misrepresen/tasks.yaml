@@ -1,0 +1,29 @@
+tasks:
+  - id: T1
+    title: >-
+      findSection() locator exported from cli/lib/slices.js — last exact whole-line match — and finalize
+      uses it instead of pattern-matching; refuses a report with no Result heading (R-1, R-4)
+    state: todo
+    verify: (cd cli && npm test)
+  - id: T2
+    title: >-
+      heartbeat inserts before the structural Result heading via the same locator, so a note containing a
+      heading-shaped line no longer splices the next beat into it; neither writer passes caller text as a
+      replacement pattern; heartbeat refuses a missing heading too (R-2, R-3, R-4)
+    state: todo
+    verify: (cd cli && npm test)
+    depends_on:
+      - T1
+  - id: T3
+    title: >-
+      house adr <slice> attach <adr-id> writer + slice.adr_attached event type (owned, not free-form);
+      0001's hand-populated adrs value re-recorded through the writer, never hand-edited (R-5)
+    state: todo
+    verify: >-
+      (cd cli && npm test) && grep -q '"slice.adr_attached"' .house/events.jsonl && house validate
+  - id: T4
+    title: >-
+      the unknown-flag guard names the accepted flags, and unit validates its action before the unit
+      lookup so a phantom verb stops reporting "no such unit: undefined" (R-6, R-7)
+    state: todo
+    verify: (cd cli && npm test) && house validate && house validate --strict

@@ -1,0 +1,22 @@
+schema_version: 1
+id: 0008-kernel-record-integrity-writers-that-misrepresen
+title: kernel record integrity — writers that misrepresent their records
+kind: slice
+rigor: slice
+state: shaping
+blocked_on: null
+appetite: 1 session
+created: '2026-07-30'
+branch: slice/0008-kernel-record-integrity-writers-that-misrepresen
+base_sha: null
+pr: null
+adrs: []
+artifacts:
+  spec:
+    state: approved
+    updated: '2026-07-30'
+  plan:
+    state: draft
+    updated: '2026-07-30'
+units: []
+kickoff: null
